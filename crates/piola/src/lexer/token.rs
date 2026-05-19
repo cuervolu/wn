@@ -65,6 +65,8 @@ pub enum TokenKind {
     Ojo,
     Cago,
 
+    Devolver,
+
     // Logical operators (keyword form)
     Y,
     O,
@@ -97,6 +99,9 @@ pub enum TokenKind {
     RCorchete,
     Coma,
     Colon,
+
+    Cortala,
+    Sigue,
 
     // End of file
     EOF,

@@ -145,6 +145,9 @@ impl Lexer {
             "verdad"  => TokenKind::Verdad,
             "falso"   => TokenKind::Falso,
             "nada"    => TokenKind::Nada,
+            "devolver" => TokenKind::Devolver,
+            "cortala" => TokenKind::Cortala,
+            "sigue"   => TokenKind::Sigue,
             _         => TokenKind::Ident(s),
         }
     }

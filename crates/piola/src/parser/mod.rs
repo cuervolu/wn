@@ -100,6 +100,9 @@ impl Parser {
             TokenKind::Mientras=> self.parse_mientras(),
             TokenKind::Para    => self.parse_para(),
             TokenKind::Ojo     => self.parse_ojo(),
+            TokenKind::Devolver => self.parse_devolver(),
+            TokenKind::Cortala => { self.advance(); Ok(Stmt::Cortala) }
+            TokenKind::Sigue   => { self.advance(); Ok(Stmt::Sigue) }
             _                  => self.parse_expr_stmt(),
         }
     }
@@ -200,6 +203,19 @@ impl Parser {
         }
         self.consume(&TokenKind::RLlave)?;
         Ok(stmts)
+    }
+
+    fn parse_devolver(&mut self) -> Result<Stmt, PiolaError> {
+        self.advance();
+
+        // `devolver` retorna nada implícitamente
+        let valor = if matches!(self.peek(), TokenKind::RLlave | TokenKind::EOF) {
+            Expr::Nada
+        } else {
+            self.parse_expr()?
+        };
+
+        Ok(Stmt::Devolver { valor })
     }
 
     fn parse_expr(&mut self) -> Result<Expr, PiolaError> {

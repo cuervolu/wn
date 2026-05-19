@@ -78,11 +78,17 @@ pub enum Stmt {
         cuerpo: Vec<Stmt>,
     },
 
+    Devolver {
+        valor: Expr,
+    },
+
     Ojo {
         cuerpo: Vec<Stmt>,
         error_var: String,
         manejo: Vec<Stmt>,
     },
+    Cortala,
+    Sigue,
 }
 
 #[derive(Debug, Clone, PartialEq)]
