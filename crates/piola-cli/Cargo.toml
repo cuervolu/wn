@@ -7,6 +7,10 @@ repository = "https://github.com/cuervolu/piola"
 license = "MIT"
 keywords = ["piola", "language", "interpreter", "cli", "chile"]
 
+[[bin]]
+name = "piola"
+path = "src/main.rs"
+
 [dependencies]
 clap      = { version = "4", features = ["derive"] }
 miette    = { version = "7", features = ["fancy"] }
