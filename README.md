@@ -16,6 +16,53 @@ pega fibonacci(n) {
 altiro(fibonacci(10))  // → 55
 ```
 
+## Instalación
+
+### macOS y Linux
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/cuervolu/piola/main/install.sh | bash
+```
+
+### Windows (PowerShell)
+
+```powershell
+iwr -useb https://raw.githubusercontent.com/cuervolu/piola/main/install.ps1 | iex
+```
+
+### Verificar la instalación
+
+```sh
+piola --version
+```
+
+### Actualizar
+
+```sh
+piola update
+```
+
+### Instalación manual
+
+Si prefieres no usar los scripts, descarga el binario para tu plataforma directamente desde [GitHub Releases](https://github.com/cuervolu/piola/releases/latest) y agrégalo a tú `PATH`.
+
+| Plataforma            | Archivo                                         |
+|-----------------------|-------------------------------------------------|
+| macOS (Apple Silicon) | `piola-vX.Y.Z-aarch64-apple-darwin.tar.gz`      |
+| macOS (Intel)         | `piola-vX.Y.Z-x86_64-apple-darwin.tar.gz`       |
+| Linux x86_64          | `piola-vX.Y.Z-x86_64-unknown-linux-gnu.tar.gz`  |
+| Linux ARM64           | `piola-vX.Y.Z-aarch64-unknown-linux-gnu.tar.gz` |
+| Windows 64-bit        | `piola-vX.Y.Z-x86_64-pc-windows-msvc.zip`       |
+
+---
+
+## Uso
+
+```sh
+piola              # abre el REPL interactivo
+piola programa.cl  # ejecuta un archivo
+```
+
 ## El nombre
 
 *Piola* en Chile tiene varios significados según el contexto. Puede ser alguien tranquilo y hábil, algo que funciona bien sin hacer bulla, o simplemente un elogio: "quedó piola".
@@ -42,14 +89,18 @@ El intérprete está escrito en Rust, es deliberadamente simple, y cada fase del
 
 ## Estado actual
 
-El pipeline completo — lexer, parser, AST e intérprete tree-walking, está implementado y funcional. Puedes ejecutar archivos `.cl` directamente o usar el REPL interactivo:
+El pipeline completo — lexer, parser, AST e intérprete tree-walking — está implementado y funcional. Las siguientes fases — compilador a bytecode, VM y garbage collector — están en el roadmap. El detalle de cada fase está en [`docs/roadmap.md`](docs/roadmap.md).
 
-```
-cargo run              # abre el REPL
-cargo run -- main.cl   # ejecuta un archivo
-```
+## Construir desde el código fuente
 
-Las siguientes fases — compilador a bytecode, VM y garbage collector, están en el roadmap. El detalle de cada fase está en `docs/roadmap.md`.
+Si quieres compilar Piola tú mismo necesitas [Rust](https://rustup.rs) 1.80 o superior.
+
+```sh
+git clone https://github.com/cuervolu/piola
+cd piola
+cargo build --release
+./target/release/piola
+```
 
 ## Contribuir
 
