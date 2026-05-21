@@ -6,13 +6,13 @@ use clap::Parser;
 use miette::IntoDiagnostic;
 use rustyline::{DefaultEditor, error::ReadlineError};
 
+use crate::updater::run_update;
 use piola::{
     error::PiolaError,
     interpreter::{Interprete, value::Valor},
     lexer::{Lexer, tokenizar},
     parser::parsear,
 };
-use crate::updater::run_update;
 
 #[derive(Parser)]
 #[command(
@@ -49,8 +49,11 @@ fn main() -> miette::Result<()> {
         Some(Command::Update { force }) => run_update(force),
         None => match cli.file {
             Some(path) => run_file(path),
-            None => { run_repl(); Ok(()) }
-        }
+            None => {
+                run_repl();
+                Ok(())
+            }
+        },
     }
 }
 

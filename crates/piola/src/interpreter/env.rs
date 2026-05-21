@@ -10,15 +10,30 @@ pub struct Entorno {
 
 impl Entorno {
     pub fn nuevo() -> Self {
-        Entorno { valores: HashMap::new(), padre: None }
+        Entorno {
+            valores: HashMap::new(),
+            padre: None,
+        }
     }
 
     pub fn nuevo_hijo(padre: Rc<RefCell<Entorno>>) -> Self {
-        Entorno { valores: HashMap::new(), padre: Some(padre) }
+        Entorno {
+            valores: HashMap::new(),
+            padre: Some(padre),
+        }
     }
 
-    pub fn definir(&mut self, nombre: &str, valor: Valor, es_duro: bool) {
+    pub fn definir(
+        &mut self,
+        nombre: &str,
+        valor: Valor,
+        es_duro: bool,
+    ) -> Result<(), RuntimeError> {
+        if let Some((_, true)) = self.valores.get(nombre) {
+            return Err(RuntimeError::ConstanteInmutable(nombre.to_string()));
+        }
         self.valores.insert(nombre.to_string(), (valor, es_duro));
+        Ok(())
     }
 
     pub fn asignar(&mut self, nombre: &str, valor: Valor) -> Result<(), RuntimeError> {
@@ -43,5 +58,75 @@ impl Entorno {
             return padre.borrow().obtener(nombre);
         }
         None
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::{cell::RefCell, rc::Rc};
+
+    use super::*;
+
+    const PI_NUM: f64 = std::f64::consts::PI;
+
+    #[test]
+    fn duro_no_permite_redeclaracion_mismo_scope() {
+        let mut env = Entorno::nuevo();
+        env.definir("PI", Valor::Numero(PI_NUM), true).unwrap();
+
+        let resultado = env.definir("PI", Valor::Numero(99.0), true);
+
+        assert!(
+            matches!(resultado, Err(RuntimeError::ConstanteInmutable(nombre)) if nombre == "PI")
+        );
+    }
+
+    #[test]
+    fn duro_permite_shadowing_en_scope_hijo() {
+        let padre = Rc::new(RefCell::new(Entorno::nuevo()));
+        padre
+            .borrow_mut()
+            .definir("PI", Valor::Numero(PI_NUM), true)
+            .unwrap();
+
+        let mut hijo = Entorno::nuevo_hijo(Rc::clone(&padre));
+
+        let resultado = hijo.definir("PI", Valor::Numero(99.0), true);
+
+        assert!(resultado.is_ok());
+        assert_eq!(hijo.obtener("PI"), Some(Valor::Numero(99.0)));
+    }
+
+    #[test]
+    fn wea_permite_redeclaracion_mismo_scope() {
+        let mut env = Entorno::nuevo();
+        env.definir("x", Valor::Numero(10.0), false).unwrap();
+
+        let resultado = env.definir("x", Valor::Texto("hola".to_string()), false);
+
+        assert!(resultado.is_ok());
+        assert_eq!(env.obtener("x"), Some(Valor::Texto("hola".to_string())));
+    }
+
+    #[test]
+    fn scope_hijo_puede_leer_variable_del_padre() {
+        let padre = Rc::new(RefCell::new(Entorno::nuevo()));
+        padre
+            .borrow_mut()
+            .definir("x", Valor::Numero(10.0), false)
+            .unwrap();
+
+        let hijo = Entorno::nuevo_hijo(Rc::clone(&padre));
+
+        assert_eq!(hijo.obtener("x"), Some(Valor::Numero(10.0)));
+    }
+
+    #[test]
+    fn scope_padre_no_puede_leer_variable_del_hijo() {
+        let padre = Rc::new(RefCell::new(Entorno::nuevo()));
+        let mut hijo = Entorno::nuevo_hijo(Rc::clone(&padre));
+        hijo.definir("x", Valor::Numero(10.0), false).unwrap();
+
+        assert_eq!(padre.borrow().obtener("x"), None);
     }
 }

@@ -2,7 +2,15 @@ use std::{cell::RefCell, collections::HashMap, fmt, rc::Rc};
 
 use crate::ast::Stmt;
 
-use super::{env::Entorno, error::RuntimeError};
+use super::env::Entorno;
+
+#[derive(Debug, Clone, Copy)]
+pub enum Nativa {
+    Altiro,
+    Largo,
+    Cachar,
+    Pregunta,
+}
 
 #[derive(Debug, Clone)]
 pub enum Valor {
@@ -17,7 +25,7 @@ pub enum Valor {
         cuerpo: Vec<Stmt>,
         entorno: Rc<RefCell<Entorno>>,
     },
-    Nativa(fn(Vec<Valor>) -> Result<Valor, RuntimeError>),
+    Nativa(Nativa),
 }
 
 impl Valor {

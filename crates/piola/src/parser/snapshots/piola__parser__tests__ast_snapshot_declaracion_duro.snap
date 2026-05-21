@@ -1,0 +1,13 @@
+---
+source: crates/piola/src/parser/mod.rs
+expression: ast
+---
+[
+    DeclWea {
+        nombre: "PI",
+        valor: Numero(
+            3.14,
+        ),
+        es_duro: true,
+    },
+]

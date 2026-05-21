@@ -14,7 +14,7 @@ impl Span {
 
 impl From<&Span> for SourceSpan {
     fn from(s: &Span) -> Self {
-        SourceSpan::new(s.start.into(), (s.end - s.start).into())
+        SourceSpan::new(s.start.into(), s.end - s.start)
     }
 }
 
@@ -24,7 +24,6 @@ impl From<Span> for SourceSpan {
     }
 }
 
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct Token {
     pub kind: TokenKind,
@@ -33,7 +32,10 @@ pub struct Token {
 
 impl Token {
     pub fn new(kind: TokenKind, start: usize, end: usize) -> Self {
-        Token { kind, span: Span::new(start, end) }
+        Token {
+            kind,
+            span: Span::new(start, end),
+        }
     }
 }
 

@@ -1,5 +1,5 @@
-use thiserror::Error;
 use crate::interpreter::value::Valor;
+use thiserror::Error;
 
 #[derive(Debug, Clone, Error)]
 pub enum RuntimeError {
@@ -33,7 +33,7 @@ pub enum RuntimeError {
     #[error("{0}")]
     ErrorCatcheable(String),
 
-    #[error("cortala")]   // nunca se muestra al usuario
+    #[error("cortala")] // nunca se muestra al usuario
     Cortala,
 
     #[error("sigue")]

@@ -1,0 +1,23 @@
+---
+source: crates/piola/src/parser/mod.rs
+expression: ast
+---
+[
+    DeclWea {
+        nombre: "x",
+        valor: Binario {
+            izq: Numero(
+                10.0,
+            ),
+            op: Suma,
+            der: Numero(
+                20.0,
+            ),
+            span: Span {
+                start: 11,
+                end: 15,
+            },
+        },
+        es_duro: false,
+    },
+]

@@ -1,0 +1,5 @@
+---
+source: crates/piola/tests/interpreter_runtime.rs
+expression: stdout
+---
+3.14
