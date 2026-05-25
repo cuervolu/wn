@@ -1,10 +1,10 @@
 [package]
 name = "wn-cli"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
 description = "CLI and REPL for the WN++ programming language"
-repository = "https://github.com/cuervolu/wn"
-license = "MIT"
+repository.workspace = true
+license.workspace = true
 keywords = ["wn", "language", "interpreter", "cli", "chile"]
 
 [[bin]]

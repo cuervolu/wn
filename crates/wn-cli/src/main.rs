@@ -87,7 +87,7 @@ fn run_repl() {
     let _ = rl.load_history(".wn_history");
 
     let mut interp = Interprete::nuevo();
-    println!("WN++ v0.1 — escribe 'chao' para salir");
+    println!("WN++ v{} — escribe 'chao' para salir", env!("CARGO_PKG_VERSION"));
 
     loop {
         match rl.readline(">>> ") {

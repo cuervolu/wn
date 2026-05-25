@@ -4,6 +4,12 @@ members = [
     "crates/wn",
     "crates/wn-cli",
 ]
+[workspace.package]
+version = "0.2.0"
+edition = "2024"
+repository = "https://github.com/cuervolu/wn"
+license = "MIT"
+
 
 [profile.dev]
 opt-level = 0      # no optimization, fast compile
