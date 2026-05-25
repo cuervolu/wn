@@ -50,13 +50,13 @@ piola update
 
 Si prefieres no usar los scripts, descarga el binario para tu plataforma directamente desde [GitHub Releases](https://github.com/cuervolu/piola/releases/latest) y agrégalo a tu `PATH`.
 
-| Plataforma            | Archivo                                         |
-| --------------------- | ----------------------------------------------- -----|
-| macOS (Apple Silicon) | `piola-cli-aarch64-apple-darwin.tar.xz`              |
-| macOS (Intel)         | `piola-cli-x86_64-apple-darwin.tar.xz`               |
-| Linux x86_64          | `piola-cli-x86_64-unknown-linux-gnu.tar.xz`          |
-| Linux ARM64           | `piola-cli-aarch64-unknown-linux-gnu.tar.xz`         |
-| Windows 64-bit        | `piola-cli-x86_64-pc-windows-msvc.zip`               |
+| Plataforma            | Archivo                                      |
+|-----------------------|----------------------------------------------|
+| macOS (Apple Silicon) | `piola-cli-aarch64-apple-darwin.tar.xz`      |
+| macOS (Intel)         | `piola-cli-x86_64-apple-darwin.tar.xz`       |
+| Linux x86_64          | `piola-cli-x86_64-unknown-linux-gnu.tar.xz`  |
+| Linux ARM64           | `piola-cli-aarch64-unknown-linux-gnu.tar.xz` |
+| Windows 64-bit        | `piola-cli-x86_64-pc-windows-msvc.zip`       |
 
 Cada archivo tiene un `.sha256` correspondiente para verificar la integridad.
 
