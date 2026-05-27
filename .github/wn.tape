@@ -32,7 +32,7 @@ Type `wea nombre = "WN++"`
 Enter
 Sleep 400ms
 
-Type `altiro("Wena, " + nombre + "!")`
+Type `lorea("Wena, " + nombre + "!")`
 Enter
 Sleep 800ms
 
@@ -61,7 +61,7 @@ Enter
 Sleep 1500ms
 
 Sleep 400ms
-Type `ojo { 1 / 0 } cago(e) { altiro("se cago todo") }`
+Type `ojo { 1 / 0 } cago(e) { lorea("se cago todo") }`
 Enter
 Sleep 800ms
 

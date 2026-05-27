@@ -20,7 +20,7 @@ wea goles_alexis  = 47       // entero
 wea promedio_gol  = 0.72     // decimal
 wea deuda_fifa    = 1.5e6    // notación científica → 1500000
 
-altiro(cachar(goles_alexis))  // → numero
+lorea(cachar(goles_alexis))  // → numero
 ```
 
 Las operaciones aritméticas estándar:
@@ -30,13 +30,13 @@ wea partidos   = 180
 wea victorias  = 98
 wea porcentaje = victorias / partidos * 100
 
-altiro(porcentaje)  // → 54.44444444444444
+lorea(porcentaje)  // → 54.44444444444444
 ```
 
 ```wn
 wea minutos   = 94
 wea descuento = minutos % 90  // módulo
-altiro(descuento)              // → 4
+lorea(descuento)              // → 4
 ```
 
 <Aside type="caution">
@@ -59,7 +59,7 @@ wea jugador  = "Arturo Vidal"
 wea apodo    = 'El Rey'
 wea completo = jugador + " — " + apodo
 
-altiro(completo)  // → Arturo Vidal — El Rey
+lorea(completo)  // → Arturo Vidal — El Rey
 ```
 
 Texto con números se convierte automáticamente al concatenar:
@@ -68,15 +68,15 @@ Texto con números se convierte automáticamente al concatenar:
 wea nombre  = "Gary Medel"
 wea tarjetas = 15
 
-altiro(nombre + " tiene " + tarjetas + " tarjetas amarillas")
+lorea(nombre + " tiene " + tarjetas + " tarjetas amarillas")
 // → Gary Medel tiene 15 tarjetas amarillas
 ```
 
 Secuencias de escape:
 
 ```wn
-altiro("Primera línea\nSegunda línea")
-altiro("Campeón:\t\"La Roja\"")
+lorea("Primera línea\nSegunda línea")
+lorea("Campeón:\t\"La Roja\"")
 ```
 
 ---
@@ -90,7 +90,7 @@ wea es_titular     = verdad
 wea esta_lesionado = falso
 wea puede_jugar    = es_titular y no esta_lesionado
 
-altiro(puede_jugar)  // → verdad
+lorea(puede_jugar)  // → verdad
 ```
 
 Las comparaciones devuelven booleanos:
@@ -99,9 +99,9 @@ Las comparaciones devuelven booleanos:
 wea goles_chile   = 3
 wea goles_bolivia = 0
 
-altiro(goles_chile > goles_bolivia)   // → verdad
-altiro(goles_chile == goles_bolivia)  // → falso
-altiro(goles_chile != goles_bolivia)  // → verdad
+lorea(goles_chile > goles_bolivia)   // → verdad
+lorea(goles_chile == goles_bolivia)  // → falso
+lorea(goles_chile != goles_bolivia)  // → verdad
 ```
 
 **Valores "falsy"** — se evalúan como `falso` en un `cachai`:
@@ -116,15 +116,15 @@ altiro(goles_chile != goles_bolivia)  // → verdad
 
 ```wn
 cachai (0) {
-  altiro("nunca llega acá")
+  lorea("nunca llega acá")
 }
 
 cachai ("") {
-  altiro("tampoco acá")
+  lorea("tampoco acá")
 }
 
 cachai ("Colo-Colo") {
-  altiro("esto sí se ejecuta")  // → esto sí se ejecuta
+  lorea("esto sí se ejecuta")  // → esto sí se ejecuta
 }
 ```
 
@@ -138,7 +138,7 @@ Representa la ausencia de valor. Es lo que devuelve una función que no retorna 
 wea transferencia = nada  // aún no se concreta
 
 cachai (transferencia == nada) {
-  altiro("Alexis sigue sin club, esperando ofertas")
+  lorea("Alexis sigue sin club, esperando ofertas")
 }
 ```
 
@@ -163,29 +163,29 @@ wea mixta   = [1, "dos", verdad, nada]  // válido
 **Acceso por índice** — base cero:
 
 ```wn
-altiro(plantel[0])   // → Bravo
-altiro(plantel[2])   // → Maripán
-altiro(plantel[-1])  // → Vidal (índice negativo: desde el final)
+lorea(plantel[0])   // → Bravo
+lorea(plantel[2])   // → Maripán
+lorea(plantel[-1])  // → Vidal (índice negativo: desde el final)
 ```
 
 **Modificar un elemento:**
 
 ```wn
 plantel[4] = "Brereton"
-altiro(plantel[4])  // → Brereton
+lorea(plantel[4])  // → Brereton
 ```
 
 **Largo:**
 
 ```wn
-altiro(largo(plantel))  // → 6
+lorea(largo(plantel))  // → 6
 ```
 
 **Iterar:**
 
 ```wn
 para (jugador en plantel) {
-  altiro("  " + jugador)
+  lorea("  " + jugador)
 }
 ```
 
@@ -198,8 +198,8 @@ wea fixture = [
   ["Uruguay", "Colombia"]
 ]
 
-altiro(fixture[0])      // → [Chile, Bolivia]
-altiro(fixture[0][1])   // → Bolivia
+lorea(fixture[0])      // → [Chile, Bolivia]
+lorea(fixture[0][1])   // → Bolivia
 ```
 
 <Aside type="caution">
@@ -207,7 +207,7 @@ altiro(fixture[0][1])   // → Bolivia
 
   ```wn
   wea lista = [1, 2, 3]
-  altiro(lista[10])
+  lorea(lista[10])
   // Error: Te fuiste al chancho, el índice 10 no existe en la lista (largo: 3).
   ```
 </Aside>
@@ -230,9 +230,9 @@ wea jugador = {
 **Acceso por clave:**
 
 ```wn
-altiro(jugador["nombre"])    // → Charles Aránguiz
-altiro(jugador["copas"])     // → 2
-altiro(jugador["clubes"][0]) // → La U
+lorea(jugador["nombre"])    // → Charles Aránguiz
+lorea(jugador["copas"])     // → 2
+lorea(jugador["clubes"][0]) // → La U
 ```
 
 **Modificar un valor:**
@@ -244,7 +244,7 @@ jugador["copas"] = 3
 **Clave inexistente:**
 
 ```wn
-altiro(jugador["sueldo"])
+lorea(jugador["sueldo"])
 // Error: La clave 'sueldo' no existe papito.
 ```
 
@@ -260,7 +260,7 @@ wea seleccion = {
   }
 }
 
-altiro(seleccion["tecnico"]["nombre"])  // → Ricardo Gareca
+lorea(seleccion["tecnico"]["nombre"])  // → Ricardo Gareca
 ```
 
 ---
@@ -270,13 +270,13 @@ altiro(seleccion["tecnico"]["nombre"])  // → Ricardo Gareca
 La función nativa `cachar()` devuelve el tipo de cualquier valor como texto:
 
 ```wn
-altiro(cachar(42))           // → numero
-altiro(cachar("La Roja"))    // → texto
-altiro(cachar(verdad))       // → booleano
-altiro(cachar(nada))         // → nada
-altiro(cachar([1, 2, 3]))    // → lista
-altiro(cachar({"a": 1}))     // → mapa
-altiro(cachar(pega x() {}))  // → pega
+lorea(cachar(42))           // → numero
+lorea(cachar("La Roja"))    // → texto
+lorea(cachar(verdad))       // → booleano
+lorea(cachar(nada))         // → nada
+lorea(cachar([1, 2, 3]))    // → lista
+lorea(cachar({"a": 1}))     // → mapa
+lorea(cachar(pega x() {}))  // → pega
 ```
 
 Útil para hacer lógica condicional según el tipo:
@@ -300,10 +300,10 @@ pega describir(valor) {
   }
 }
 
-altiro(describir(9))               // → el número 9
-altiro(describir("Estadio Monumental")) // → el texto "Estadio Monumental"
-altiro(describir([1, 2, 3]))       // → una lista de 3 elementos
-altiro(describir(nada))            // → un nada
+lorea(describir(9))               // → el número 9
+lorea(describir("Estadio Monumental")) // → el texto "Estadio Monumental"
+lorea(describir([1, 2, 3]))       // → una lista de 3 elementos
+lorea(describir(nada))            // → un nada
 ```
 
 ---

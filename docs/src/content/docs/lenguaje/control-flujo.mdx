@@ -17,9 +17,9 @@ La forma de tomar decisiones. Si la condición es verdad, ejecuta el bloque. Si 
 wea temperatura_horno = 180
 
 cachai (temperatura_horno >= 200) {
-  altiro("Listo para las empanadas")
+  lorea("Listo para las empanadas")
 } si no {
-  altiro("Espera un poco más, weon")
+  lorea("Espera un poco más, weon")
 }
 // → Espera un poco más, weon 
 ```
@@ -32,12 +32,12 @@ No hay `sino cachai` como en otros lenguajes — se anidan bloques:
 wea ingredientes = 3
 
 cachai (ingredientes == 0) {
-  altiro("No hay nada, pide delivery")
+  lorea("No hay nada, pide delivery")
 } si no {
   cachai (ingredientes < 3) {
-    altiro("Alcanza para un completo no más")
+    lorea("Alcanza para un completo no más")
   } si no {
-    altiro("Suficiente para una cazuela")
+    lorea("Suficiente para una cazuela")
   }
 }
 // → Suficiente para una cazuela
@@ -53,15 +53,15 @@ wea tiene_tomate = verdad
 wea tiene_mayo   = falso
 
 cachai (tiene_palta y tiene_tomate) {
-  altiro("Completo italiano asegurado")
+  lorea("Completo italiano asegurado")
 }
 
 cachai (tiene_mayo o tiene_palta) {
-  altiro("Algo rico sale igual")
+  lorea("Algo rico sale igual")
 }
 
 cachai (no tiene_mayo) {
-  altiro("Sin mayo, más sano pero menos rico")
+  lorea("Sin mayo, más sano pero menos rico")
 }
 ```
 
@@ -76,11 +76,11 @@ Repite un bloque **mientras** una condición sea verdad. Clásico para cuando no
 wea masa_restante = 500  // gramos
 
 mientras (masa_restante > 0) {
-  altiro("Friendo sopaipilla... quedan " + masa_restante + "g de masa")
+  lorea("Friendo sopaipilla... quedan " + masa_restante + "g de masa")
   masa_restante = masa_restante - 50
 }
 
-altiro("¡Se acabó la masa!")
+lorea("¡Se acabó la masa!")
 // → Friendo sopaipilla... quedan 500g de masa
 // → Friendo sopaipilla... quedan 450g de masa
 // → ... (10 veces)
@@ -102,7 +102,7 @@ Itera sobre cada elemento de una lista o los caracteres de un texto. Úsalo cuan
 wea ingredientes = ["vacuno", "papas", "choclo", "zanahoria", "zapallo"]
 
 para (ingrediente en ingredientes) {
-  altiro("Agregar " + ingrediente + " a la olla")
+  lorea("Agregar " + ingrediente + " a la olla")
 }
 // → Agregar vacuno a la olla
 // → Agregar papas a la olla
@@ -115,7 +115,7 @@ También funciona con texto:
 
 ```wn
 para (letra en "pebre") {
-  altiro(letra)
+  lorea(letra)
 }
 // → p
 // → e
@@ -135,10 +135,10 @@ wea completos_comidos = 0
 
 mientras (verdad) {  // bucle infinito a propósito
   completos_comidos = completos_comidos + 1
-  altiro("Completo número " + completos_comidos)
+  lorea("Completo número " + completos_comidos)
 
   cachai (completos_comidos >= 3) {
-    altiro("Ya, basta. Me voy a morir.")
+    lorea("Ya, basta. Me voy a morir.")
     cortala
   }
 }
@@ -155,10 +155,10 @@ wea postres = ["manjar", "calzones rotos", "mote con huesillos", "leche asada"]
 
 para (postre en postres) {
   cachai (postre == "mote con huesillos") {
-    altiro("¡Este es! Me quedo con el " + postre)
+    lorea("¡Este es! Me quedo con el " + postre)
     cortala
   }
-  altiro("Pasando el " + postre + "...")
+  lorea("Pasando el " + postre + "...")
 }
 // → Pasando el manjar...
 // → Pasando el calzones rotos...
@@ -181,10 +181,10 @@ wea toppings = ["papas fritas", "cebolla", "carne mechada", "huevo", "cebolla"]
 
 para (topping en toppings) {
   cachai (topping == "cebolla") {
-    altiro("Ugh, cebolla no gracias")
+    lorea("Ugh, cebolla no gracias")
     sigue  // ← no agrega la cebolla, sigue con el siguiente
   }
-  altiro("Agregando " + topping)
+  lorea("Agregando " + topping)
 }
 // → Agregando papas fritas
 // → Ugh, cebolla no gracias
@@ -206,7 +206,7 @@ wea cant_pino = 0
 
 para (sabor en pedido) {
   cachai (sabor == "camarón") {
-    altiro("Sin camarones, se nos acabaron")
+    lorea("Sin camarones, se nos acabaron")
     sigue
   }
 
@@ -220,12 +220,12 @@ para (sabor en pedido) {
   }
 
   total = total + precio
-  altiro("+ Empanada de " + sabor + ": $" + precio)
+  lorea("+ Empanada de " + sabor + ": $" + precio)
 }
 
-altiro("---")
-altiro("Empanadas de pino: " + cant_pino)
-altiro("Total: $" + total)
+lorea("---")
+lorea("Empanadas de pino: " + cant_pino)
+lorea("Total: $" + total)
 ```
 
 ```

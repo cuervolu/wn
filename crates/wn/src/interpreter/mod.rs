@@ -90,8 +90,8 @@ impl Interprete {
         let global = Rc::new(RefCell::new(Entorno::nuevo()));
         {
             let mut env = global.borrow_mut();
-            env.definir("altiro", Valor::Nativa(Nativa::Altiro), false)
-                .expect("builtin 'altiro' debe registrarse");
+            env.definir("lorea", Valor::Nativa(Nativa::Lorea), false)
+                .expect("builtin 'lorea' debe registrarse");
             env.definir("largo", Valor::Nativa(Nativa::Largo), false)
                 .expect("builtin 'largo' debe registrarse");
             env.definir("cachar", Valor::Nativa(Nativa::Cachar), false)
@@ -445,14 +445,14 @@ impl Interprete {
 
     fn llamar_nativa(&mut self, nativa: Nativa, args: Vec<Valor>) -> Result<Valor, RuntimeError> {
         match nativa {
-            Nativa::Altiro => self.builtin_altiro(args),
+            Nativa::Lorea => self.builtin_lorea(args),
             Nativa::Largo => builtin_largo(args),
             Nativa::Cachar => builtin_cachar(args),
             Nativa::Pregunta => builtin_pregunta(args),
         }
     }
 
-    fn builtin_altiro(&mut self, args: Vec<Valor>) -> Result<Valor, RuntimeError> {
+    fn builtin_lorea(&mut self, args: Vec<Valor>) -> Result<Valor, RuntimeError> {
         let linea = args
             .iter()
             .map(|v| v.to_string())

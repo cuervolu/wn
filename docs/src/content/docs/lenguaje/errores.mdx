@@ -16,7 +16,7 @@ Envuelve en `ojo` el código que puede fallar. Si algo explota, `cago` lo captur
 ojo {
   wea resultado = 10 / 0
 } cago(error) {
-  altiro("La cagó: " + error)
+  lorea("La cagó: " + error)
 }
 // → La cagó: Weon, no se puede dividir por cero.
 ```
@@ -25,9 +25,9 @@ ojo {
 
 ```wn
 ojo {
-  altiro(lista_inexistente)
+  lorea(lista_inexistente)
 } cago(e) {
-  altiro("Oe: " + e)
+  lorea("Oe: " + e)
 }
 // → Oe: La wea 'lista_inexistente' no existe papito.
 ```
@@ -42,7 +42,7 @@ Cualquier error de runtime puede ser atrapado con `ojo`/`cago`. Estos son todos 
 ojo {
   wea x = "fósforos" + 42
 } cago(error) {
-  altiro(error)
+  lorea(error)
 }
 // → No podi usar '+' entre un 'texto' y un 'numero' pedazo de saco wea.
 ```
@@ -51,15 +51,15 @@ ojo {
   Sumar texto con número funciona si el número va al lado del texto, es coerción intencional:
 
   ```wn
-  altiro("Precio: " + 1500)  // → Precio: 1500  ✓
-  altiro(1500 + " pesos")    // → 1500 pesos     ✓
-  altiro("precio" + 1500 + "CLP")   // → precio1500CLP  ✓
+  lorea("Precio: " + 1500)  // → Precio: 1500  ✓
+  lorea(1500 + " pesos")    // → 1500 pesos     ✓
+  lorea("precio" + 1500 + "CLP")   // → precio1500CLP  ✓
   ```
 
   Lo que no funciona es intentar operar aritméticamente:
 
   ```wn
-  altiro("precio" * 2)  // Error ✗
+  lorea("precio" * 2)  // Error ✗
   ```
 </Aside>
 
@@ -67,9 +67,9 @@ ojo {
 
 ```wn
 ojo {
-  altiro(boleta_electronica)
+  lorea(boleta_electronica)
 } cago(error) {
-  altiro(error)
+  lorea(error)
 }
 // → La wea 'boleta_electronica' no existe papito.
 ```
@@ -80,7 +80,7 @@ ojo {
 ojo {
   wea promedio = 100 / 0
 } cago(error) {
-  altiro(error)
+  lorea(error)
 }
 // → Weon, no se puede dividir por cero.
 ```
@@ -91,9 +91,9 @@ ojo {
 wea fila_banco = ["señora Rosa", "don Lucho", "el cabro chico"]
 
 ojo {
-  altiro(fila_banco[99])
+  lorea(fila_banco[99])
 } cago(error) {
-  altiro(error)
+  lorea(error)
 }
 // → Te fuiste al chancho, el índice 99 no existe en la lista (largo: 3).
 ```
@@ -104,9 +104,9 @@ ojo {
 wea tramite = {"nombre": "certificado de residencia", "costo": 0}
 
 ojo {
-  altiro(tramite["tiempo_estimado"])
+  lorea(tramite["tiempo_estimado"])
 } cago(error) {
-  altiro(error)
+  lorea(error)
 }
 // → La clave 'tiempo_estimado' no existe papito.
 ```
@@ -119,7 +119,7 @@ duro PRECIO_MICRO = 800
 ojo {
   PRECIO_MICRO = 750
 } cago(error) {
-  altiro(error)
+  lorea(error)
 }
 // → Oe, 'PRECIO_MICRO' es duro, no lo podí cambiar.
 ```
@@ -134,7 +134,7 @@ pega recargar_bip(monto) {
 ojo {
   recargar_bip(500, "efectivo", "por favor")
 } cago(error) {
-  altiro(error)
+  lorea(error)
 }
 // → La pega espera 1 args, le pasaste 3.
 ```
@@ -147,7 +147,7 @@ wea direccion = "Avenida Libertador Bernardo O'Higgins 1234"
 ojo {
   direccion()
 } cago(error) {
-  altiro(error)
+  lorea(error)
 }
 // → 'texto' no es una pega papito.
 ```
@@ -171,16 +171,16 @@ pega buscar_documento(rut) {
 ojo {
   ojo {
     wea doc = buscar_documento(nada)
-    altiro(doc)
+    lorea(doc)
   } cago(error_interno) {
-    altiro("Error buscando documento: " + error_interno)
+    lorea("Error buscando documento: " + error_interno)
     // podríamos relanzar o manejar acá
   }
 
-  altiro("Trámite completado")
+  lorea("Trámite completado")
 
 } cago(error_externo) {
-  altiro("Error general del sistema: " + error_externo)
+  lorea("Error general del sistema: " + error_externo)
 }
 ```
 
@@ -196,9 +196,9 @@ para (i en [1, 2, 3, 4, 5]) {
     cachai (i == 3) {
       cortala  // ← esto NO lo atrapa el cago
     }
-    altiro(i)
+    lorea(i)
   } cago(e) {
-    altiro("error: " + e)
+    lorea("error: " + e)
   }
 }
 // → 1
@@ -286,9 +286,9 @@ ojo {
   wea datos     = obtener_datos()
   wea procesado = procesar(datos)
   wea resultado = guardar(procesado)
-  altiro(resultado)
+  lorea(resultado)
 } cago(e) {
-  altiro("algo falló: " + e)
+  lorea("algo falló: " + e)
 }
 
 // ✓ Captura específica — sabes exactamente qué y dónde
@@ -297,11 +297,11 @@ wea datos = nada
 ojo {
   datos = obtener_datos()
 } cago(e) {
-  altiro("No se pudieron obtener los datos: " + e)
+  lorea("No se pudieron obtener los datos: " + e)
 }
 
 cachai (datos != nada) {
   wea procesado = procesar(datos)
-  altiro(procesado)
+  lorea(procesado)
 }
 ```

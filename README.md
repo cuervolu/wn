@@ -17,7 +17,7 @@ pega fibonacci(n) {
   }
 }
 
-altiro(fibonacci(10))  // → 55
+lorea(fibonacci(10))  // → 55
 ```
 
 ## Instalación
