@@ -6,7 +6,7 @@ use super::env::Entorno;
 
 #[derive(Debug, Clone, Copy)]
 pub enum Nativa {
-    Altiro,
+    Lorea,
     Largo,
     Cachar,
     Pregunta,

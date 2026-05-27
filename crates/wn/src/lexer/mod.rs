@@ -287,8 +287,8 @@ mod tests {
 
     #[test]
     fn tokeniza_string_con_comillas_dobles() {
-        let tokens = tokenizar(r#"altiro("hola")"#).unwrap();
-        assert!(matches!(&tokens[0].kind, TokenKind::Ident(s) if s == "altiro"));
+        let tokens = tokenizar(r#"lorea("hola")"#).unwrap();
+        assert!(matches!(&tokens[0].kind, TokenKind::Ident(s) if s == "lorea"));
         assert_eq!(tokens[1].kind, TokenKind::LParen);
         assert!(matches!(&tokens[2].kind, TokenKind::Texto(s) if s == "hola"));
         assert_eq!(tokens[3].kind, TokenKind::RParen);
