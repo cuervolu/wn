@@ -2,4 +2,4 @@
 source: crates/wn/tests/interpreter_runtime.rs
 expression: render_error(&err)
 ---
-Error en tiempo de ejecución: Oe, 'PI' es duro, no lo podí cambiar.
+Oe, 'PI' es duro, no lo podí cambiar.

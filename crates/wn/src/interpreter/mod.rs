@@ -107,20 +107,7 @@ impl Interprete {
 
     pub fn correr(&mut self, stmts: &[Stmt]) -> Result<Valor, WnError> {
         self.eval_stmts(stmts, Rc::clone(&self.global))
-            .map_err(|e| match e {
-                RuntimeError::Retorno(_) => WnError::Runtime {
-                    mensaje: "'devolver' solo puede usarse dentro de una pega papito.".to_string(),
-                },
-                RuntimeError::Cortala => WnError::Runtime {
-                    mensaje: "'cortala' solo tiene sentido dentro de un bucle, po.".to_string(),
-                },
-                RuntimeError::Sigue => WnError::Runtime {
-                    mensaje: "'sigue' solo tiene sentido dentro de un bucle, po.".to_string(),
-                },
-                _ => WnError::Runtime {
-                    mensaje: e.to_string(),
-                },
-            })
+            .map_err(WnError::from)
     }
 
     fn eval_stmts(
