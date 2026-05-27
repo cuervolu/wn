@@ -25,7 +25,6 @@ fn duro_reasignacion_directa_lanza_error() {
     assert_snapshot!("duro_reasignacion_directa_lanza_error", render_error(&err));
 }
 
-
 #[test]
 fn duro_valor_no_cambia_tras_intento_fallido() {
     let src = "duro PI = 3.14\nojo { PI = 99 } cago(err) { lorea(PI) }";
