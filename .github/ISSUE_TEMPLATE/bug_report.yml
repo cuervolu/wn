@@ -74,7 +74,7 @@ body:
       render: "wn"
       placeholder: |
         wea x = 10
-        altiro(x + "wena")  // ← acá caga
+        lorea(x + "wena")  // ← acá caga
     validations:
       required: false
 

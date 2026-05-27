@@ -6,4 +6,4 @@ pega fibonacci(n) {
   }
 }
 
-altiro(fibonacci(10))
+lorea(fibonacci(10))

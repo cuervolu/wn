@@ -27,7 +27,7 @@ fn duro_reasignacion_directa_lanza_error() {
 
 #[test]
 fn duro_valor_no_cambia_tras_intento_fallido() {
-    let src = "duro PI = 3.14\nojo { PI = 99 } cago(err) { altiro(PI) }";
+    let src = "duro PI = 3.14\nojo { PI = 99 } cago(err) { lorea(PI) }";
     let (resultado, stdout) = run_program_with_output(src);
 
     assert!(resultado.is_ok());
@@ -36,7 +36,7 @@ fn duro_valor_no_cambia_tras_intento_fallido() {
 
 #[test]
 fn wea_puede_cambiar_de_tipo() {
-    let (resultado, stdout) = run_program_with_output("wea x = 10\nx = \"hola\"\naltiro(x)");
+    let (resultado, stdout) = run_program_with_output("wea x = 10\nx = \"hola\"\nlorea(x)");
 
     assert!(resultado.is_ok());
     assert_snapshot!("wea_puede_cambiar_de_tipo", stdout);
@@ -44,7 +44,7 @@ fn wea_puede_cambiar_de_tipo() {
 
 #[test]
 fn variable_no_definida_da_error_correcto() {
-    let resultado = run_program("altiro(x_que_no_existe)");
+    let resultado = run_program("lorea(x_que_no_existe)");
 
     assert!(resultado.is_err());
     let err = resultado.unwrap_err();

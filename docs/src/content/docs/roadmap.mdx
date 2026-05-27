@@ -20,7 +20,7 @@ wea investigar = pega(ser_vivo) {
   "El misterio de los seres vivos: ¿Por qué " + ser_vivo + " hace lo que hace?"
 }
 
-altiro(investigar("el oso"))
+lorea(investigar("el oso"))
 // → El misterio de los seres vivos: ¿Por qué el oso hace lo que hace?
 ```
 
@@ -33,7 +33,7 @@ wea duplicar = (x) -> x * 2
 wea lista = [1, 2, 3, 4, 5]
 
 // Se usan igual que cualquier otra pega
-altiro(duplicar(4))  // → 8
+lorea(duplicar(4))  // → 8
 ```
 
 ### Conversión de tipos: `numero()` y `texto()`
@@ -45,7 +45,7 @@ wea entrada = pregunta("¿Cuántos años tienes? ")
 wea edad = numero(entrada)
 
 cachai (edad >= 18) {
-  altiro("Bienvenido")
+  lorea("Bienvenido")
 }
 ```
 
@@ -57,7 +57,7 @@ Concatenar con `+` funciona, pero se vuelve ilegible rápido. Los strings interp
 wea nombre = "Bodoque"
 wea edad = 42
 
-altiro($"Wena {nombre}, tienes {edad} años.")
+lorea($"Wena {nombre}, tienes {edad} años.")
 // → Wena Bodoque, tienes 42 años.
 ```
 
@@ -69,9 +69,9 @@ Una forma más limpia de comparar un valor contra múltiples posibilidades. El c
 wea tipo = cachar(x)
 
 según tipo {
-  "numero" -> altiro($"{x} es un número")
-  "texto"  -> altiro($"{x} es un texto")
-  _        -> altiro("no sé qué wea es esto")
+  "numero" -> lorea($"{x} es un número")
+  "texto"  -> lorea($"{x} es un texto")
+  _        -> lorea("no sé qué wea es esto")
 }
 ```
 

@@ -35,7 +35,7 @@ body:
       placeholder: |
         // Así se usaría la nueva feature
         wea resultado = algo_nuevo(x, y)
-        altiro(resultado)
+        lorea(resultado)
     validations:
       required: false
 

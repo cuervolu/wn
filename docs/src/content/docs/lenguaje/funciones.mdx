@@ -14,8 +14,8 @@ pega saludar(nombre) {
   "Wena, " + nombre + "!"
 }
 
-altiro(saludar("Tulio"))   // → Wena, Tulio!
-altiro(saludar("Bodoque")) // → Wena, Bodoque!
+lorea(saludar("Tulio"))   // → Wena, Tulio!
+lorea(saludar("Bodoque")) // → Wena, Bodoque!
 ```
 
 La sintaxis es `pega nombre(parámetros) { cuerpo }`.
@@ -29,7 +29,7 @@ pega titular(periodista, noticia) {
   periodista + " informa: " + noticia
 }
 
-altiro(titular("Tulio Triviño", "¡Mañana es sábado!"))
+lorea(titular("Tulio Triviño", "¡Mañana es sábado!"))
 // → Tulio Triviño informa: ¡Mañana es sábado!
 ```
 
@@ -54,7 +54,7 @@ pega pronostico_policarpo(temperatura) {
   "Pronóstico: " + temperatura + " grados (probablemente equivocado)"
 }
 
-altiro(pronostico_policarpo(200))
+lorea(pronostico_policarpo(200))
 // → Señal de mal pronóstico, como siempre
 ```
 
@@ -66,9 +66,9 @@ Una `pega` puede no recibir nada:
 
 ```wn
 pega es_hora_de_noticias() {
-  altiro("¡Buenas noches!")
-  altiro("Yo me llamo Tulio Triviño")
-  altiro("¡Y esto es 31 minutos!")
+  lorea("¡Buenas noches!")
+  lorea("Yo me llamo Tulio Triviño")
+  lorea("¡Y esto es 31 minutos!")
 }
 
 es_hora_de_noticias()
@@ -83,7 +83,7 @@ pega reporte_de_campo(reportera, lugar, noticia) {
   reportera + " desde " + lugar + ": " + noticia
 }
 
-altiro(reporte_de_campo("Patana", "el desierto", "hace calor aquí"))
+lorea(reporte_de_campo("Patana", "el desierto", "hace calor aquí"))
 // → Patana desde el desierto: hace calor aquí
 ```
 
@@ -99,7 +99,7 @@ wea investigar = pega misterio(ser_vivo) {
   "El misterio de los seres vivos: ¿Por qué " + ser_vivo + " hace lo que hace?"
 }
 
-altiro(investigar("el oso"))
+lorea(investigar("el oso"))
 // → El misterio de los seres vivos: ¿Por qué el oso hace lo que hace?
 ```
 
@@ -114,7 +114,7 @@ pega intro_bodoque() {
   "Juan Carlos Bodoque"
 }
 
-altiro(presentar(intro_bodoque, "Hoy: los pingüinos"))
+lorea(presentar(intro_bodoque, "Hoy: los pingüinos"))
 // → Juan Carlos Bodoque — Hoy: los pingüinos
 ```
 
@@ -133,7 +133,7 @@ pega fibonacci(n) {
   }
 }
 
-altiro(fibonacci(10))  // → 55
+lorea(fibonacci(10))  // → 55
 ```
 
 Un ejemplo más 31 minutos:
@@ -144,7 +144,7 @@ pega repetir(frase, veces) {
   cachai (veces == 0) {
     "¡Quiero hacer mi show!"
   } si no {
-    altiro(frase)
+    lorea(frase)
     repetir(frase, veces - 1)
   }
 }
@@ -173,10 +173,10 @@ pega crear_corresponsal(nombre) {
 wea patana  = crear_corresponsal("Patana Tufillo")
 wea juanin  = crear_corresponsal("Juanín Juan Hope")
 
-altiro(patana("hay tráfico en la autopista"))
+lorea(patana("hay tráfico en la autopista"))
 // → Patana Tufillo reporta: hay tráfico en la autopista
 
-altiro(juanin("Colo-Colo perdió otra vez"))
+lorea(juanin("Colo-Colo perdió otra vez"))
 // → Juanín Juan Hope reporta: Colo-Colo perdió otra vez
 ```
 
@@ -243,7 +243,7 @@ pega nombre(param) {
 
 // Sin parámetros
 pega hacer_algo() {
-  altiro("hecho")
+  lorea("hecho")
 }
 
 // Guardada en variable

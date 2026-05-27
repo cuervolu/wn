@@ -68,10 +68,10 @@ wea sospechoso = "Pancho"
 
 cachai (sospechoso == "Pancho") {
   wea coartada = "estaba en el mall"  // solo existe acá adentro
-  altiro(coartada)                    // → estaba en el mall
+  lorea(coartada)                    // → estaba en el mall
 }
 
-altiro(coartada)  // Error: La wea 'coartada' no existe papito.
+lorea(coartada)  // Error: La wea 'coartada' no existe papito.
 ```
 
 Pero una `wea` declarada afuera sí es visible desde adentro — y se puede modificar:
@@ -83,7 +83,7 @@ para (episodio en [1, 2, 3, 4, 5]) {
   puntaje = puntaje + 10  // modifica la wea del bloque padre
 }
 
-altiro(puntaje)  // → 50
+lorea(puntaje)  // → 50
 ```
 
 ---
@@ -118,7 +118,7 @@ duro BARRIO = "La Florida"
   <TabItem label="Usar antes de declarar">
 
 ```wn
-altiro(personaje)           // Error: La wea 'personaje' no existe papito.
+lorea(personaje)           // Error: La wea 'personaje' no existe papito.
 wea personaje = "Condorito"
 ```
 
