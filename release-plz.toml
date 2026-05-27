@@ -1,18 +1,20 @@
 ﻿[workspace]
 changelog_config = "cliff.toml"
-changelog_update = true
 git_tag_enable = true
 git_release_enable = false
-pr_labels = ["release"]
 publish = false
-semver_check = false
-dependencies_update = true
+git_only = true
 release_always = false
-
-[[package]]
-name = "wn-cli"
-changelog_update = false # solo el workspace genera changelog
+pr_labels = ["release"]
+semver_check = false
+dependencies_update = false
 
 [[package]]
 name = "wn"
+changelog_path = "CHANGELOG.md"
+changelog_update = true
+changelog_include = ["wn-cli"]
+
+[[package]]
+name = "wn-cli"
 changelog_update = false
