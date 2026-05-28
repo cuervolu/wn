@@ -110,12 +110,18 @@ fn numero_rechaza_aridad_invalida() {
     assert!(sin_args.is_err());
     let err = sin_args.unwrap_err();
     assert!(matches!(err, WnError::NumArgInvalido { .. }));
-    assert_snapshot!("numero_rechaza_aridad_invalida_sin_args", render_error(&err));
+    assert_snapshot!(
+        "numero_rechaza_aridad_invalida_sin_args",
+        render_error(&err)
+    );
 
     assert!(muchos_args.is_err());
     let err = muchos_args.unwrap_err();
     assert!(matches!(err, WnError::NumArgInvalido { .. }));
-    assert_snapshot!("numero_rechaza_aridad_invalida_muchos_args", render_error(&err));
+    assert_snapshot!(
+        "numero_rechaza_aridad_invalida_muchos_args",
+        render_error(&err)
+    );
 }
 
 #[test]
@@ -166,7 +172,10 @@ fn texto_rechaza_aridad_invalida() {
     assert!(muchos_args.is_err());
     let err = muchos_args.unwrap_err();
     assert!(matches!(err, WnError::NumArgInvalido { .. }));
-    assert_snapshot!("texto_rechaza_aridad_invalida_muchos_args", render_error(&err));
+    assert_snapshot!(
+        "texto_rechaza_aridad_invalida_muchos_args",
+        render_error(&err)
+    );
 }
 
 #[test]
