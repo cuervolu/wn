@@ -1,0 +1,11 @@
+---
+source: crates/wn/tests/interpreter_runtime.rs
+assertion_line: 132
+expression: stdout
+---
+No pude convertir "1e3" a número.
+No pude convertir "3,14" a número.
+No pude convertir "+7" a número.
+No pude convertir "1.2.3" a número.
+No pude convertir ".5" a número.
+No pude convertir "5." a número.

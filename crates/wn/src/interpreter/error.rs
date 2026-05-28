@@ -27,6 +27,9 @@ pub enum RuntimeError {
     #[error("'{0}' no es una pega papito.")]
     NoLlamable(String),
 
+    #[error("No pude convertir {0:?} a número.")]
+    TextoNoConvertibleANumero(String),
+
     #[error("devolver")]
     Retorno(Valor),
 

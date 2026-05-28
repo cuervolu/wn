@@ -1,0 +1,6 @@
+---
+source: crates/wn/tests/interpreter_runtime.rs
+assertion_line: 78
+expression: render_error(&err)
+---
+No pude convertir "hola" a número.

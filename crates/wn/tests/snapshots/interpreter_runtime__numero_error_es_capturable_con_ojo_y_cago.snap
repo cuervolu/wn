@@ -1,0 +1,6 @@
+---
+source: crates/wn/tests/interpreter_runtime.rs
+assertion_line: 136
+expression: stdout
+---
+error: No pude convertir "papas" a número.

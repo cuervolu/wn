@@ -1,0 +1,8 @@
+---
+source: crates/wn/tests/interpreter_runtime.rs
+assertion_line: 92
+expression: stdout
+---
+No pude convertir "" a número.
+No pude convertir "NaN" a número.
+No pude convertir "Infinity" a número.

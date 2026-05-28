@@ -1,0 +1,10 @@
+---
+source: crates/wn/tests/interpreter_runtime.rs
+assertion_line: 68
+expression: stdout
+---
+42
+3.14
+-7
+19
+8

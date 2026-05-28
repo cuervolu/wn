@@ -10,6 +10,8 @@ pub enum Nativa {
     Largo,
     Cachar,
     Pregunta,
+    Numero,
+    Texto,
 }
 
 #[derive(Debug, Clone)]

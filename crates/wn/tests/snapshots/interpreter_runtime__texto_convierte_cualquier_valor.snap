@@ -1,0 +1,12 @@
+---
+source: crates/wn/tests/interpreter_runtime.rs
+assertion_line: 120
+expression: stdout
+---
+hola
+42
+3.5
+verdad
+falso
+nada
+[1, hola]

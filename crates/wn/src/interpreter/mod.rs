@@ -5,7 +5,7 @@ pub mod value;
 use std::{
     cell::RefCell,
     collections::HashMap,
-    io::{self, Write},
+    io::{self, BufRead, BufReader, Cursor, Write},
     rc::Rc,
 };
 
@@ -76,16 +76,25 @@ macro_rules! exec_body_loop {
 pub struct Interprete {
     global: Rc<RefCell<Entorno>>,
     salida: Rc<RefCell<Box<dyn Write>>>,
+    entrada: Rc<RefCell<Box<dyn BufRead>>>,
 }
 
 impl Interprete {
     pub fn nuevo() -> Self {
-        Self::con_salida(io::stdout())
+        Self::con_io(io::stdout(), BufReader::new(io::stdin()))
     }
 
     pub fn con_salida<W>(salida: W) -> Self
     where
         W: Write + 'static,
+    {
+        Self::con_io(salida, Cursor::new(Vec::<u8>::new()))
+    }
+
+    pub fn con_io<W, R>(salida: W, entrada: R) -> Self
+    where
+        W: Write + 'static,
+        R: BufRead + 'static,
     {
         let global = Rc::new(RefCell::new(Entorno::nuevo()));
         {
@@ -98,10 +107,15 @@ impl Interprete {
                 .expect("builtin 'cachar' debe registrarse");
             env.definir("pregunta", Valor::Nativa(Nativa::Pregunta), false)
                 .expect("builtin 'pregunta' debe registrarse");
+            env.definir("numero", Valor::Nativa(Nativa::Numero), false)
+                .expect("builtin 'numero' debe registrarse");
+            env.definir("texto", Valor::Nativa(Nativa::Texto), false)
+                .expect("builtin 'texto' debe registrarse");
         }
         Interprete {
             global,
             salida: Rc::new(RefCell::new(Box::new(salida))),
+            entrada: Rc::new(RefCell::new(Box::new(entrada))),
         }
     }
 
@@ -435,7 +449,9 @@ impl Interprete {
             Nativa::Lorea => self.builtin_lorea(args),
             Nativa::Largo => builtin_largo(args),
             Nativa::Cachar => builtin_cachar(args),
-            Nativa::Pregunta => builtin_pregunta(args),
+            Nativa::Pregunta => self.builtin_pregunta(args),
+            Nativa::Numero => builtin_numero(args),
+            Nativa::Texto => builtin_texto(args),
         }
     }
 
@@ -448,6 +464,28 @@ impl Interprete {
         writeln!(self.salida.borrow_mut(), "{linea}")
             .map_err(|e| RuntimeError::TipoInvalido(format!("Error escribiendo output: {e}")))?;
         Ok(Valor::Nada)
+    }
+
+    fn builtin_pregunta(&mut self, args: Vec<Valor>) -> Result<Valor, RuntimeError> {
+        if args.len() != 1 {
+            return Err(RuntimeError::NumArgInvalido(1, args.len()));
+        }
+        write!(self.salida.borrow_mut(), "{}", args[0])
+            .map_err(|e| RuntimeError::TipoInvalido(format!("Error escribiendo output: {e}")))?;
+        self.salida.borrow_mut().flush().ok();
+
+        let mut input = String::new();
+        self.entrada
+            .borrow_mut()
+            .read_line(&mut input)
+            .map_err(|e| RuntimeError::TipoInvalido(format!("Error leyendo input: {e}")))?;
+
+        Ok(Valor::Texto(
+            input
+                .trim_end_matches('\n')
+                .trim_end_matches('\r')
+                .to_string(),
+        ))
     }
 }
 
@@ -513,20 +551,66 @@ fn builtin_cachar(args: Vec<Valor>) -> Result<Valor, RuntimeError> {
     Ok(Valor::Texto(args[0].tipo_nombre().to_string()))
 }
 
-fn builtin_pregunta(args: Vec<Valor>) -> Result<Valor, RuntimeError> {
+fn builtin_numero(args: Vec<Valor>) -> Result<Valor, RuntimeError> {
     if args.len() != 1 {
         return Err(RuntimeError::NumArgInvalido(1, args.len()));
     }
-    print!("{}", args[0]);
-    io::stdout().flush().ok();
-    let mut input = String::new();
-    io::stdin()
-        .read_line(&mut input)
-        .map_err(|e| RuntimeError::TipoInvalido(format!("Error leyendo input: {e}")))?;
-    Ok(Valor::Texto(
-        input
-            .trim_end_matches('\n')
-            .trim_end_matches('\r')
-            .to_string(),
-    ))
+
+    match &args[0] {
+        Valor::Numero(n) => Ok(Valor::Numero(*n)),
+        Valor::Texto(texto) => parsear_numero(texto),
+        other => Err(RuntimeError::TipoInvalido(format!(
+            "numero() solo convierte textos o números, no un '{}'.",
+            other.tipo_nombre()
+        ))),
+    }
+}
+
+fn builtin_texto(args: Vec<Valor>) -> Result<Valor, RuntimeError> {
+    if args.len() != 1 {
+        return Err(RuntimeError::NumArgInvalido(1, args.len()));
+    }
+
+    Ok(Valor::Texto(args[0].to_string()))
+}
+
+fn parsear_numero(texto: &str) -> Result<Valor, RuntimeError> {
+    let limpio = texto.trim();
+    if limpio.is_empty() || !es_texto_numerico_simple(limpio) {
+        return Err(RuntimeError::TextoNoConvertibleANumero(texto.to_string()));
+    }
+
+    let numero = limpio
+        .parse::<f64>()
+        .map_err(|_| RuntimeError::TextoNoConvertibleANumero(texto.to_string()))?;
+
+    if !numero.is_finite() {
+        return Err(RuntimeError::TextoNoConvertibleANumero(texto.to_string()));
+    }
+
+    Ok(Valor::Numero(numero))
+}
+
+fn es_texto_numerico_simple(texto: &str) -> bool {
+    let sin_signo = if let Some(resto) = texto.strip_prefix('-') {
+        if resto.is_empty() {
+            return false;
+        }
+        resto
+    } else {
+        texto
+    };
+
+    let mut partes = sin_signo.split('.');
+    let entero = partes.next().unwrap_or_default();
+    let decimal = partes.next();
+
+    if partes.next().is_some() || entero.is_empty() || !entero.chars().all(|c| c.is_ascii_digit()) {
+        return false;
+    }
+
+    match decimal {
+        Some(fraccion) => !fraccion.is_empty() && fraccion.chars().all(|c| c.is_ascii_digit()),
+        None => true,
+    }
 }

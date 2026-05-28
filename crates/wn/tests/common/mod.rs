@@ -55,6 +55,22 @@ pub fn run_program_with_output(src: &str) -> (Result<Valor, WnError>, String) {
     (resultado, captura.contenido())
 }
 
+pub fn run_program_with_io(src: &str, input: &str) -> (Result<Valor, WnError>, String) {
+    let captura = CapturaSalida::default();
+    let tokens = match tokenizar(src) {
+        Ok(tokens) => tokens,
+        Err(err) => return (Err(err), captura.contenido()),
+    };
+    let stmts = match parsear(tokens, src, "<test>") {
+        Ok(stmts) => stmts,
+        Err(err) => return (Err(err), captura.contenido()),
+    };
+    let mut interprete =
+        Interprete::con_io(captura.clone(), io::Cursor::new(input.as_bytes().to_vec()));
+    let resultado = interprete.correr(&stmts);
+    (resultado, captura.contenido())
+}
+
 pub fn render_error(err: &WnError) -> String {
     err.to_string()
 }

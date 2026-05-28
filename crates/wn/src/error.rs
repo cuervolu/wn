@@ -84,6 +84,13 @@ pub enum WnError {
     )]
     TipoInvalido { mensaje: String },
 
+    #[error("No pude convertir {valor:?} a número.")]
+    #[diagnostic(
+        code(wn::runtime::texto_no_convertible_a_numero),
+        help("A `numero()` pásale un texto numérico simple como `42`, `-7` o `3.14`.")
+    )]
+    TextoNoConvertibleANumero { valor: String },
+
     #[error("Error en tiempo de ejecución: {mensaje}")]
     #[diagnostic(code(wn::runtime), help("Revisa la lógica de tu programa ctm."))]
     Runtime { mensaje: String },
@@ -105,6 +112,9 @@ impl From<RuntimeError> for WnError {
                 recibidos,
             },
             RuntimeError::TipoInvalido(mensaje) => WnError::TipoInvalido { mensaje },
+            RuntimeError::TextoNoConvertibleANumero(valor) => {
+                WnError::TextoNoConvertibleANumero { valor }
+            }
             // Estos tres son errores de control de flujo que no deberían
             // llegar al usuario, si llegan, es un bug en el intérprete
             RuntimeError::Retorno(_) => WnError::Runtime {

@@ -1,0 +1,6 @@
+---
+source: crates/wn/tests/interpreter_runtime.rs
+assertion_line: 102
+expression: render_error(&err)
+---
+Error de tipos: numero() solo convierte textos o números, no un 'booleano'.

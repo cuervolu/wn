@@ -1,0 +1,6 @@
+---
+source: crates/wn/tests/interpreter_runtime.rs
+assertion_line: 116
+expression: render_error(&err)
+---
+La pega espera 1 argumento(s), le pasaste 2.

@@ -1,0 +1,6 @@
+---
+source: crates/wn/tests/interpreter_runtime.rs
+assertion_line: 149
+expression: stdout
+---
+Edad: 42
