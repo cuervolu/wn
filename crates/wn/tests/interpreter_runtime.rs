@@ -53,6 +53,51 @@ fn variable_no_definida_da_error_correcto() {
 }
 
 #[test]
+fn indices_numericos_aceptan_enteros_positivos_y_negativos() {
+    let (resultado, stdout) = run_program_with_output(
+        r#"
+        lorea([10, 20, 30][1])
+        lorea("hola"[1])
+        lorea([10, 20, 30][-1])
+        lorea("hola"[-1])
+    "#,
+    );
+
+    assert!(resultado.is_ok());
+    assert_eq!(stdout, "20\no\n30\na\n");
+}
+
+#[test]
+fn indices_numericos_rechazan_fraccionarios_en_lista_y_texto() {
+    let lista = run_program("[10, 20, 30][1.9]");
+    let texto = run_program(r#""hola"[1.1]"#);
+
+    assert!(matches!(lista, Err(WnError::TipoInvalido { .. })));
+    assert!(matches!(texto, Err(WnError::TipoInvalido { .. })));
+}
+
+#[test]
+fn indices_numericos_rechazan_no_finitos() {
+    let gigante = "9".repeat(400);
+    let infinito = run_program(&format!("[10, 20, 30][{gigante}]"));
+    let nan = run_program(&format!(
+        "wea gigante = {gigante}\nlorea([10, 20, 30][gigante - gigante])"
+    ));
+
+    assert!(matches!(infinito, Err(WnError::TipoInvalido { .. })));
+    assert!(matches!(nan, Err(WnError::TipoInvalido { .. })));
+}
+
+#[test]
+fn indices_numericos_rechazan_enteros_fuera_de_rango_i64() {
+    let positivo = run_program("[10, 20, 30][9223372036854775808]");
+    let negativo = run_program("[10, 20, 30][-9223372036854775809]");
+
+    assert!(matches!(positivo, Err(WnError::TipoInvalido { .. })));
+    assert!(matches!(negativo, Err(WnError::TipoInvalido { .. })));
+}
+
+#[test]
 fn numero_convierte_textos_y_numeros_validos() {
     let src = r#"
     lorea(numero("42"))
