@@ -1,6 +1,6 @@
-name: "Bug report"
+name: "Reporte de bug"
 description: "Algo se rompió. Cuéntanos qué pasó."
-title: "[Bug]: "
+title: "[Error]: "
 labels: [ "bug", "triage" ]
 body:
   - type: markdown
@@ -21,7 +21,7 @@ body:
   - type: dropdown
     id: os
     attributes:
-      label: "Sistema operativo / target"
+      label: "Sistema operativo / plataforma"
       description: "¿Desde qué plataforma estás corriendo WN++?"
       options:
         - "macOS — Apple Silicon (aarch64-apple-darwin)"
@@ -40,7 +40,7 @@ body:
       description: "¿Cómo instalaste WN++?"
       options:
         - "Script de instalación"
-        - "Descarga manual del release"
+        - "Descarga manual de la publicación"
         - "Compilado desde el código fuente"
         - "wn update"
     validations:
@@ -99,14 +99,14 @@ body:
     id: context
     attributes:
       label: "Contexto adicional"
-      description: "Screenshots, logs, configuración especial, o cualquier otra cosa relevante."
+      description: "Capturas, logs, configuración especial, o cualquier otra cosa relevante."
     validations:
       required: false
 
   - type: checkboxes
     id: checklist
     attributes:
-      label: "Checklist"
+      label: "Lista de verificación"
       options:
         - label: "Busqué issues existentes y no encontré uno igual."
           required: true

@@ -1,6 +1,6 @@
 ---
 title: Variables y Constantes
-description: wea y duro, cómo declarar, asignar y entender el scope en WN++.
+description: wea y duro, cómo declarar, asignar y entender el alcance en WN++.
 ---
 
 import { Aside, Tabs, TabItem, Card, CardGrid } from '@astrojs/starlight/components';
@@ -47,7 +47,7 @@ duro PI                = 3.1415
 duro GRITO_DE_CONDORITO = "¡Plop!"
 ```
 
-Intentar modificar una constante es un error de runtime:
+Intentar modificar una constante es un error en ejecución:
 
 ```wn
 duro campeón = "Colo-Colo"
@@ -105,7 +105,7 @@ duro BARRIO = "La Florida"
 
 ## Referencia rápida
 
-| Keyword | Mutable | Scope   | Cuándo usarla                          |
+| Palabra | Mutable | Alcance | Cuándo usarla                          |
 |---------|---------|---------|----------------------------------------|
 | `wea`   | ✓       | bloque  | Casi siempre                           |
 | `duro`  | ✗       | bloque  | Valores que nunca deben cambiar        |
@@ -122,7 +122,7 @@ lorea(personaje)           // Error: La wea 'personaje' no existe papito.
 wea personaje = "Condorito"
 ```
 
-WN++ lee de arriba hacia abajo. No hay hoisting.
+WN++ lee de arriba hacia abajo. No hay elevación automática de declaraciones.
 
   </TabItem>
   <TabItem label="Olvidar el wea">

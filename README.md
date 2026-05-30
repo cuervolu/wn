@@ -75,7 +75,7 @@ _WN++_ se pronuncia como "wena plus plus": corto, chileno y fácil de escribir c
 
 El nombre mantiene la intención original del proyecto: un lenguaje tranquilo de leer, directo para aprender cómo funciona un intérprete por dentro, y con una identidad chilena que no se siente pegada encima.
 
-El `++` es un guiño a la idea de ir construyéndolo por capas: primero intérprete, después tooling, bytecode, VM y todo lo que venga cuando el lenguaje se gane ese crecimiento.
+El `++` es un guiño a la idea de ir construyéndolo por capas: primero intérprete, después herramientas, bytecode, VM y todo lo que venga cuando el lenguaje se gane ese crecimiento.
 
 ## Para quién es
 
@@ -83,7 +83,7 @@ WN++ está pensado para quien quiere entender cómo funcionan los lenguajes de p
 
 Si alguna vez te preguntaste cómo hace Python para saber que `3 + 4 * 2` es `11` y no `14`, qué es exactamente un _scope_, cómo funciona un garbage collector, o qué pasa entre que escribes código y la máquina lo ejecuta — WN++ está construido para que puedas responder esas preguntas leyendo su código fuente.
 
-El intérprete está escrito en Rust, es deliberadamente simple, y cada fase del pipeline existe como un módulo separado y legible. No asumimos conocimiento de teoría formal de lenguajes. Asumimos que sabes programar y tienes curiosidad.
+El intérprete está escrito en Rust, es deliberadamente simple, y cada fase del flujo existe como un módulo separado y legible. No asumimos conocimiento de teoría formal de lenguajes. Asumimos que sabes programar y tienes curiosidad.
 
 ## Lo que WN++ no es
 
@@ -95,7 +95,7 @@ El intérprete está escrito en Rust, es deliberadamente simple, y cada fase del
 
 ## Estado actual
 
-El pipeline completo — lexer, parser, AST e intérprete tree-walking — está implementado y funcional. Las siguientes fases — compilador a bytecode, VM y garbage collector — están en el roadmap. El detalle de cada fase está en [`docs/roadmap`](https://cuervolu.github.io/wn/roadmap/).
+El flujo completo — lexer, parser, AST e intérprete tree-walking — está implementado y funcional. Las siguientes fases — compilador a bytecode, VM y recolector de basura — están en la hoja de ruta. El detalle de cada fase está en [`docs/roadmap`](https://cuervolu.github.io/wn/roadmap/).
 
 ## Construir desde el código fuente
 
@@ -110,7 +110,7 @@ cargo build --release
 
 ## Contribuir
 
-WN++ es open source. Si te interesa contribuir, sea código, documentación, ejemplos, o simplemente feedback sobre qué se siente raro al escribir el lenguaje, eres bienvenido.
+WN++ es de código abierto. Si te interesa contribuir, sea código, documentación, ejemplos, o simplemente comentarios sobre qué se siente raro al escribir el lenguaje, eres bienvenido.
 
 Lo más valioso que puedes hacer en esta etapa es escribir programas en WN++ y reportar qué se siente natural y qué no. El lenguaje mejora con uso real, no solo con teoría.
 
