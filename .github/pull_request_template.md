@@ -6,12 +6,12 @@ Closes #<!-- número del issue -->
 
 ## Tipo de cambio
 
-- [ ] Bug fix
-- [ ] Nueva feature
+- [ ] Corrección de bug
+- [ ] Nueva funcionalidad
 - [ ] Refactor (sin cambio de comportamiento)
 - [ ] Cambio en el lenguaje (sintaxis, semántica, tokens)
 - [ ] Documentación
-- [ ] CI / tooling
+- [ ] CI / herramientas
 
 ## Qué cambia en el lenguaje (si aplica)
 
@@ -27,7 +27,7 @@ Closes #<!-- número del issue -->
 
 ```
 
-## Testing
+## Pruebas
 
 <!-- Describe cómo probaste el cambio. -->
 
@@ -35,8 +35,8 @@ Closes #<!-- número del issue -->
 - [ ] Los tests existentes pasan (`cargo test`)
 - [ ] Probé manualmente con un archivo `.cl`
 
-## Checklist
+## Lista de verificación
 
-- [ ] `cargo clippy` sin warnings
+- [ ] `cargo clippy` sin advertencias
 - [ ] `cargo fmt` aplicado
-- [ ] Si el PR toca el lexer, parser, o AST: corrí `cargo nextest` y revise snapshots nuevos con `cargo insta review`
+- [ ] Si el PR toca el lexer, parser, o AST: corrí `cargo nextest` y revisé snapshots nuevos con `cargo insta review`

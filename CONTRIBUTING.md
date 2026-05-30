@@ -1,6 +1,6 @@
 # Contribuyendo a WN++
 
-Wena, gracias por querer contribuir. WN++ es un proyecto en etapa temprana, así que cada aporte cuenta, desde un typo en la doc hasta una feature nueva del lenguaje.
+Wena, gracias por querer contribuir. WN++ es un proyecto en etapa temprana, así que cada aporte cuenta, desde un typo en la doc hasta una funcionalidad nueva del lenguaje.
 
 Antes de empezar, lee esto. No es largo.
 
@@ -11,7 +11,7 @@ Depende de qué quieres cambiar:
 **Abre un issue primero si tu cambio afecta el lenguaje:**
 - Lexer, parser, o AST
 - Sintaxis o semántica de WN++
-- El intérprete o comportamiento en runtime
+- El intérprete o comportamiento en ejecución
 - Mensajes de error
 
 Los cambios al lenguaje tienen consecuencias en cadena. Vale la pena discutir el diseño antes de implementar.
@@ -20,7 +20,7 @@ Los cambios al lenguaje tienen consecuencias en cadena. Vale la pena discutir el
 - Typos o mejoras en la documentación
 - Fixes de CI
 - Refactors que no cambian comportamiento
-- Mejoras al tooling interno
+- Mejoras a las herramientas internas
 
 ## Entorno de desarrollo
 
@@ -44,7 +44,7 @@ rustup component add clippy
 pnpm install  # desde la carpeta docs/
 ```
 
-Para compilación cruzada entre targets también necesitas [`cross`](https://github.com/cross-rs/cross), pero eso es solo si trabajas en el pipeline de release.
+Para compilación cruzada entre plataformas también necesitas [`cross`](https://github.com/cross-rs/cross), pero eso es solo si trabajas en el flujo de publicación.
 
 ## Comandos útiles
 
@@ -65,7 +65,7 @@ cargo fmt
 pnpm dev
 ```
 
-## Conventional commits
+## Commits convencionales
 
 Este proyecto usa conventional commits. El tipo va en inglés, la descripción en español.
 
@@ -89,13 +89,13 @@ Los tipos que reconoce el CHANGELOG:
 | `doc`, `test`, `chore`, `ci`, `build` | Misceláneos                  |
 | `wip`                                 | No aparece (se omite)        |
 
-El scope es opcional pero recomendado cuando el cambio está acotado a una parte específica: `lexer`, `parser`, `ast`, `interpreter`, `cli`, `repl`, `docs`.
+El alcance es opcional pero recomendado cuando el cambio está acotado a una parte específica: `lexer`, `parser`, `ast`, `interpreter`, `cli`, `repl`, `docs`.
 
 ## Pull requests
 
 1. Haz fork del repo y trabaja en una rama con nombre descriptivo: `feat/strings-interpolados`, `fix/precedencia-not`.
 2. Un PR por cambio. No mezcles features con refactors. (a veces hasta yo soy porfiado con esa wea, pero es mejor para la revisión y el historial).
-3. Asegúrate de que pasa el CI antes de pedir review:
+3. Asegúrate de que pasa el CI antes de pedir revisión:
    ```bash
    cargo nextest run
    cargo clippy --all-targets --all-features
@@ -110,7 +110,7 @@ El scope es opcional pero recomendado cuando el cambio está acotado a una parte
 - `cargo fmt` es obligatorio. Si el CI falla por formato, no se revisa el PR.
 - Prefiere `match` exhaustivo sobre cadenas de `if let` al traversar el AST.
 - Todo token y nodo del AST debe tener `Span`. Sin excepciones.
-- Los mensajes de error de runtime van en castellano chileno. Si agregas uno nuevo, que se sienta natural al lado de los existentes.
+- Los mensajes de error en ejecución van en castellano chileno. Si agregas uno nuevo, que se sienta natural al lado de los existentes.
 
 ## ¿Dudas?
 

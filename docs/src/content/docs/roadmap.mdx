@@ -1,5 +1,5 @@
 ---
-title: Roadmap
+title: Hoja de ruta
 description: Qué viene, en qué orden, y por qué.
 ---
 
@@ -77,7 +77,7 @@ según tipo {
 
 ---
 
-## v0.3 — Tooling <Badge text="Planificado" variant="note" />
+## v0.3 — Herramientas <Badge text="Planificado" variant="note" />
 
 ### Sistema de módulos
 
@@ -103,11 +103,11 @@ wn fmt src/          # formatea un directorio completo
 
 ### Extensión para VS Code
 
-Soporte básico de editor: syntax highlighting, detección de errores mientras escribes, y autocompletado simple.
+Soporte básico de editor: resaltado de sintaxis, detección de errores mientras escribes, y autocompletado simple.
 
 ---
 
-## v0.4 — Standard library <Badge text="Planificado" variant="note" />
+## v0.4 — Biblioteca estándar <Badge text="Planificado" variant="note" />
 
 Funciones que todo programa eventualmente necesita. Organizada en módulos según el dominio.
 
@@ -134,11 +134,11 @@ SUMAR
 GUARDAR x
 ```
 
-### Stack VM
+### VM de pila
 
 Una máquina virtual propia que ejecuta ese bytecode. Un loop que lee instrucción por instrucción y mantiene una pila de valores. Simple, rápida, y completamente controlable.
 
-### Garbage Collector
+### Recolector de basura
 
 Para que los programas largos no se coman la RAM. El GC de WN++ revisa periódicamente qué valores en memoria ya no son accesibles desde ningún lado y los libera. Mark-and-sweep: primero marca todo lo alcanzable, después elimina todo lo que no fue marcado.
 
@@ -149,5 +149,5 @@ El REPL actual funciona, pero olvida todo entre líneas. El REPL de v1.0 mantien
 ---
 
 :::note
-Este roadmap es una intención, no un contrato. El orden puede cambiar según lo que se aprenda escribiendo programas reales en WN++. Si una feature de v0.3 resulta ser más urgente que una de v0.2, se mueve.
+Esta hoja de ruta es una intención, no un contrato. El orden puede cambiar según lo que se aprenda escribiendo programas reales en WN++. Si una funcionalidad de v0.3 resulta ser más urgente que una de v0.2, se mueve.
 :::
