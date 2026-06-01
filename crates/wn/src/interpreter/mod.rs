@@ -40,7 +40,20 @@ fn resolver_indice(i: i64, len: usize) -> Result<usize, RuntimeError> {
 
 fn numeric_idx(idx: &Valor, contexto: &str) -> Result<i64, RuntimeError> {
     match idx {
-        Valor::Numero(n) => Ok(*n as i64),
+        Valor::Numero(n) => {
+            const I64_MIN_F64: f64 = i64::MIN as f64;
+            const I64_MAX_EXCLUSIVE_F64: f64 = -(i64::MIN as f64);
+
+            // f64 puede redondear enteros menores que i64::MIN hasta el borde exacto.
+            let fuera_de_rango_i64 = *n <= I64_MIN_F64 || *n >= I64_MAX_EXCLUSIVE_F64;
+            if !n.is_finite() || n.fract() != 0.0 || fuera_de_rango_i64 {
+                return Err(RuntimeError::TipoInvalido(format!(
+                    "Los índices de {contexto} deben ser números enteros finitos dentro del rango soportado."
+                )));
+            }
+
+            Ok(*n as i64)
+        }
         other => Err(RuntimeError::TipoInvalido(format!(
             "Los índices de {contexto} deben ser números, no '{}'.",
             other.tipo_nombre()
