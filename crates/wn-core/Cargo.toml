@@ -1,5 +1,5 @@
 [package]
-name = "wn"
+name = "wn-core"
 version.workspace = true
 edition.workspace = true
 
@@ -7,12 +7,12 @@ edition.workspace = true
 name = "wn"
 
 [dependencies]
-miette  = { version = "7", features = ["fancy"] }
-thiserror = "2"
-id-arena = "2"
+miette.workspace    = true
+thiserror.workspace = true
+id-arena.workspace  = true
 
 [package.metadata.dist]
 dist = false
 
 [dev-dependencies]
-insta = { version = "1", features = ["ron"] }
+insta.workspace = true
