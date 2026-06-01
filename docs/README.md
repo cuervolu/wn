@@ -1,18 +1,10 @@
-# Starlight Starter Kit: Basics
+# Documentación de WN++
 
-[![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)
+Este directorio contiene el sitio de documentación oficial de WN++, construido con Astro y Starlight.
 
-```
-pnpm create astro@latest -- --template starlight
-```
+## Estructura
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
-
-## 🚀 Project Structure
-
-Inside of your Astro + Starlight project, you'll see the following folders and files:
-
-```
+```text
 .
 ├── public/
 ├── src/
@@ -25,25 +17,25 @@ Inside of your Astro + Starlight project, you'll see the following folders and f
 └── tsconfig.json
 ```
 
-Starlight looks for `.md` or `.mdx` files in the `src/content/docs/` directory. Each file is exposed as a route based on its file name.
+Las páginas de documentación viven en `src/content/docs/`. Cada archivo `.md` o `.mdx` se publica como una ruta del sitio según su nombre.
 
-Images can be added to `src/assets/` and embedded in Markdown with a relative link.
+Los recursos versionados de la documentación van en `src/assets/`. Los archivos estáticos que deben servirse tal cual, como favicons, van en `public/`.
 
-Static assets, like favicons, can be placed in the `public/` directory.
+## Comandos
 
-## 🧞 Commands
+Ejecuta estos comandos desde este directorio:
 
-All commands are run from the root of the project, from a terminal:
+| Comando                  | Acción                                                |
+|--------------------------|-------------------------------------------------------|
+| `pnpm install`           | Instala las dependencias de la documentación.         |
+| `pnpm dev`               | Levanta el sitio local en `localhost:4321`.           |
+| `pnpm build`             | Genera el sitio de producción en `./dist/`.           |
+| `pnpm preview`           | Previsualiza el build generado antes de publicarlo.   |
+| `pnpm astro ...`         | Ejecuta comandos de Astro, como `astro check`.        |
+| `pnpm astro -- --help`   | Muestra la ayuda de la CLI de Astro.                  |
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `pnpm install`             | Installs dependencies                            |
-| `pnpm dev`             | Starts local dev server at `localhost:4321`      |
-| `pnpm build`           | Build your production site to `./dist/`          |
-| `pnpm preview`         | Preview your build locally, before deploying     |
-| `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help` | Get help using the Astro CLI                     |
+## Mantención
 
-## 👀 Want to learn more?
+La documentación oficial de WN++ se escribe principalmente en español. Mantén el tono claro, cercano y consistente con el resto del proyecto.
 
-Check out [Starlight’s docs](https://starlight.astro.build/), read [the Astro documentation](https://docs.astro.build), or jump into the [Astro Discord server](https://astro.build/chat).
+Si agregas una página nueva, actualiza la navegación en `astro.config.mjs` cuando corresponda.

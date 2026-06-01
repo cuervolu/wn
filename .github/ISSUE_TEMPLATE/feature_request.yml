@@ -1,6 +1,6 @@
-name: "Feature request"
+name: "Solicitud de funcionalidad"
 description: "¿Tienes una idea para mejorar WN++? Pasa pa aca."
-title: "[Feature]: "
+title: "[Funcionalidad]: "
 labels: ["enhancement", "triage"]
 body:
   - type: markdown
@@ -33,7 +33,7 @@ body:
       description: "¿Cómo se vería en código WN++? No tiene que compilar, es para ilustrar la idea."
       render: "wn"
       placeholder: |
-        // Así se usaría la nueva feature
+        // Así se usaría la nueva funcionalidad
         wea resultado = algo_nuevo(x, y)
         lorea(resultado)
     validations:
@@ -55,11 +55,11 @@ body:
         - "Sintaxis / parser"
         - "Semántica / intérprete"
         - "Tipos y conversiones"
-        - "Standard library (built-ins)"
+        - "Biblioteca estándar (built-ins)"
         - "Manejo de errores"
         - "REPL"
         - "CLI (wn, wn fmt, etc.)"
-        - "Tooling / ecosistema"
+        - "Herramientas / ecosistema"
         - "Documentación"
         - "Otro"
     validations:
@@ -68,12 +68,12 @@ body:
   - type: dropdown
     id: phase
     attributes:
-      label: "¿En qué fase del roadmap encajaría?"
-      description: "Referencia al [roadmap oficial](https://cuervolu.github.io/wn/roadmap/)."
+      label: "¿En qué fase de la hoja de ruta encajaría?"
+      description: "Referencia a la [hoja de ruta oficial](https://cuervolu.github.io/wn/roadmap/)."
       options:
         - "v0.2 — El lenguaje completo"
-        - "v0.3 — Tooling"
-        - "v0.4 — Standard library"
+        - "v0.3 — Herramientas"
+        - "v0.4 — Biblioteca estándar"
         - "v1.0 — VM + bytecode"
         - "No sé / no importa"
     validations:
@@ -90,7 +90,7 @@ body:
   - type: checkboxes
     id: checklist
     attributes:
-      label: "Checklist"
+      label: "Lista de verificación"
       options:
         - label: "Busqué issues existentes y no encontré una propuesta igual."
           required: true

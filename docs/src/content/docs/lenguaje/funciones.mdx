@@ -34,7 +34,7 @@ lorea(titular("Tulio Triviño", "¡Mañana es sábado!"))
 ```
 
 <Aside type="tip">
-  Si el cuerpo tiene varias líneas, el valor de retorno es la última expresión evaluada — no el último statement.
+  Si el cuerpo tiene varias líneas, el valor de retorno es la última expresión evaluada, no la última sentencia.
 </Aside>
 
 ---
@@ -181,7 +181,7 @@ lorea(juanin("Colo-Colo perdió otra vez"))
 ```
 
 <Aside>
-  Esto es un **closure**: `reportar` lleva consigo el `nombre` aunque `crear_corresponsal` ya terminó de ejecutarse. Cada corresponsal tiene su propia copia del nombre.
+  Esto es un **cierre**: `reportar` lleva consigo el `nombre` aunque `crear_corresponsal` ya terminó de ejecutarse. Cada corresponsal tiene su propia copia del nombre.
 
   Si vienes de JavaScript, esto es exactamente lo mismo. Si vienes de Java, piensa en una inner class que captura variables `final` del método contenedor.
 </Aside>

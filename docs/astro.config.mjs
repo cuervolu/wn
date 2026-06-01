@@ -32,7 +32,7 @@ export default defineConfig({
             { label: 'Introducción', link: '/' },
             { label: 'Instalación', link: '/instalacion' },
             { label: 'Filosofía', link: '/filosofia' },
-            { label: 'Roadmap', link: '/roadmap' },
+            { label: 'Hoja de ruta', link: '/roadmap' },
           ],
         },
         {
@@ -49,7 +49,7 @@ export default defineConfig({
         //   label: 'Internals',
         //   collapsed: true,
         //   items: [
-        //     { label: 'Pipeline', link: '/internals/pipeline' },
+        //     { label: 'Flujo', link: '/internals/pipeline' },
         //     { label: 'Lexer', link: '/internals/lexer' },
         //     { label: 'Parser', link: '/internals/parser' },
         //     { label: 'Intérprete', link: '/internals/interprete' },

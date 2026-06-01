@@ -5,7 +5,7 @@ description: numero, texto, booleano, nada, lista y mapa — los tipos de WN++ y
 
 import { Aside, Tabs, TabItem, Card, CardGrid, Badge } from '@astrojs/starlight/components';
 
-WN++ es de **tipado dinámico**: una variable puede guardar cualquier tipo de valor, y ese tipo puede cambiar. No declaras el tipo, WN++ lo infiere. Cuando algo no cuadra, te lo dice en runtime.
+WN++ es de **tipado dinámico**: una variable puede guardar cualquier tipo de valor, y ese tipo puede cambiar. No declaras el tipo, WN++ lo infiere. Cuando algo no cuadra, te lo dice en ejecución.
 
 ---
 
@@ -40,7 +40,7 @@ lorea(descuento)              // → 4
 ```
 
 <Aside type="caution">
-  División por cero es un error de runtime:
+  División por cero es un error en ejecución:
 
   ```wn
   wea x = 10 / 0
@@ -104,9 +104,9 @@ lorea(goles_chile == goles_bolivia)  // → falso
 lorea(goles_chile != goles_bolivia)  // → verdad
 ```
 
-**Valores "falsy"** — se evalúan como `falso` en un `cachai`:
+**Valores tratados como falso** — se evalúan como `falso` en un `cachai`:
 
-| Valor       | Falsy |
+| Valor       | ¿Falso? |
 |-------------|-------|
 | `falso`     | ✓     |
 | `nada`      | ✓     |
@@ -329,7 +329,7 @@ lorea(describir(nada))            // → un nada
   <Card title="nada" icon="approve-check">
     `nada`
 
-    Ausencia de valor. Falsy en condiciones.
+    Ausencia de valor. Se evalúa como falso en condiciones.
   </Card>
   <Card title="lista" icon="approve-check">
     `[1, "dos", verdad]`
