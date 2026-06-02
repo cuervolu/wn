@@ -1150,7 +1150,7 @@ mod tests {
 
         match err {
             WnDiagnostic::Compilacion { span, .. } => {
-                assert_eq!(span.offset(), 0usize.into());
+                assert_eq!(span.offset(), 0usize);
                 assert_eq!(span.len(), 10);
             }
             other => panic!("diagnóstico inesperado: {other:?}"),

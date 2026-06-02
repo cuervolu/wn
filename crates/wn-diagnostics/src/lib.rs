@@ -214,7 +214,10 @@ pub enum WnDiagnostic {
     },
 
     #[error("Bug interno del motor: {mensaje}")]
-    #[diagnostic(code(wn::interno), help("Esto es un bug del motor. Reportalo con el programa que lo dispara."))]
+    #[diagnostic(
+        code(wn::interno),
+        help("Esto es un bug del motor. Reportalo con el programa que lo dispara.")
+    )]
     Interno { mensaje: String },
 }
 
@@ -243,7 +246,11 @@ impl WnDiagnostic {
         }
     }
 
-    pub fn var_no_definida(source: &SourceFile, span: SourceSpan, nombre: impl Into<String>) -> Self {
+    pub fn var_no_definida(
+        source: &SourceFile,
+        span: SourceSpan,
+        nombre: impl Into<String>,
+    ) -> Self {
         Self::VarNoDefinida {
             src: source.named_source(),
             span,
@@ -296,11 +303,7 @@ impl WnDiagnostic {
         }
     }
 
-    pub fn no_llamable(
-        source: &SourceFile,
-        span: SourceSpan,
-        nombre: impl Into<String>,
-    ) -> Self {
+    pub fn no_llamable(source: &SourceFile, span: SourceSpan, nombre: impl Into<String>) -> Self {
         Self::NoLlamable {
             src: source.named_source(),
             span,

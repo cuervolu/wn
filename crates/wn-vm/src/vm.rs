@@ -1431,7 +1431,7 @@ mod tests {
         let err = run_err("wea x = zeta");
         match err {
             WnDiagnostic::VarNoDefinida { span, .. } => {
-                assert_eq!(span.offset(), 8usize.into());
+                assert_eq!(span.offset(), 8usize);
                 assert_eq!(span.len(), 4);
             }
             other => panic!("diagnóstico inesperado: {other:?}"),
@@ -1443,7 +1443,7 @@ mod tests {
         let err = run_err(r#"numero("hola")"#);
         match err {
             WnDiagnostic::TextoNoConvertibleANumero { span, .. } => {
-                assert_eq!(span.offset(), 0usize.into());
+                assert_eq!(span.offset(), 0usize);
                 assert_eq!(span.len(), 14);
             }
             other => panic!("diagnóstico inesperado: {other:?}"),

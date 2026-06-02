@@ -653,15 +653,21 @@ fn runtime_error_a_diagnostico(err: RuntimeError, source: &SourceFile) -> WnErro
         RuntimeError::TextoNoConvertibleANumero(valor) => {
             WnError::texto_no_convertible(source, span, valor)
         }
-        RuntimeError::Retorno(_) => {
-            WnError::compilacion(source, span, "'devolver' solo puede usarse dentro de una pega papito.")
-        }
-        RuntimeError::Cortala => {
-            WnError::compilacion(source, span, "'cortala' solo tiene sentido dentro de un bucle, po.")
-        }
-        RuntimeError::Sigue => {
-            WnError::compilacion(source, span, "'sigue' solo tiene sentido dentro de un bucle, compare.")
-        }
+        RuntimeError::Retorno(_) => WnError::compilacion(
+            source,
+            span,
+            "'devolver' solo puede usarse dentro de una pega papito.",
+        ),
+        RuntimeError::Cortala => WnError::compilacion(
+            source,
+            span,
+            "'cortala' solo tiene sentido dentro de un bucle, po.",
+        ),
+        RuntimeError::Sigue => WnError::compilacion(
+            source,
+            span,
+            "'sigue' solo tiene sentido dentro de un bucle, compare.",
+        ),
         RuntimeError::ErrorCatcheable(msg) => WnError::runtime(source, span, msg),
     }
 }
