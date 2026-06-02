@@ -4,17 +4,19 @@ expression: chunk.to_string()
 ---
 ══ <script> ══
 0000     1  Constante                0  '0'
-0003     |  DefinirGlobal            1  'i'
-0006     2  ObtenerGlobal            2  'i'
-0009     |  Constante                3  '3'
-000c     |  Lt
-000d     |  SaltarSiFalso           13 → 001f
-0010     |  Pop
-0011     |  ObtenerGlobal            4  'i'
-0014     |  Constante                5  '1'
+0003     |  ObtenerLocal             0
+0005     |  DefinirGlobal            1  'i'
+0008     2  ObtenerLocal             0
+000a     |  Constante                2  '3'
+000d     |  Lt
+000e     |  SaltarSiFalso           14 → 0021
+0011     |  Pop
+0012     |  ObtenerLocal             0
+0014     |  Constante                3  '1'
 0017     |  Suma
-0018     |  AsignarGlobal            6  'i'
-001b     |  Pop
-001c     |  Loop                    28 → 0006
-001f     |  Pop
-0020     |  RetornarNada
+0018     |  AsignarLocal             0
+001a     |  AsignarGlobal            1  'i'
+001d     |  Pop
+001e     |  Loop                    30 → 0008
+0021     |  Pop
+0022     |  RetornarNada

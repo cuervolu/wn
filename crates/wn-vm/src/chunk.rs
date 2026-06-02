@@ -2,9 +2,9 @@
 
 use std::{fmt, sync::Arc};
 
-use wn::{lexer::token::Span};
-use wn_diagnostics::SourceFile;
 use crate::{opcode::OpCode, value::Value};
+use wn::lexer::token::Span;
+use wn_diagnostics::SourceFile;
 
 /// Unidad de compilación: instrucciones + constantes + info de debug.
 ///

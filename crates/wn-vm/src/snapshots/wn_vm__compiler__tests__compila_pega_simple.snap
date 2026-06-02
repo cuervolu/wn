@@ -3,6 +3,10 @@ source: crates/wn-vm/src/compiler.rs
 expression: chunk.to_string()
 ---
 ══ <script> ══
-0000     1  Closure                  0  '<pega sumar>'
-0003     |  DefinirGlobal            1  'sumar'
-0006     |  RetornarNada
+0000     1  Nada
+0001     |  Closure                  1  '<pega sumar>'
+0004     |  AsignarLocal             0
+0006     |  Pop
+0007     |  ObtenerLocal             0
+0009     |  DefinirGlobal            0  'sumar'
+000c     |  RetornarNada

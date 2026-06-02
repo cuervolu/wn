@@ -4,12 +4,7 @@
 //! semántica del VM antes de acoplar el recolector final. La capa de GC se monta
 //! encima de estas referencias rastreando qué objetos siguen alcanzables.
 
-use std::{
-    cell::RefCell,
-    collections::HashMap,
-    fmt,
-    rc::Rc,
-};
+use std::{cell::RefCell, collections::HashMap, fmt, rc::Rc};
 
 use crate::chunk::Chunk;
 

@@ -6,5 +6,6 @@ expression: chunk.to_string()
 0000     1  Constante                0  '10'
 0003     |  Constante                1  '20'
 0006     |  Suma
-0007     |  DefinirGlobal            2  'x'
-000a     |  RetornarNada
+0007     |  ObtenerLocal             0
+0009     |  DefinirGlobal            2  'x'
+000c     |  RetornarNada

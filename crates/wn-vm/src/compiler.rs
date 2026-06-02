@@ -32,6 +32,7 @@ struct Local {
     depth: u32,
     es_duro: bool,
     is_captured: bool,
+    global_mirror: Option<u16>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -81,6 +82,7 @@ impl FunctionContext {
                 depth: 0,
                 es_duro: false,
                 is_captured: false,
+                global_mirror: None,
             }],
             upvalues: Vec::new(),
             scope_depth: 1,
@@ -102,6 +104,7 @@ enum VariableRef {
 pub struct Compiler {
     contexts: Vec<FunctionContext>,
     duro_globals: HashSet<String>,
+    script_locals_enabled: bool,
 }
 
 impl Compiler {
@@ -109,6 +112,7 @@ impl Compiler {
         Self {
             contexts: vec![FunctionContext::new_script(nombre, source)],
             duro_globals: HashSet::new(),
+            script_locals_enabled: true,
         }
     }
 
@@ -117,13 +121,17 @@ impl Compiler {
     }
 
     pub fn compile_repl(mut self, stmts: &[Stmt]) -> Result<Chunk, WnDiagnostic> {
+        self.script_locals_enabled = false;
         self.compile_impl(stmts, true)
     }
 
     fn compile_impl(&mut self, stmts: &[Stmt], repl: bool) -> Result<Chunk, WnDiagnostic> {
         for (idx, stmt) in stmts.iter().enumerate() {
             let es_ultima = idx + 1 == stmts.len();
-            if repl && es_ultima && let Stmt::Expresion { expr, .. } = stmt {
+            if repl
+                && es_ultima
+                && let Stmt::Expresion { expr, .. } = stmt
+            {
                 self.expr(expr)?;
                 self.emit_opcode(OpCode::Devolver, expr.span().clone());
                 return Ok(self.contexts.pop().expect("script context").chunk);
@@ -147,7 +155,10 @@ impl Compiler {
                 ..
             } => {
                 self.expr(valor)?;
-                if self.scope_depth() == 0 {
+                if self.use_script_locals() {
+                    let slot = self.define_script_local(nombre, *es_duro);
+                    self.mirror_script_local_to_global(slot, stmt.span().clone());
+                } else if self.scope_depth() == 0 {
                     self.define_global(nombre, *es_duro, stmt.span().clone());
                 } else {
                     self.define_local(nombre.clone(), *es_duro);
@@ -168,10 +179,9 @@ impl Compiler {
             Stmt::Mientras { cond, cuerpo, .. } => self.stmt_mientras(cond, cuerpo)?,
             Stmt::Devolver { valor, span } => {
                 if self.current_context().kind == FunctionKind::Script {
-                    return Err(self.compile_error(
-                        span.clone(),
-                        CompileErrorKind::DevolverFueraDeFuncion,
-                    ));
+                    return Err(
+                        self.compile_error(span.clone(), CompileErrorKind::DevolverFueraDeFuncion)
+                    );
                 }
                 self.expr(valor)?;
                 self.emit_opcode(OpCode::Devolver, span.clone());
@@ -204,7 +214,10 @@ impl Compiler {
                 ..
             } => {
                 self.expr(valor)?;
-                if self.scope_depth() == 0 {
+                if self.use_script_locals() {
+                    let slot = self.define_script_local(nombre, *es_duro);
+                    self.mirror_script_local_to_global(slot, stmt.span().clone());
+                } else if self.scope_depth() == 0 {
                     self.define_global(nombre, *es_duro, stmt.span().clone());
                 } else {
                     self.define_local(nombre.clone(), *es_duro);
@@ -232,10 +245,9 @@ impl Compiler {
             }
             Stmt::Devolver { valor, span } => {
                 if self.current_context().kind == FunctionKind::Script {
-                    return Err(self.compile_error(
-                        span.clone(),
-                        CompileErrorKind::DevolverFueraDeFuncion,
-                    ));
+                    return Err(
+                        self.compile_error(span.clone(), CompileErrorKind::DevolverFueraDeFuncion)
+                    );
                 }
                 self.expr(valor)?;
                 self.emit_opcode(OpCode::Devolver, span.clone());
@@ -268,6 +280,18 @@ impl Compiler {
         cuerpo: &[Stmt],
         span: &Span,
     ) -> Result<(), WnDiagnostic> {
+        if self.use_script_locals() {
+            self.emit_opcode(OpCode::Nada, span.clone());
+            let slot = self.define_script_local(nombre, false);
+            let closure = self.compile_function(nombre, params, cuerpo, span)?;
+            self.emit_closure(closure, span.clone());
+            self.emit_opcode(OpCode::AsignarLocal, span.clone());
+            self.emit_byte(slot, span.clone());
+            self.emit_opcode(OpCode::Pop, span.clone());
+            self.mirror_script_local_to_global(slot, span.clone());
+            return Ok(());
+        }
+
         let closure = self.compile_function(nombre, params, cuerpo, span)?;
         self.emit_closure(closure, span.clone());
         if self.scope_depth() == 0 {
@@ -548,7 +572,11 @@ impl Compiler {
             Expr::Booleano(false, span) => self.emit_opcode(OpCode::Falso, span.clone()),
             Expr::Nada(span) => self.emit_opcode(OpCode::Nada, span.clone()),
             Expr::Ident(nombre, span) => self.expr_ident(nombre, span.clone()),
-            Expr::Asignacion { nombre, valor, span } => {
+            Expr::Asignacion {
+                nombre,
+                valor,
+                span,
+            } => {
                 self.expr(valor)?;
                 self.expr_asignacion(nombre, span)?;
             }
@@ -576,7 +604,11 @@ impl Compiler {
                 self.emit_opcode(OpCode::ConstruirMapa, span.clone());
                 self.emit_u16(pares.len() as u16, span.clone());
             }
-            Expr::Indice { objeto, indice, span } => {
+            Expr::Indice {
+                objeto,
+                indice,
+                span,
+            } => {
                 self.expr(objeto)?;
                 self.expr(indice)?;
                 self.emit_opcode(OpCode::ObtenerIndice, span.clone());
@@ -614,6 +646,10 @@ impl Compiler {
                 }
                 self.emit_opcode(OpCode::AsignarLocal, span.clone());
                 self.emit_byte(slot, span.clone());
+                if let Some(idx) = self.current_context().locals[slot as usize].global_mirror {
+                    self.emit_opcode(OpCode::AsignarGlobal, span.clone());
+                    self.emit_u16(idx, span.clone());
+                }
             }
             VariableRef::Upvalue(slot) => {
                 self.emit_opcode(OpCode::AsignarUpvalue, span.clone());
@@ -684,7 +720,12 @@ impl Compiler {
         Ok(())
     }
 
-    fn expr_llamada(&mut self, callee: &Expr, args: &[Expr], span: &Span) -> Result<(), WnDiagnostic> {
+    fn expr_llamada(
+        &mut self,
+        callee: &Expr,
+        args: &[Expr],
+        span: &Span,
+    ) -> Result<(), WnDiagnostic> {
         self.expr(callee)?;
         for arg in args {
             self.expr(arg)?;
@@ -761,7 +802,24 @@ impl Compiler {
             depth,
             es_duro,
             is_captured: false,
+            global_mirror: None,
         });
+    }
+
+    fn define_script_local(&mut self, nombre: &str, es_duro: bool) -> u8 {
+        if es_duro {
+            self.duro_globals.insert(nombre.to_string());
+        }
+        let idx = self.add_constant(Value::from(nombre));
+        let depth = self.scope_depth();
+        self.current_context_mut().locals.push(Local {
+            nombre: nombre.to_string(),
+            depth,
+            es_duro,
+            is_captured: false,
+            global_mirror: Some(idx),
+        });
+        (self.current_context().locals.len() - 1) as u8
     }
 
     fn resolve_variable(&mut self, nombre: &str) -> VariableRef {
@@ -877,6 +935,22 @@ impl Compiler {
         (self.current_context().locals.len() - 1) as u8
     }
 
+    fn mirror_script_local_to_global(&mut self, slot: u8, span: Span) {
+        let idx = self.current_context().locals[slot as usize]
+            .global_mirror
+            .expect("script local sin mirror global");
+        self.emit_opcode(OpCode::ObtenerLocal, span.clone());
+        self.emit_byte(slot, span.clone());
+        self.emit_opcode(OpCode::DefinirGlobal, span.clone());
+        self.emit_u16(idx, span);
+    }
+
+    fn use_script_locals(&self) -> bool {
+        self.script_locals_enabled
+            && self.current_context().kind == FunctionKind::Script
+            && self.scope_depth() == 0
+    }
+
     fn compile_stmts_tail(&mut self, stmts: &[Stmt]) -> Result<(), WnDiagnostic> {
         if let Some((last, init)) = stmts.split_last() {
             for stmt in init {
@@ -982,9 +1056,11 @@ impl Compiler {
             CompileErrorKind::AsignacionConstante(nombre) => {
                 WnDiagnostic::constante_inmutable(&source, span, nombre)
             }
-            CompileErrorKind::DemasiadosArgumentos => {
-                WnDiagnostic::compilacion(&source, span, "Demasiados argumentos en la llamada (máximo 255).")
-            }
+            CompileErrorKind::DemasiadosArgumentos => WnDiagnostic::compilacion(
+                &source,
+                span,
+                "Demasiados argumentos en la llamada (máximo 255).",
+            ),
             CompileErrorKind::DemasiadosParametros(nombre) => WnDiagnostic::compilacion(
                 &source,
                 span,
@@ -1059,7 +1135,8 @@ mod tests {
 
     #[test]
     fn compila_closure_con_captura() {
-        let chunk = compile_src("pega afuera(x) { pega adentro() { devolver x }\n devolver adentro }");
+        let chunk =
+            compile_src("pega afuera(x) { pega adentro() { devolver x }\n devolver adentro }");
         insta::assert_snapshot!(chunk.to_string());
     }
 

@@ -11,12 +11,12 @@ use std::{
     sync::Arc,
 };
 
-use wn_diagnostics::{SourceFile, WnDiagnostic};
 use crate::{
     chunk::Chunk,
     opcode::OpCode,
     value::{NativeFn, ObjClosure, ObjFunction, ObjUpvalue, UpvalueState, Value},
 };
+use wn_diagnostics::{SourceFile, WnDiagnostic};
 
 #[derive(Debug, Clone, thiserror::Error)]
 pub enum VmError {
@@ -130,7 +130,7 @@ impl Default for GcArena {
 
 pub struct VM {
     stack: Vec<Value>,
-    pub globals: HashMap<String, Value>,
+    pub globals: HashMap<Rc<str>, Value>,
     pub frames: Vec<CallFrame>,
     open_upvalues: Vec<Rc<RefCell<ObjUpvalue>>>,
     gc: GcArena,
@@ -199,18 +199,16 @@ impl VM {
                 let op_offset = frame.ip;
                 let byte = chunk.code[frame.ip];
                 frame.ip += 1;
-                let op = OpCode::try_from(byte).map_err(VmError::OpcodeInvalido);
-                match op {
-                    Ok(op) => (op, frame.base_slot, op_offset),
-                    Err(err) => {
-                        let source = chunk.source.clone();
-                        let span = chunk.spans[op_offset].clone();
-                        return Err(WnDiagnostic::runtime(
-                            &source,
-                            source.span(span.start, span.end),
-                            err.to_string(),
-                        ));
-                    }
+                if let Some(op) = OpCode::from_byte(byte) {
+                    (op, frame.base_slot, op_offset)
+                } else {
+                    let source = chunk.source.clone();
+                    let span = chunk.spans[op_offset].clone();
+                    return Err(WnDiagnostic::runtime(
+                        &source,
+                        source.span(span.start, span.end),
+                        VmError::OpcodeInvalido(byte).to_string(),
+                    ));
                 }
             };
 
@@ -248,19 +246,19 @@ impl VM {
                     let valor = self
                         .globals
                         .get(&nombre)
-                        .ok_or_else(|| VmError::VarNoDefinida(nombre.clone()))?
+                        .ok_or_else(|| VmError::VarNoDefinida(nombre.to_string()))?
                         .clone();
                     self.push(valor);
                     Ok(StepAction::Continue)
                 }
                 OpCode::AsignarGlobal => {
                     let nombre = self.read_nombre_constante(frame_idx);
-                    if !self.globals.contains_key(&nombre) {
-                        Err(VmError::VarNoDefinida(nombre))
-                    } else {
-                        let valor = self.peek()?.clone();
-                        self.globals.insert(nombre, valor);
+                    let valor = self.peek()?.clone();
+                    if let Some(slot) = self.globals.get_mut(&nombre) {
+                        *slot = valor;
                         Ok(StepAction::Continue)
+                    } else {
+                        Err(VmError::VarNoDefinida(nombre.to_string()))
                     }
                 }
                 OpCode::ObtenerLocal => {
@@ -377,18 +375,19 @@ impl VM {
                 }
                 OpCode::Closure => {
                     let idx = self.read_u16_operand(frame_idx) as usize;
-                    let funcion = match self.frames[frame_idx].closure.funcion.chunk.constants[idx].clone() {
-                        Value::Funcion(funcion) => funcion,
-                        _ => panic!("constante de closure no es función"),
-                    };
+                    let funcion =
+                        match self.frames[frame_idx].closure.funcion.chunk.constants[idx].clone() {
+                            Value::Funcion(funcion) => funcion,
+                            _ => panic!("constante de closure no es función"),
+                        };
                     let mut captures = Vec::with_capacity(funcion.upvalues.len());
-                    for descriptor in &funcion.upvalues {
-                        let capture = if descriptor.is_local {
-                            self.capture_upvalue(base_slot + descriptor.index as usize)
+                    for _ in &funcion.upvalues {
+                        let is_local = self.read_byte_operand(frame_idx) != 0;
+                        let index = self.read_byte_operand(frame_idx);
+                        let capture = if is_local {
+                            self.capture_upvalue(base_slot + index as usize)
                         } else {
-                            self.frames[frame_idx].closure.upvalues.borrow()
-                                [descriptor.index as usize]
-                                .clone()
+                            self.frames[frame_idx].closure.upvalues.borrow()[index as usize].clone()
                         };
                         captures.push(capture);
                     }
@@ -430,7 +429,8 @@ impl VM {
                 OpCode::IterInit => self.op_iter_init().map(|_| StepAction::Continue),
                 OpCode::IterNext => {
                     let slot = self.read_byte_operand(frame_idx);
-                    self.op_iter_next(base_slot, slot).map(|_| StepAction::Continue)
+                    self.op_iter_next(base_slot, slot)
+                        .map(|_| StepAction::Continue)
                 }
                 OpCode::ObtenerIndice => self.op_obtener_indice().map(|_| StepAction::Continue),
                 OpCode::AsignarIndice => self.op_asignar_indice().map(|_| StepAction::Continue),
@@ -457,17 +457,17 @@ impl VM {
 
     fn registrar_nativas(&mut self) {
         self.globals
-            .insert("lorea".to_string(), Value::Nativa(NativeFn::Lorea));
+            .insert(Rc::from("lorea"), Value::Nativa(NativeFn::Lorea));
         self.globals
-            .insert("largo".to_string(), Value::Nativa(NativeFn::Largo));
+            .insert(Rc::from("largo"), Value::Nativa(NativeFn::Largo));
         self.globals
-            .insert("cachar".to_string(), Value::Nativa(NativeFn::Cachar));
+            .insert(Rc::from("cachar"), Value::Nativa(NativeFn::Cachar));
         self.globals
-            .insert("pregunta".to_string(), Value::Nativa(NativeFn::Pregunta));
+            .insert(Rc::from("pregunta"), Value::Nativa(NativeFn::Pregunta));
         self.globals
-            .insert("numero".to_string(), Value::Nativa(NativeFn::Numero));
+            .insert(Rc::from("numero"), Value::Nativa(NativeFn::Numero));
         self.globals
-            .insert("texto".to_string(), Value::Nativa(NativeFn::Texto));
+            .insert(Rc::from("texto"), Value::Nativa(NativeFn::Texto));
     }
 
     fn call_value(&mut self, callee: Value, argc: usize) -> Result<(), VmError> {
@@ -638,12 +638,14 @@ impl VM {
             Value::Mapa(mapa) => self.track_ptr(
                 Rc::as_ptr(mapa) as *const () as usize,
                 GcKind::Mapa,
-                mapa.borrow().len() * (std::mem::size_of::<String>() + std::mem::size_of::<Value>()),
+                mapa.borrow().len()
+                    * (std::mem::size_of::<String>() + std::mem::size_of::<Value>()),
             ),
             Value::Funcion(funcion) => self.track_ptr(
                 Rc::as_ptr(funcion) as *const () as usize,
                 GcKind::Funcion,
-                funcion.chunk.code.len() + funcion.chunk.constants.len() * std::mem::size_of::<Value>(),
+                funcion.chunk.code.len()
+                    + funcion.chunk.constants.len() * std::mem::size_of::<Value>(),
             ),
             Value::Closure(closure) => {
                 self.track_ptr(
@@ -677,7 +679,7 @@ impl VM {
 
     fn mark_value(&mut self, value: &Value) {
         self.track_value(value);
-                match value {
+        match value {
             Value::Texto(texto) => {
                 self.mark_ptr(Rc::as_ptr(texto) as *const () as usize);
             }
@@ -810,7 +812,9 @@ impl VM {
         if let Some(existing) = self.open_upvalues.iter().find_map(|candidate| {
             let state = &candidate.borrow().state;
             match state {
-                UpvalueState::Abierta(existing_slot) if *existing_slot == slot => Some(candidate.clone()),
+                UpvalueState::Abierta(existing_slot) if *existing_slot == slot => {
+                    Some(candidate.clone())
+                }
                 _ => None,
             }
         }) {
@@ -972,11 +976,13 @@ impl VM {
             }
             Value::Mapa(map) => {
                 let clave = indice.a_clave_mapa();
-                let valor = map
-                    .borrow()
-                    .get(&clave)
-                    .cloned()
-                    .ok_or_else(|| VmError::ClaveInexistente { clave: clave.clone() })?;
+                let valor =
+                    map.borrow()
+                        .get(&clave)
+                        .cloned()
+                        .ok_or_else(|| VmError::ClaveInexistente {
+                            clave: clave.clone(),
+                        })?;
                 self.push(valor);
             }
             Value::Texto(texto) => {
@@ -1009,7 +1015,8 @@ impl VM {
                 self.push(valor);
             }
             Value::Mapa(map) => {
-                map.borrow_mut().insert(indice.a_clave_mapa(), valor.clone());
+                map.borrow_mut()
+                    .insert(indice.a_clave_mapa(), valor.clone());
                 self.push(valor);
             }
             other => {
@@ -1073,18 +1080,22 @@ impl VM {
         Ok(())
     }
 
+    #[inline]
     fn push(&mut self, valor: Value) {
         self.stack.push(valor);
     }
 
+    #[inline]
     fn pop(&mut self) -> Result<Value, VmError> {
         self.stack.pop().ok_or(VmError::StackUnderflow)
     }
 
+    #[inline]
     fn peek(&self) -> Result<&Value, VmError> {
         self.stack.last().ok_or(VmError::StackUnderflow)
     }
 
+    #[inline]
     fn read_byte_operand(&mut self, frame_idx: usize) -> u8 {
         let frame = &mut self.frames[frame_idx];
         let byte = frame.closure.funcion.chunk.code[frame.ip];
@@ -1092,16 +1103,18 @@ impl VM {
         byte
     }
 
+    #[inline]
     fn read_u16_operand(&mut self, frame_idx: usize) -> u16 {
         let hi = self.read_byte_operand(frame_idx) as u16;
         let lo = self.read_byte_operand(frame_idx) as u16;
         (hi << 8) | lo
     }
 
-    fn read_nombre_constante(&mut self, frame_idx: usize) -> String {
+    #[inline]
+    fn read_nombre_constante(&mut self, frame_idx: usize) -> Rc<str> {
         let idx = self.read_u16_operand(frame_idx) as usize;
         match &self.frames[frame_idx].closure.funcion.chunk.constants[idx] {
-            Value::Texto(texto) => texto.to_string(),
+            Value::Texto(texto) => Rc::clone(texto),
             _ => panic!("constante de nombre no es texto"),
         }
     }
@@ -1151,16 +1164,19 @@ impl VM {
             VmError::VarNoDefinida(nombre) => {
                 WnDiagnostic::var_no_definida(&source, source_span, nombre.clone())
             }
-            VmError::TiposIncompatibles { .. } | VmError::NegacionInvalida(_) | VmError::TipoInvalido(_) => {
+            VmError::TiposIncompatibles { .. }
+            | VmError::NegacionInvalida(_)
+            | VmError::TipoInvalido(_) => {
                 WnDiagnostic::tipo_invalido(&source, source_span, err.to_string())
             }
             VmError::DivisionPorCero => WnDiagnostic::division_por_cero(&source, source_span),
             VmError::NoLlamable(nombre) => {
                 WnDiagnostic::no_llamable(&source, source_span, nombre.clone())
             }
-            VmError::NumArgInvalido { esperados, recibidos } => {
-                WnDiagnostic::num_arg_invalido(&source, source_span, *esperados, *recibidos)
-            }
+            VmError::NumArgInvalido {
+                esperados,
+                recibidos,
+            } => WnDiagnostic::num_arg_invalido(&source, source_span, *esperados, *recibidos),
             VmError::IndiceInvalido { indice, largo } => {
                 WnDiagnostic::indice_invalido(&source, source_span, *indice, *largo)
             }
@@ -1187,14 +1203,20 @@ fn resolver_indice(i: i64, len: usize) -> Result<usize, VmError> {
     let idx = if i < 0 {
         let pos = len as i64 + i;
         if pos < 0 {
-            return Err(VmError::IndiceInvalido { indice: i, largo: len });
+            return Err(VmError::IndiceInvalido {
+                indice: i,
+                largo: len,
+            });
         }
         pos as usize
     } else {
         i as usize
     };
     if idx >= len {
-        return Err(VmError::IndiceInvalido { indice: i, largo: len });
+        return Err(VmError::IndiceInvalido {
+            indice: i,
+            largo: len,
+        });
     }
     Ok(idx)
 }
@@ -1356,7 +1378,9 @@ mod tests {
         let vm = run_src(
             "pega romper() { devolver numero(\"nope\") }\nwea r = \"ok\"\nojo { r = romper() } cago(e) { r = e }",
         );
-        assert!(matches!(&vm.globals["r"], Value::Texto(texto) if texto.contains("No pude convertir")));
+        assert!(
+            matches!(&vm.globals["r"], Value::Texto(texto) if texto.contains("No pude convertir"))
+        );
     }
 
     #[test]
@@ -1369,9 +1393,8 @@ mod tests {
 
     #[test]
     fn gc_sweep_limpia_temporales_inaccesibles() {
-        let mut vm = run_src(
-            "wea viva = [1]\ncachai (verdad) { wea tmp = [2, 3]\nwea otro = {\"x\": 9} }",
-        );
+        let mut vm =
+            run_src("wea viva = [1]\ncachai (verdad) { wea tmp = [2, 3]\nwea otro = {\"x\": 9} }");
         let antes = vm.gc_stats();
         vm.collect_garbage();
         let despues = vm.gc_stats();

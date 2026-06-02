@@ -123,3 +123,19 @@ impl TryFrom<u8> for OpCode {
         }
     }
 }
+
+impl OpCode {
+    #[inline]
+    pub const fn max_discriminant() -> u8 {
+        Self::RetornarNada as u8
+    }
+
+    #[inline]
+    pub fn from_byte(byte: u8) -> Option<Self> {
+        if byte <= Self::max_discriminant() {
+            Some(unsafe { std::mem::transmute::<u8, Self>(byte) })
+        } else {
+            None
+        }
+    }
+}
