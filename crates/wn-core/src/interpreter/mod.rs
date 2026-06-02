@@ -11,7 +11,7 @@ use std::{
 
 use crate::{
     ast::{Expr, OpBin, OpUn, Stmt},
-    error::WnError,
+    error::{SourceFile, WnError},
 };
 
 use env::Entorno;
@@ -132,9 +132,9 @@ impl Interprete {
         }
     }
 
-    pub fn correr(&mut self, stmts: &[Stmt]) -> Result<Valor, WnError> {
+    pub fn correr(&mut self, stmts: &[Stmt], source: &SourceFile) -> Result<Valor, WnError> {
         self.eval_stmts(stmts, Rc::clone(&self.global))
-            .map_err(WnError::from)
+            .map_err(|err| runtime_error_a_diagnostico(err, source))
     }
 
     fn eval_stmts(
@@ -151,12 +151,13 @@ impl Interprete {
 
     fn eval_stmt(&mut self, stmt: &Stmt, env: Rc<RefCell<Entorno>>) -> Result<Valor, RuntimeError> {
         match stmt {
-            Stmt::Expresion(expr) => self.eval_expr(expr, env),
+            Stmt::Expresion { expr, .. } => self.eval_expr(expr, env),
 
             Stmt::DeclWea {
                 nombre,
                 valor,
                 es_duro,
+                ..
             } => {
                 let v = self.eval_expr(valor, Rc::clone(&env))?;
                 env.borrow_mut().definir(nombre, v, *es_duro)?;
@@ -167,6 +168,7 @@ impl Interprete {
                 nombre,
                 params,
                 cuerpo,
+                ..
             } => {
                 let funcion = Valor::Funcion {
                     params: params.clone(),
@@ -181,6 +183,7 @@ impl Interprete {
                 cond,
                 entonces,
                 si_no,
+                ..
             } => {
                 let condicion = self.eval_expr(cond, Rc::clone(&env))?;
                 if condicion.es_verdadero() {
@@ -192,7 +195,7 @@ impl Interprete {
                 }
             }
 
-            Stmt::Mientras { cond, cuerpo } => {
+            Stmt::Mientras { cond, cuerpo, .. } => {
                 loop {
                     let condicion = self.eval_expr(cond, Rc::clone(&env))?;
                     if !condicion.es_verdadero() {
@@ -207,6 +210,7 @@ impl Interprete {
                 var,
                 iterable,
                 cuerpo,
+                ..
             } => {
                 let coleccion = self.eval_expr(iterable, Rc::clone(&env))?;
                 match coleccion {
@@ -241,6 +245,7 @@ impl Interprete {
                 cuerpo,
                 error_var,
                 manejo,
+                ..
             } => {
                 match self.eval_stmts(cuerpo, nuevo_scope(&env)) {
                     Ok(v) => Ok(v),
@@ -262,22 +267,22 @@ impl Interprete {
                 }
             }
 
-            Stmt::Devolver { valor } => {
+            Stmt::Devolver { valor, .. } => {
                 let v = self.eval_expr(valor, env)?;
                 Err(RuntimeError::Retorno(v))
             }
 
-            Stmt::Cortala => Err(RuntimeError::Cortala),
-            Stmt::Sigue => Err(RuntimeError::Sigue),
+            Stmt::Cortala(_) => Err(RuntimeError::Cortala),
+            Stmt::Sigue(_) => Err(RuntimeError::Sigue),
         }
     }
 
     fn eval_expr(&mut self, expr: &Expr, env: Rc<RefCell<Entorno>>) -> Result<Valor, RuntimeError> {
         match expr {
-            Expr::Numero(n) => Ok(Valor::Numero(*n)),
-            Expr::Texto(s) => Ok(Valor::Texto(s.clone())),
-            Expr::Booleano(b) => Ok(Valor::Booleano(*b)),
-            Expr::Nada => Ok(Valor::Nada),
+            Expr::Numero(n, _) => Ok(Valor::Numero(*n)),
+            Expr::Texto(s, _) => Ok(Valor::Texto(s.clone())),
+            Expr::Booleano(b, _) => Ok(Valor::Booleano(*b)),
+            Expr::Nada(_) => Ok(Valor::Nada),
 
             Expr::Ident(nombre, _span) => env
                 .borrow()
@@ -625,5 +630,44 @@ fn es_texto_numerico_simple(texto: &str) -> bool {
     match decimal {
         Some(fraccion) => !fraccion.is_empty() && fraccion.chars().all(|c| c.is_ascii_digit()),
         None => true,
+    }
+}
+
+fn runtime_error_a_diagnostico(err: RuntimeError, source: &SourceFile) -> WnError {
+    let span = source.eof_span();
+    match err {
+        RuntimeError::VarNoDefinida(nombre) => WnError::var_no_definida(source, span, nombre),
+        RuntimeError::ConstanteInmutable(nombre) => {
+            WnError::constante_inmutable(source, span, nombre)
+        }
+        RuntimeError::DivisionPorCero => WnError::division_por_cero(source, span),
+        RuntimeError::IndiceInvalido(indice, largo) => {
+            WnError::indice_invalido(source, span, indice, largo)
+        }
+        RuntimeError::ClaveInexistente(clave) => WnError::clave_inexistente(source, span, clave),
+        RuntimeError::NoLlamable(nombre) => WnError::no_llamable(source, span, nombre),
+        RuntimeError::NumArgInvalido(esperados, recibidos) => {
+            WnError::num_arg_invalido(source, span, esperados, recibidos)
+        }
+        RuntimeError::TipoInvalido(mensaje) => WnError::tipo_invalido(source, span, mensaje),
+        RuntimeError::TextoNoConvertibleANumero(valor) => {
+            WnError::texto_no_convertible(source, span, valor)
+        }
+        RuntimeError::Retorno(_) => WnError::compilacion(
+            source,
+            span,
+            "'devolver' solo puede usarse dentro de una pega papito.",
+        ),
+        RuntimeError::Cortala => WnError::compilacion(
+            source,
+            span,
+            "'cortala' solo tiene sentido dentro de un bucle, po.",
+        ),
+        RuntimeError::Sigue => WnError::compilacion(
+            source,
+            span,
+            "'sigue' solo tiene sentido dentro de un bucle, compare.",
+        ),
+        RuntimeError::ErrorCatcheable(msg) => WnError::runtime(source, span, msg),
     }
 }

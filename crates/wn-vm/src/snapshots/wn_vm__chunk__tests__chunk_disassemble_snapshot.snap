@@ -1,0 +1,10 @@
+---
+source: crates/wn-vm/src/chunk.rs
+assertion_line: 310
+expression: chunk.to_string()
+---
+══ <test> ══
+0000     1  Constante                0  '1'
+0003     |  Constante                1  '2'
+0006     |  Suma
+0007     |  RetornarNada

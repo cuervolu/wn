@@ -12,16 +12,13 @@ name = "wn"
 path = "src/main.rs"
 
 [dependencies]
-clap = { version = "4", features = ["derive"] }
-miette = { version = "7", features = ["fancy"] }
-rustyline = "18"
-self_update = { version = "0.44", features = [
-    "archive-tar",
-    "archive-zip",
-    "compression-flate2",
-    "compression-zip-deflate",
-] }
-owo-colors = "4"
-dialoguer = "0.12"
-self-replace = "1"
-wn = { path = "../wn" }
+clap.workspace        = true
+dialoguer.workspace   = true
+miette.workspace      = true
+owo-colors.workspace    = true
+rustyline.workspace   = true
+self-replace.workspace = true
+self_update.workspace = true
+wn-core = { path = "../wn-core" }
+wn-vm = { path = "../wn-vm" }
+wn-diagnostics = { path = "../wn-diagnostics" }

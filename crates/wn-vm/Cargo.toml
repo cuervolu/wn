@@ -1,0 +1,26 @@
+[package]
+name = "wn-vm"
+version.workspace = true
+edition.workspace = true
+description = "Compilador Bytecode y stack VM para WN++"
+repository.workspace = true
+license.workspace = true
+
+[lib]
+name = "wn_vm"
+
+[dependencies]
+thiserror.workspace = true
+wn-core = { path = "../wn-core" }
+wn-diagnostics = { path = "../wn-diagnostics" }
+
+[package.metadata.dist]
+dist = false
+
+[dev-dependencies]
+insta.workspace = true
+criterion = { version = "0.8", features = ["html_reports"] }
+
+[[bench]]
+name = "vm_bench"
+harness = false

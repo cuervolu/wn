@@ -2,10 +2,10 @@ use crate::lexer::token::Span;
 
 #[derive(Debug, Clone)]
 pub enum Expr {
-    Numero(f64),
-    Texto(String),
-    Booleano(bool),
-    Nada,
+    Numero(f64, Span),
+    Texto(String, Span),
+    Booleano(bool, Span),
+    Nada(Span),
 
     Ident(String, Span),
 
@@ -47,48 +47,58 @@ pub enum Expr {
 
 #[derive(Debug, Clone)]
 pub enum Stmt {
-    Expresion(Expr),
+    Expresion {
+        expr: Expr,
+        span: Span,
+    },
 
     DeclWea {
         nombre: String,
         valor: Expr,
         es_duro: bool,
+        span: Span,
     },
 
     DeclPega {
         nombre: String,
         params: Vec<String>,
         cuerpo: Vec<Stmt>,
+        span: Span,
     },
 
     Cachai {
         cond: Expr,
         entonces: Vec<Stmt>,
         si_no: Option<Vec<Stmt>>,
+        span: Span,
     },
 
     Mientras {
         cond: Expr,
         cuerpo: Vec<Stmt>,
+        span: Span,
     },
 
     Para {
         var: String,
         iterable: Expr,
         cuerpo: Vec<Stmt>,
+        span: Span,
     },
 
     Devolver {
         valor: Expr,
+        span: Span,
     },
 
     Ojo {
         cuerpo: Vec<Stmt>,
         error_var: String,
         manejo: Vec<Stmt>,
+        span: Span,
     },
-    Cortala,
-    Sigue,
+    Cortala(Span),
+    Sigue(Span),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -112,4 +122,40 @@ pub enum OpBin {
 pub enum OpUn {
     No,
     Neg,
+}
+
+impl Expr {
+    pub fn span(&self) -> &Span {
+        match self {
+            Expr::Numero(_, span)
+            | Expr::Texto(_, span)
+            | Expr::Booleano(_, span)
+            | Expr::Nada(span)
+            | Expr::Ident(_, span)
+            | Expr::Lista(_, span)
+            | Expr::Mapa(_, span)
+            | Expr::Binario { span, .. }
+            | Expr::Unario { span, .. }
+            | Expr::Llamada { span, .. }
+            | Expr::Indice { span, .. }
+            | Expr::Asignacion { span, .. } => span,
+        }
+    }
+}
+
+impl Stmt {
+    pub fn span(&self) -> &Span {
+        match self {
+            Stmt::Expresion { span, .. }
+            | Stmt::DeclWea { span, .. }
+            | Stmt::DeclPega { span, .. }
+            | Stmt::Cachai { span, .. }
+            | Stmt::Mientras { span, .. }
+            | Stmt::Para { span, .. }
+            | Stmt::Devolver { span, .. }
+            | Stmt::Ojo { span, .. }
+            | Stmt::Cortala(span)
+            | Stmt::Sigue(span) => span,
+        }
+    }
 }

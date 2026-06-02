@@ -1,0 +1,10 @@
+---
+source: crates/wn-vm/src/compiler.rs
+expression: chunk.to_string()
+---
+══ <script> ══
+0000     1  ObtenerGlobal            0  'lorea'
+0003     |  Constante                1  '42'
+0006     |  Llamar                   1
+0008     |  Pop
+0009     |  RetornarNada

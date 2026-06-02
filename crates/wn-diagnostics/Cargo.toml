@@ -1,0 +1,14 @@
+[package]
+name = "wn-diagnostics"
+version.workspace = true
+edition.workspace = true
+
+[lib]
+name = "wn_diagnostics"
+
+[dependencies]
+miette.workspace = true
+thiserror.workspace = true
+
+[package.metadata.dist]
+dist = false

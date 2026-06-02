@@ -1,0 +1,22 @@
+---
+source: crates/wn-vm/src/compiler.rs
+expression: chunk.to_string()
+---
+══ <script> ══
+0000     1  Constante                0  '0'
+0003     |  ObtenerLocal             0
+0005     |  DefinirGlobal            1  'i'
+0008     2  ObtenerLocal             0
+000a     |  Constante                2  '3'
+000d     |  Lt
+000e     |  SaltarSiFalso           14 → 0021
+0011     |  Pop
+0012     |  ObtenerLocal             0
+0014     |  Constante                3  '1'
+0017     |  Suma
+0018     |  AsignarLocal             0
+001a     |  AsignarGlobal            1  'i'
+001d     |  Pop
+001e     |  Loop                    30 → 0008
+0021     |  Pop
+0022     |  RetornarNada

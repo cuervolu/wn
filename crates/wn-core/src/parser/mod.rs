@@ -1,8 +1,8 @@
 use miette::NamedSource;
+use wn_diagnostics::WnDiagnostic;
 
 use crate::{
     ast::{Expr, OpBin, OpUn, Stmt},
-    error::WnError,
     lexer::token::{Span, Token, TokenKind},
 };
 
@@ -27,8 +27,8 @@ impl Parser {
         NamedSource::new(&self.filename, self.src.clone())
     }
 
-    fn error(&self, span: &Span, mensaje: impl Into<String>) -> WnError {
-        WnError::Sintaxis {
+    fn error(&self, span: &Span, mensaje: impl Into<String>) -> WnDiagnostic {
+        WnDiagnostic::Sintaxis {
             src: self.make_source(),
             span: span.into(),
             mensaje: mensaje.into(),
@@ -41,6 +41,10 @@ impl Parser {
 
     fn peek_span(&self) -> &Span {
         &self.tokens[self.pos].span
+    }
+
+    fn previous_span(&self) -> &Span {
+        &self.tokens[self.pos.saturating_sub(1)].span
     }
 
     fn peek_next(&self) -> &TokenKind {
@@ -63,7 +67,7 @@ impl Parser {
         self.peek() == kind
     }
 
-    fn consume(&mut self, kind: &TokenKind) -> Result<&Token, WnError> {
+    fn consume(&mut self, kind: &TokenKind) -> Result<&Token, WnDiagnostic> {
         if self.peek() == kind {
             Ok(self.advance())
         } else {
@@ -79,7 +83,7 @@ impl Parser {
         matches!(self.peek(), TokenKind::EOF)
     }
 
-    pub fn parsear(&mut self) -> Result<Vec<Stmt>, WnError> {
+    pub fn parsear(&mut self) -> Result<Vec<Stmt>, WnDiagnostic> {
         let mut stmts = Vec::new();
         while !self.is_at_end() {
             stmts.push(self.parse_stmt()?);
@@ -87,7 +91,7 @@ impl Parser {
         Ok(stmts)
     }
 
-    fn parse_stmt(&mut self) -> Result<Stmt, WnError> {
+    fn parse_stmt(&mut self) -> Result<Stmt, WnDiagnostic> {
         match self.peek() {
             TokenKind::Wea => self.parse_decl_wea(),
             TokenKind::Duro => self.parse_decl_duro(),
@@ -98,42 +102,49 @@ impl Parser {
             TokenKind::Ojo => self.parse_ojo(),
             TokenKind::Devolver => self.parse_devolver(),
             TokenKind::Cortala => {
+                let span = self.peek_span().clone();
                 self.advance();
-                Ok(Stmt::Cortala)
+                Ok(Stmt::Cortala(span))
             }
             TokenKind::Sigue => {
+                let span = self.peek_span().clone();
                 self.advance();
-                Ok(Stmt::Sigue)
+                Ok(Stmt::Sigue(span))
             }
             _ => self.parse_expr_stmt(),
         }
     }
 
-    fn parse_decl_wea(&mut self) -> Result<Stmt, WnError> {
+    fn parse_decl_wea(&mut self) -> Result<Stmt, WnDiagnostic> {
+        let start = self.peek_span().start;
         self.advance();
         let nombre = self.expect_ident()?;
         self.consume(&TokenKind::Asignar)?;
         let valor = self.parse_expr()?;
         Ok(Stmt::DeclWea {
             nombre,
+            span: Span::new(start, valor.span().end),
             valor,
             es_duro: false,
         })
     }
 
-    fn parse_decl_duro(&mut self) -> Result<Stmt, WnError> {
+    fn parse_decl_duro(&mut self) -> Result<Stmt, WnDiagnostic> {
+        let start = self.peek_span().start;
         self.advance();
         let nombre = self.expect_ident()?;
         self.consume(&TokenKind::Asignar)?;
         let valor = self.parse_expr()?;
         Ok(Stmt::DeclWea {
             nombre,
+            span: Span::new(start, valor.span().end),
             valor,
             es_duro: true,
         })
     }
 
-    fn parse_decl_pega(&mut self) -> Result<Stmt, WnError> {
+    fn parse_decl_pega(&mut self) -> Result<Stmt, WnDiagnostic> {
+        let start = self.peek_span().start;
         self.advance();
         let nombre = self.expect_ident()?;
         self.consume(&TokenKind::LParen)?;
@@ -143,11 +154,12 @@ impl Parser {
         Ok(Stmt::DeclPega {
             nombre,
             params,
+            span: Span::new(start, self.previous_span().end),
             cuerpo,
         })
     }
 
-    fn parse_params(&mut self) -> Result<Vec<String>, WnError> {
+    fn parse_params(&mut self) -> Result<Vec<String>, WnDiagnostic> {
         let mut params = Vec::new();
         if self.check(&TokenKind::RParen) {
             return Ok(params);
@@ -160,7 +172,8 @@ impl Parser {
         Ok(params)
     }
 
-    fn parse_cachai(&mut self) -> Result<Stmt, WnError> {
+    fn parse_cachai(&mut self) -> Result<Stmt, WnDiagnostic> {
+        let start = self.peek_span().start;
         self.advance();
         self.consume(&TokenKind::LParen)?;
         let cond = self.parse_expr()?;
@@ -177,19 +190,26 @@ impl Parser {
             cond,
             entonces,
             si_no,
+            span: Span::new(start, self.previous_span().end),
         })
     }
 
-    fn parse_mientras(&mut self) -> Result<Stmt, WnError> {
+    fn parse_mientras(&mut self) -> Result<Stmt, WnDiagnostic> {
+        let start = self.peek_span().start;
         self.advance();
         self.consume(&TokenKind::LParen)?;
         let cond = self.parse_expr()?;
         self.consume(&TokenKind::RParen)?;
         let cuerpo = self.parse_block()?;
-        Ok(Stmt::Mientras { cond, cuerpo })
+        Ok(Stmt::Mientras {
+            cond,
+            cuerpo,
+            span: Span::new(start, self.previous_span().end),
+        })
     }
 
-    fn parse_para(&mut self) -> Result<Stmt, WnError> {
+    fn parse_para(&mut self) -> Result<Stmt, WnDiagnostic> {
+        let start = self.peek_span().start;
         self.advance();
         self.consume(&TokenKind::LParen)?;
         let var = self.expect_ident()?;
@@ -201,10 +221,12 @@ impl Parser {
             var,
             iterable,
             cuerpo,
+            span: Span::new(start, self.previous_span().end),
         })
     }
 
-    fn parse_ojo(&mut self) -> Result<Stmt, WnError> {
+    fn parse_ojo(&mut self) -> Result<Stmt, WnDiagnostic> {
+        let start = self.peek_span().start;
         self.advance();
         let cuerpo = self.parse_block()?;
         self.consume(&TokenKind::Cago)?;
@@ -216,14 +238,19 @@ impl Parser {
             cuerpo,
             error_var,
             manejo,
+            span: Span::new(start, self.previous_span().end),
         })
     }
 
-    fn parse_expr_stmt(&mut self) -> Result<Stmt, WnError> {
-        Ok(Stmt::Expresion(self.parse_expr()?))
+    fn parse_expr_stmt(&mut self) -> Result<Stmt, WnDiagnostic> {
+        let expr = self.parse_expr()?;
+        Ok(Stmt::Expresion {
+            span: expr.span().clone(),
+            expr,
+        })
     }
 
-    fn parse_block(&mut self) -> Result<Vec<Stmt>, WnError> {
+    fn parse_block(&mut self) -> Result<Vec<Stmt>, WnDiagnostic> {
         self.consume(&TokenKind::LLave)?;
         let mut stmts = Vec::new();
         while !self.check(&TokenKind::RLlave) && !self.is_at_end() {
@@ -233,24 +260,27 @@ impl Parser {
         Ok(stmts)
     }
 
-    fn parse_devolver(&mut self) -> Result<Stmt, WnError> {
+    fn parse_devolver(&mut self) -> Result<Stmt, WnDiagnostic> {
+        let start = self.peek_span().start;
         self.advance();
 
-        // `devolver` retorna nada implícitamente
         let valor = if matches!(self.peek(), TokenKind::RLlave | TokenKind::EOF) {
-            Expr::Nada
+            Expr::Nada(Span::new(start, start))
         } else {
             self.parse_expr()?
         };
 
-        Ok(Stmt::Devolver { valor })
+        Ok(Stmt::Devolver {
+            span: Span::new(start, valor.span().end),
+            valor,
+        })
     }
 
-    fn parse_expr(&mut self) -> Result<Expr, WnError> {
+    fn parse_expr(&mut self) -> Result<Expr, WnDiagnostic> {
         self.parse_pratt(0)
     }
 
-    fn parse_pratt(&mut self, min_bp: u8) -> Result<Expr, WnError> {
+    fn parse_pratt(&mut self, min_bp: u8) -> Result<Expr, WnDiagnostic> {
         let mut lhs = self.parse_unary()?;
         loop {
             let op = match self.peek() {
@@ -273,10 +303,10 @@ impl Parser {
             if left_bp < min_bp {
                 break;
             }
-            let span_start = self.peek_span().start;
+            let span_start = lhs.span().start;
             self.advance();
             let rhs = self.parse_pratt(right_bp)?;
-            let span = Span::new(span_start, self.peek_span().start);
+            let span = Span::new(span_start, rhs.span().end);
             lhs = Expr::Binario {
                 izq: Box::new(lhs),
                 op,
@@ -287,13 +317,13 @@ impl Parser {
         Ok(lhs)
     }
 
-    fn parse_unary(&mut self) -> Result<Expr, WnError> {
+    fn parse_unary(&mut self) -> Result<Expr, WnDiagnostic> {
         match self.peek() {
             TokenKind::No => {
                 let span_start = self.peek_span().start;
                 self.advance();
                 let expr = self.parse_unary()?;
-                let span = Span::new(span_start, self.peek_span().start);
+                let span = Span::new(span_start, expr.span().end);
                 Ok(Expr::Unario {
                     op: OpUn::No,
                     expr: Box::new(expr),
@@ -304,7 +334,7 @@ impl Parser {
                 let span_start = self.peek_span().start;
                 self.advance();
                 let expr = self.parse_unary()?;
-                let span = Span::new(span_start, self.peek_span().start);
+                let span = Span::new(span_start, expr.span().end);
                 Ok(Expr::Unario {
                     op: OpUn::Neg,
                     expr: Box::new(expr),
@@ -315,32 +345,30 @@ impl Parser {
         }
     }
 
-    fn parse_postfix(&mut self) -> Result<Expr, WnError> {
+    fn parse_postfix(&mut self) -> Result<Expr, WnDiagnostic> {
         let mut expr = self.parse_primary()?;
         loop {
             match self.peek() {
                 TokenKind::LParen => {
-                    let span_start = self.peek_span().start;
+                    let span_start = expr.span().start;
                     self.advance();
                     let args = self.parse_args()?;
-                    self.consume(&TokenKind::RParen)?;
-                    let span = Span::new(span_start, self.peek_span().start);
+                    let cierre = self.consume(&TokenKind::RParen)?.span.end;
                     expr = Expr::Llamada {
                         callee: Box::new(expr),
                         args,
-                        span,
+                        span: Span::new(span_start, cierre),
                     };
                 }
                 TokenKind::LCorchete => {
-                    let span_start = self.peek_span().start;
+                    let span_start = expr.span().start;
                     self.advance();
                     let indice = self.parse_expr()?;
-                    self.consume(&TokenKind::RCorchete)?;
-                    let span = Span::new(span_start, self.peek_span().start);
+                    let cierre = self.consume(&TokenKind::RCorchete)?.span.end;
                     expr = Expr::Indice {
                         objeto: Box::new(expr),
                         indice: Box::new(indice),
-                        span,
+                        span: Span::new(span_start, cierre),
                     };
                 }
                 _ => break,
@@ -349,7 +377,7 @@ impl Parser {
         Ok(expr)
     }
 
-    fn parse_args(&mut self) -> Result<Vec<Expr>, WnError> {
+    fn parse_args(&mut self) -> Result<Vec<Expr>, WnDiagnostic> {
         let mut args = Vec::new();
         if self.check(&TokenKind::RParen) {
             return Ok(args);
@@ -362,27 +390,32 @@ impl Parser {
         Ok(args)
     }
 
-    fn parse_primary(&mut self) -> Result<Expr, WnError> {
+    fn parse_primary(&mut self) -> Result<Expr, WnDiagnostic> {
         match self.peek().clone() {
             TokenKind::Numero(n) => {
+                let span = self.peek_span().clone();
                 self.advance();
-                Ok(Expr::Numero(n))
+                Ok(Expr::Numero(n, span))
             }
             TokenKind::Texto(s) => {
+                let span = self.peek_span().clone();
                 self.advance();
-                Ok(Expr::Texto(s))
+                Ok(Expr::Texto(s, span))
             }
             TokenKind::Verdad => {
+                let span = self.peek_span().clone();
                 self.advance();
-                Ok(Expr::Booleano(true))
+                Ok(Expr::Booleano(true, span))
             }
             TokenKind::Falso => {
+                let span = self.peek_span().clone();
                 self.advance();
-                Ok(Expr::Booleano(false))
+                Ok(Expr::Booleano(false, span))
             }
             TokenKind::Nada => {
+                let span = self.peek_span().clone();
                 self.advance();
-                Ok(Expr::Nada)
+                Ok(Expr::Nada(span))
             }
 
             TokenKind::Ident(nombre) => {
@@ -391,11 +424,10 @@ impl Parser {
                 if self.check(&TokenKind::Asignar) {
                     self.advance();
                     let valor = self.parse_expr()?;
-                    let end = self.peek_span().start;
                     return Ok(Expr::Asignacion {
                         nombre,
-                        valor: Box::new(valor),
-                        span: Span::new(span.start, end),
+                        valor: Box::new(valor.clone()),
+                        span: Span::new(span.start, valor.span().end),
                     });
                 }
                 Ok(Expr::Ident(nombre, span))
@@ -422,9 +454,8 @@ impl Parser {
                         items.push(self.parse_expr()?);
                     }
                 }
-                self.consume(&TokenKind::RCorchete)?;
-                let span = Span::new(span_start, self.peek_span().start);
-                Ok(Expr::Lista(items, span))
+                let cierre = self.consume(&TokenKind::RCorchete)?.span.end;
+                Ok(Expr::Lista(items, Span::new(span_start, cierre)))
             }
 
             TokenKind::LLave => {
@@ -447,9 +478,8 @@ impl Parser {
                         pairs.push((key, val));
                     }
                 }
-                self.consume(&TokenKind::RLlave)?;
-                let span = Span::new(span_start, self.peek_span().start);
-                Ok(Expr::Mapa(pairs, span))
+                let cierre = self.consume(&TokenKind::RLlave)?.span.end;
+                Ok(Expr::Mapa(pairs, Span::new(span_start, cierre)))
             }
 
             other => {
@@ -459,7 +489,7 @@ impl Parser {
         }
     }
 
-    fn expect_ident(&mut self) -> Result<String, WnError> {
+    fn expect_ident(&mut self) -> Result<String, WnDiagnostic> {
         match self.peek().clone() {
             TokenKind::Ident(s) => {
                 self.advance();
@@ -490,7 +520,7 @@ fn infix_binding_power(op: &OpBin) -> (u8, u8) {
     }
 }
 
-pub fn parsear(tokens: Vec<Token>, src: &str, filename: &str) -> Result<Vec<Stmt>, WnError> {
+pub fn parsear(tokens: Vec<Token>, src: &str, filename: &str) -> Result<Vec<Stmt>, WnDiagnostic> {
     Parser::new(tokens, src, filename).parsear()
 }
 
