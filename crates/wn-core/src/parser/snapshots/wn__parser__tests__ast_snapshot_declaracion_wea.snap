@@ -1,5 +1,5 @@
 ---
-source: crates/wn/src/parser/mod.rs
+source: crates/wn-core/src/parser/mod.rs
 expression: ast
 ---
 [
@@ -8,16 +8,28 @@ expression: ast
         valor: Binario {
             izq: Numero(
                 10.0,
+                Span {
+                    start: 8,
+                    end: 10,
+                },
             ),
             op: Suma,
             der: Numero(
                 20.0,
+                Span {
+                    start: 13,
+                    end: 15,
+                },
             ),
             span: Span {
-                start: 11,
+                start: 8,
                 end: 15,
             },
         },
         es_duro: false,
+        span: Span {
+            start: 0,
+            end: 15,
+        },
     },
 ]

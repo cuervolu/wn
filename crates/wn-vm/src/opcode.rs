@@ -68,18 +68,34 @@ pub enum OpCode {
     SaltarSiFalso,
     /// `LOOP <u16>` — ip -= offset (salto hacia atrás para `mientras`)
     Loop,
+    /// `PUSH_HANDLER <u16> <u8>` — registra un catch target y el slot donde guardar el error.
+    PushHandler,
+    /// Remueve el handler activo del frame actual.
+    PopHandler,
 
     //Funciones
+    /// `CLOSURE <u16> <upvalue...>` — crea una closure desde una función compilada.
+    Closure,
     /// `LLAMAR <u8>` — invoca la función con n_args argumentos
     Llamar,
     /// Retorna el tope del stack al frame anterior.
     Devolver,
+    /// `OBTENER_UPVALUE <u8>` — push valor capturado por la closure actual.
+    ObtenerUpvalue,
+    /// `ASIGNAR_UPVALUE <u8>` — reasigna valor capturado (sin pop).
+    AsignarUpvalue,
+    /// Cierra upvalues abiertas para el slot tope del stack y luego hace pop.
+    CerrarUpvalue,
 
     // Colecciones
     /// `CONSTRUIR_LISTA <u16>` — pop n valores → push Lista
     ConstruirLista,
     /// `CONSTRUIR_MAPA <u16>` — pop 2*n valores (clave, valor) → push Mapa
     ConstruirMapa,
+    /// `ITER_INIT` — pop colección → push iterador snapshot
+    IterInit,
+    /// `ITER_NEXT <u8>` — usa el iterador en un local y empuja `verdad + valor` o `falso`.
+    IterNext,
     /// pop índice, pop objeto → push objeto[índice]
     ObtenerIndice,
     /// pop valor, pop índice, pop objeto → objeto[índice] = valor

@@ -5,7 +5,7 @@ use std::{
 };
 
 use wn::{
-    error::WnError,
+    error::{SourceFile, WnError},
     interpreter::{Interprete, value::Valor},
     lexer::tokenizar,
     parser::parsear,
@@ -34,14 +34,16 @@ impl Write for CapturaSalida {
 }
 
 pub fn run_program(src: &str) -> Result<Valor, WnError> {
+    let source = SourceFile::new("<test>", src);
     let tokens = tokenizar(src)?;
     let stmts = parsear(tokens, src, "<test>")?;
     let mut interprete = Interprete::nuevo();
-    interprete.correr(&stmts)
+    interprete.correr(&stmts, &source)
 }
 
 pub fn run_program_with_output(src: &str) -> (Result<Valor, WnError>, String) {
     let captura = CapturaSalida::default();
+    let source = SourceFile::new("<test>", src);
     let tokens = match tokenizar(src) {
         Ok(tokens) => tokens,
         Err(err) => return (Err(err), captura.contenido()),
@@ -51,12 +53,13 @@ pub fn run_program_with_output(src: &str) -> (Result<Valor, WnError>, String) {
         Err(err) => return (Err(err), captura.contenido()),
     };
     let mut interprete = Interprete::con_salida(captura.clone());
-    let resultado = interprete.correr(&stmts);
+    let resultado = interprete.correr(&stmts, &source);
     (resultado, captura.contenido())
 }
 
 pub fn run_program_with_io(src: &str, input: &str) -> (Result<Valor, WnError>, String) {
     let captura = CapturaSalida::default();
+    let source = SourceFile::new("<test>", src);
     let tokens = match tokenizar(src) {
         Ok(tokens) => tokens,
         Err(err) => return (Err(err), captura.contenido()),
@@ -67,7 +70,7 @@ pub fn run_program_with_io(src: &str, input: &str) -> (Result<Valor, WnError>, S
     };
     let mut interprete =
         Interprete::con_io(captura.clone(), io::Cursor::new(input.as_bytes().to_vec()));
-    let resultado = interprete.correr(&stmts);
+    let resultado = interprete.correr(&stmts, &source);
     (resultado, captura.contenido())
 }
 

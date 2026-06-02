@@ -1,8 +1,8 @@
 pub mod token;
 
 use miette::{NamedSource, SourceSpan};
+use wn_diagnostics::WnDiagnostic;
 
-use crate::error::WnError;
 pub use token::{Span, Token, TokenKind};
 
 pub struct Lexer {
@@ -31,8 +31,8 @@ impl Lexer {
         NamedSource::new(&self.filename, self.src.clone())
     }
 
-    fn error(&self, span: impl Into<SourceSpan>, mensaje: impl Into<String>) -> WnError {
-        WnError::Lexico {
+    fn error(&self, span: impl Into<SourceSpan>, mensaje: impl Into<String>) -> WnDiagnostic {
+        WnDiagnostic::Lexico {
             src: self.make_source(),
             span: span.into(),
             mensaje: mensaje.into(),
@@ -78,7 +78,7 @@ impl Lexer {
         }
     }
 
-    fn read_string(&mut self, quote: char, start: usize) -> Result<TokenKind, WnError> {
+    fn read_string(&mut self, quote: char, start: usize) -> Result<TokenKind, WnDiagnostic> {
         let mut s = String::new();
         loop {
             match self.advance() {
@@ -174,7 +174,7 @@ impl Lexer {
         }
     }
 
-    fn next_token(&mut self) -> Result<Option<Token>, WnError> {
+    fn next_token(&mut self) -> Result<Option<Token>, WnDiagnostic> {
         self.skip_whitespace_and_comments();
         let start = self.byte_pos();
 
@@ -247,7 +247,7 @@ impl Lexer {
         Ok(Some(Token::new(kind, start, end)))
     }
 
-    pub fn tokenizar(mut self) -> Result<Vec<Token>, WnError> {
+    pub fn tokenizar(mut self) -> Result<Vec<Token>, WnDiagnostic> {
         let mut tokens = Vec::new();
         while let Some(tok) = self.next_token()? {
             let eof = tok.kind == TokenKind::EOF;
@@ -260,11 +260,11 @@ impl Lexer {
     }
 }
 
-pub fn tokenizar(src: &str) -> Result<Vec<Token>, WnError> {
+pub fn tokenizar(src: &str) -> Result<Vec<Token>, WnDiagnostic> {
     Lexer::new(src).tokenizar()
 }
 
-pub fn tokenizar_archivo(src: &str, filename: &str) -> Result<Vec<Token>, WnError> {
+pub fn tokenizar_archivo(src: &str, filename: &str) -> Result<Vec<Token>, WnDiagnostic> {
     Lexer::new(src).with_filename(filename).tokenizar()
 }
 

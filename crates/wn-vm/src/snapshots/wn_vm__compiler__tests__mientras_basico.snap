@@ -3,9 +3,9 @@ source: crates/wn-vm/src/compiler.rs
 expression: chunk.to_string()
 ---
 ══ <script> ══
-0000     0  Constante                0  '0'
+0000     1  Constante                0  '0'
 0003     |  DefinirGlobal            1  'i'
-0006     |  ObtenerGlobal            2  'i'
+0006     2  ObtenerGlobal            2  'i'
 0009     |  Constante                3  '3'
 000c     |  Lt
 000d     |  SaltarSiFalso           13 → 001f

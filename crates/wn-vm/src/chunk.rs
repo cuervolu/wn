@@ -1,50 +1,60 @@
 //! Un bloque de bytecode compilado.
 
-use std::fmt;
+use std::{fmt, sync::Arc};
 
+use wn::{lexer::token::Span};
+use wn_diagnostics::SourceFile;
 use crate::{opcode::OpCode, value::Value};
 
 /// Unidad de compilación: instrucciones + constantes + info de debug.
 ///
 /// Los campos son `pub` deliberadamente: el `Compiler` escribe en ellos
 /// directamente y el `VM` los lee directamente. No hay invariante que ocultar.
+#[derive(Clone)]
 pub struct Chunk {
     /// Bytecode: secuencia plana de opcodes y sus operandos.
     pub code: Vec<u8>,
     /// Pool de constantes referenciadas por instrucciones `CONSTANTE <u16>`.
     pub constants: Vec<Value>,
+    /// Span fuente asociado a cada byte en `code`.
+    pub spans: Vec<Span>,
     /// Número de línea fuente para cada byte en `code` (array paralelo).
     /// Permite que el VM reporte "error en línea 42" aunque esté en bytecode.
     pub lines: Vec<u32>,
     /// Nombre descriptivo para output de debug (ej: `"<script>"`, `"sumar"`).
     pub name: String,
+    /// Archivo fuente dueño del chunk.
+    pub source: Arc<SourceFile>,
 }
 
 impl Chunk {
-    pub fn new(name: impl Into<String>) -> Self {
+    pub fn new(name: impl Into<String>, source: Arc<SourceFile>) -> Self {
         Self {
             code: Vec::new(),
             constants: Vec::new(),
+            spans: Vec::new(),
             lines: Vec::new(),
             name: name.into(),
+            source,
         }
     }
 
     /// Escribe un byte crudo (opcode u operando) y registra su línea fuente.
-    pub fn emit_byte(&mut self, byte: u8, line: u32) {
+    pub fn emit_byte(&mut self, byte: u8, span: Span) {
         self.code.push(byte);
-        self.lines.push(line);
+        self.lines.push(self.source.line_for_offset(span.start));
+        self.spans.push(span);
     }
 
     /// Escribe un opcode (azúcar sobre `emit_byte`).
-    pub fn emit_opcode(&mut self, op: OpCode, line: u32) {
-        self.emit_byte(op as u8, line);
+    pub fn emit_opcode(&mut self, op: OpCode, span: Span) {
+        self.emit_byte(op as u8, span);
     }
 
     /// Escribe un `u16` en big-endian (2 bytes, mismo `line` para ambos).
-    pub fn emit_u16(&mut self, value: u16, line: u32) {
-        self.emit_byte((value >> 8) as u8, line);
-        self.emit_byte((value & 0xFF) as u8, line);
+    pub fn emit_u16(&mut self, value: u16, span: Span) {
+        self.emit_byte((value >> 8) as u8, span.clone());
+        self.emit_byte((value & 0xFF) as u8, span);
     }
 
     /// Agrega `value` al pool y retorna su índice como `u16`.
@@ -63,10 +73,10 @@ impl Chunk {
     }
 
     /// Emite `OpConstante` + índice u16. Atajo para el compilador.
-    pub fn emit_constant(&mut self, value: Value, line: u32) {
+    pub fn emit_constant(&mut self, value: Value, span: Span) {
         let idx = self.add_constant(value);
-        self.emit_opcode(OpCode::Constante, line);
-        self.emit_u16(idx, line);
+        self.emit_opcode(OpCode::Constante, span.clone());
+        self.emit_u16(idx, span);
     }
 
     /// Emite `op` con operando placeholder `0xFFFF`.
@@ -79,10 +89,10 @@ impl Chunk {
     /// // ... compilar cuerpo del `cachai` ...
     /// chunk.patch_jump(patch);
     /// ```
-    pub fn emit_jump(&mut self, op: OpCode, line: u32) -> usize {
-        self.emit_opcode(op, line);
-        self.emit_byte(0xFF, line); // placeholder high byte
-        self.emit_byte(0xFF, line); // placeholder low byte
+    pub fn emit_jump(&mut self, op: OpCode, span: Span) -> usize {
+        self.emit_opcode(op, span.clone());
+        self.emit_byte(0xFF, span.clone()); // placeholder high byte
+        self.emit_byte(0xFF, span); // placeholder low byte
         self.code.len() - 2 // posición del placeholder
     }
 
@@ -104,8 +114,8 @@ impl Chunk {
 
     /// Emite `OpLoop` con offset hacia atrás a `loop_start`.
     /// Llamar al final del cuerpo de un `mientras`.
-    pub fn emit_loop(&mut self, loop_start: usize, line: u32) {
-        self.emit_opcode(OpCode::Loop, line);
+    pub fn emit_loop(&mut self, loop_start: usize, span: Span) {
+        self.emit_opcode(OpCode::Loop, span.clone());
         // +2: los 2 bytes del operando que escribiremos ahora
         let offset = self.code.len() - loop_start + 2;
         assert!(
@@ -113,7 +123,7 @@ impl Chunk {
             "cuerpo de loop demasiado largo: {} bytes",
             offset
         );
-        self.emit_u16(offset as u16, line);
+        self.emit_u16(offset as u16, span);
     }
 
     /// Imprime el chunk desensamblado a stdout. Útil durante el desarrollo del compilador.
@@ -167,7 +177,14 @@ impl Chunk {
 
                 OpCode::Loop => self.fmt_salto_atras(f, offset),
 
-                OpCode::Llamar => self.fmt_u8_arg(f, op, offset),
+                OpCode::PushHandler => self.fmt_handler(f, offset),
+
+                OpCode::Closure => self.fmt_closure(f, offset),
+
+                OpCode::Llamar
+                | OpCode::ObtenerUpvalue
+                | OpCode::AsignarUpvalue
+                | OpCode::IterNext => self.fmt_u8_arg(f, op, offset),
 
                 OpCode::ConstruirLista | OpCode::ConstruirMapa => self.fmt_u16_arg(f, op, offset),
 
@@ -243,6 +260,46 @@ impl Chunk {
         Ok(offset + 3)
     }
 
+    fn fmt_closure(&self, f: &mut impl fmt::Write, offset: usize) -> Result<usize, fmt::Error> {
+        let idx = self.read_u16(offset + 1) as usize;
+        writeln!(f, "{:<20} {idx:>5}  '{}'", "Closure", self.constants[idx])?;
+
+        let funcion = match &self.constants[idx] {
+            Value::Funcion(funcion) => funcion,
+            _ => panic!("constante de closure no es función"),
+        };
+
+        let mut next = offset + 3;
+        for descriptor in &funcion.upvalues {
+            writeln!(
+                f,
+                "{:04x}     |  {:<20} {}",
+                next,
+                "captura",
+                if descriptor.is_local {
+                    format!("local {}", descriptor.index)
+                } else {
+                    format!("upvalue {}", descriptor.index)
+                }
+            )?;
+            next += 2;
+        }
+
+        Ok(next)
+    }
+
+    fn fmt_handler(&self, f: &mut impl fmt::Write, offset: usize) -> Result<usize, fmt::Error> {
+        let jump = self.read_u16(offset + 1) as usize;
+        let slot = self.code[offset + 3];
+        writeln!(
+            f,
+            "{:<20} {offset:>5} → {:04x}  slot {slot}",
+            "PushHandler",
+            offset + 4 + jump
+        )?;
+        Ok(offset + 4)
+    }
+
     /// Lee un `u16` big-endian desde `code[offset..]`.
     #[inline]
     fn read_u16(&self, offset: usize) -> u16 {
@@ -269,15 +326,23 @@ impl fmt::Debug for Chunk {
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
+
     use super::*;
+    use wn_diagnostics::SourceFile;
+
+    fn test_source() -> Arc<SourceFile> {
+        Arc::new(SourceFile::new("<test>", "wea x = 1"))
+    }
 
     #[test]
     fn chunk_constante_simple() {
-        let mut chunk = Chunk::new("<test>");
-        chunk.emit_constant(Value::Numero(1.0), 1);
-        chunk.emit_constant(Value::Numero(2.0), 1);
-        chunk.emit_opcode(OpCode::Suma, 1);
-        chunk.emit_opcode(OpCode::RetornarNada, 1);
+        let mut chunk = Chunk::new("<test>", test_source());
+        let span = Span::new(0, 1);
+        chunk.emit_constant(Value::Numero(1.0), span.clone());
+        chunk.emit_constant(Value::Numero(2.0), span.clone());
+        chunk.emit_opcode(OpCode::Suma, span.clone());
+        chunk.emit_opcode(OpCode::RetornarNada, span);
 
         assert_eq!(chunk.code.len(), 8); // 3 bytes × 2 constantes + Suma + RetornarNada
         assert_eq!(chunk.constants.len(), 2);
@@ -288,9 +353,10 @@ mod tests {
 
     #[test]
     fn patch_jump_correcto() {
-        let mut chunk = Chunk::new("<test>");
-        let patch = chunk.emit_jump(OpCode::SaltarSiFalso, 1);
-        chunk.emit_opcode(OpCode::Lorea, 1);
+        let mut chunk = Chunk::new("<test>", test_source());
+        let span = Span::new(0, 1);
+        let patch = chunk.emit_jump(OpCode::SaltarSiFalso, span.clone());
+        chunk.emit_opcode(OpCode::Lorea, span);
         chunk.patch_jump(patch);
 
         let high = chunk.code[patch] as u16;
@@ -301,11 +367,12 @@ mod tests {
 
     #[test]
     fn chunk_disassemble_snapshot() {
-        let mut chunk = Chunk::new("<test>");
-        chunk.emit_constant(Value::Numero(1.0), 1);
-        chunk.emit_constant(Value::Numero(2.0), 1);
-        chunk.emit_opcode(OpCode::Suma, 1);
-        chunk.emit_opcode(OpCode::RetornarNada, 1);
+        let mut chunk = Chunk::new("<test>", test_source());
+        let span = Span::new(0, 1);
+        chunk.emit_constant(Value::Numero(1.0), span.clone());
+        chunk.emit_constant(Value::Numero(2.0), span.clone());
+        chunk.emit_opcode(OpCode::Suma, span.clone());
+        chunk.emit_opcode(OpCode::RetornarNada, span);
 
         insta::assert_snapshot!(chunk.to_string());
     }

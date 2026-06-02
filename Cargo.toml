@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
+    "crates/wn-diagnostics",
     "crates/wn-core",
     "crates/wn-cli",
     "crates/wn-vm",

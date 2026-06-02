@@ -9,7 +9,7 @@ name = "wn"
 [dependencies]
 miette.workspace    = true
 thiserror.workspace = true
-id-arena.workspace  = true
+wn-diagnostics = { path = "../wn-diagnostics" }
 
 [package.metadata.dist]
 dist = false

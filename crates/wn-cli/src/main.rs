@@ -1,19 +1,19 @@
 mod updater;
 
-use std::path::PathBuf;
+use std::{path::PathBuf, sync::Arc};
 
 use clap::Parser;
 use miette::IntoDiagnostic;
 use owo_colors::OwoColorize;
 use rustyline::{DefaultEditor, error::ReadlineError};
+use wn_diagnostics::{SourceFile, WnDiagnostic};
+use wn_vm::{
+    compiler::{compilar, compilar_repl},
+    vm::VM,
+};
 
 use crate::updater::run_update;
-use wn::{
-    error::WnError,
-    interpreter::{Interprete, value::Valor},
-    lexer::{Lexer, tokenizar},
-    parser::parsear,
-};
+use wn::{lexer::{Lexer, tokenizar}, parser::parsear};
 
 #[derive(Parser)]
 #[command(
@@ -68,12 +68,14 @@ fn run_file(path: PathBuf) -> miette::Result<()> {
 
     let src = std::fs::read_to_string(&path).into_diagnostic()?;
     let filename = path.to_string_lossy();
+    let source = Arc::new(SourceFile::new(filename.to_string(), src.clone()));
 
     let tokens = Lexer::new(&src).with_filename(&*filename).tokenizar()?;
     let stmts = parsear(tokens, &src, &filename)?;
+    let chunk = compilar(&stmts, source)?;
 
-    let mut interp = Interprete::nuevo();
-    let _ = interp.correr(&stmts)?;
+    let mut vm = VM::new();
+    let _ = vm.run(&chunk)?;
 
     Ok(())
 }
@@ -89,7 +91,7 @@ fn run_repl() {
 
     let _ = rl.load_history(".wn_history");
 
-    let mut interp = Interprete::nuevo();
+    let mut vm = VM::new();
 
     // Banner de bienvenida
     println!(
@@ -114,13 +116,15 @@ fn run_repl() {
                 }
 
                 let _ = rl.add_history_entry(trimmed);
+                let source = Arc::new(SourceFile::new("<repl>", trimmed));
 
                 let result = tokenizar(trimmed)
                     .and_then(|tokens| parsear(tokens, trimmed, "<repl>"))
-                    .and_then(|stmts| interp.correr(&stmts));
+                    .and_then(|stmts| compilar_repl(&stmts, source))
+                    .and_then(|chunk| vm.run(&chunk));
 
                 match result {
-                    Ok(Valor::Nada) => {}
+                    Ok(wn_vm::value::Value::Nada) => {}
                     Ok(val) => println!("{val}"),
                     Err(e) => eprint_error(e),
                 }
@@ -168,6 +172,6 @@ fn run_uninstall() -> miette::Result<()> {
     Ok(())
 }
 
-fn eprint_error(err: WnError) {
+fn eprint_error(err: WnDiagnostic) {
     eprintln!("{:?}", miette::Report::new(err));
 }

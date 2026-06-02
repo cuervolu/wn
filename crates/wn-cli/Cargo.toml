@@ -20,3 +20,5 @@ rustyline.workspace   = true
 self-replace.workspace = true
 self_update.workspace = true
 wn-core = { path = "../wn-core" }
+wn-vm = { path = "../wn-vm" }
+wn-diagnostics = { path = "../wn-diagnostics" }

@@ -1,5 +1,5 @@
 ---
-source: crates/wn/src/parser/mod.rs
+source: crates/wn-core/src/parser/mod.rs
 expression: ast
 ---
 [
@@ -7,7 +7,15 @@ expression: ast
         nombre: "PI",
         valor: Numero(
             3.14,
+            Span {
+                start: 10,
+                end: 14,
+            },
         ),
         es_duro: true,
+        span: Span {
+            start: 0,
+            end: 14,
+        },
     },
 ]
