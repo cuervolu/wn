@@ -279,7 +279,7 @@ mod tests {
         chunk.emit_opcode(OpCode::Suma, 1);
         chunk.emit_opcode(OpCode::RetornarNada, 1);
 
-        assert_eq!(chunk.code.len(), 7); // 3 bytes × 2 constantes + Suma + RetornarNada
+        assert_eq!(chunk.code.len(), 8); // 3 bytes × 2 constantes + Suma + RetornarNada
         assert_eq!(chunk.constants.len(), 2);
         assert_eq!(chunk.constants[0], Value::Numero(1.0));
         assert_eq!(chunk.constants[1], Value::Numero(2.0));

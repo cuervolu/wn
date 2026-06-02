@@ -1,0 +1,10 @@
+---
+source: crates/wn-vm/src/compiler.rs
+expression: chunk.to_string()
+---
+══ <script> ══
+0000     0  Constante                0  '42'
+0003     |  Lorea
+0004     |  Nada
+0005     |  Pop
+0006     |  RetornarNada

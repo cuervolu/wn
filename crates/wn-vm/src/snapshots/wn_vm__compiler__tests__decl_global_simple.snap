@@ -1,0 +1,10 @@
+---
+source: crates/wn-vm/src/compiler.rs
+expression: chunk.to_string()
+---
+══ <script> ══
+0000     0  Constante                0  '10'
+0003     |  Constante                1  '20'
+0006     |  Suma
+0007     |  DefinirGlobal            2  'x'
+000a     |  RetornarNada

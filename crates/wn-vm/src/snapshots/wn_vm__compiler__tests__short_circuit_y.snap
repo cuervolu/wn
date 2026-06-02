@@ -1,0 +1,11 @@
+---
+source: crates/wn-vm/src/compiler.rs
+expression: chunk.to_string()
+---
+══ <script> ══
+0000     0  Verdad
+0001     |  SaltarSiFalso            1 → 0006
+0004     |  Pop
+0005     |  Falso
+0006     |  Pop
+0007     |  RetornarNada

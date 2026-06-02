@@ -20,6 +20,9 @@ id-arena = "2"
 
 clap      = { version = "4", features = ["derive"] }
 rustyline = "18"
+dialoguer = "0.12"
+owo-colors = "4"
+self-replace = "1"
 self_update = { version = "0.44", features = [
     "archive-tar",
     "archive-zip",
@@ -29,7 +32,6 @@ self_update = { version = "0.44", features = [
 
 
 insta = { version = "1", features = ["ron"] }
-
 [profile.dev]
 opt-level = 0      # no optimization, fast compile
 debug = true       # full debug symbols

@@ -101,7 +101,7 @@ impl TryFrom<u8> for OpCode {
         // OpCode es #[repr(u8)]. Verificamos que `byte` esté dentro
         // del rango de discriminantes válidos antes de transmutarlo.
         if byte <= Self::RetornarNada as u8 {
-            Ok(unsafe { std::mem::transmute(byte) })
+            Ok(unsafe { std::mem::transmute::<u8, Self>(byte) })
         } else {
             Err(byte)
         }
