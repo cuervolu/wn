@@ -1309,6 +1309,20 @@ mod tests {
     }
 
     #[test]
+    fn funcion_retorna_ultima_expresion_implicita() {
+        let vm = run_src("pega identidad(x) { x }\nwea r = identidad(9)");
+        assert_eq!(vm.globals["r"], Value::Numero(9.0));
+    }
+
+    #[test]
+    fn retorno_implicito_funciona_en_cachai() {
+        let vm = run_src(
+            "pega fibonacci(n) { cachai (n <= 1) { n } si no { fibonacci(n - 1) + fibonacci(n - 2) } }\nwea r = fibonacci(10)",
+        );
+        assert_eq!(vm.globals["r"], Value::Numero(55.0));
+    }
+
+    #[test]
     fn closures_capturan_scope_externo() {
         let vm = run_src(
             "pega afuera(x) { pega adentro() { devolver x }\n devolver adentro }\nwea f = afuera(9)\nwea r = f()",

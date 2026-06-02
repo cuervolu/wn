@@ -194,6 +194,73 @@ impl Compiler {
         Ok(())
     }
 
+    fn stmt_tail(&mut self, stmt: &Stmt) -> Result<(), WnDiagnostic> {
+        match stmt {
+            Stmt::Expresion { expr, .. } => self.expr(expr)?,
+            Stmt::DeclWea {
+                nombre,
+                valor,
+                es_duro,
+                ..
+            } => {
+                self.expr(valor)?;
+                if self.scope_depth() == 0 {
+                    self.define_global(nombre, *es_duro, stmt.span().clone());
+                } else {
+                    self.define_local(nombre.clone(), *es_duro);
+                }
+                self.emit_opcode(OpCode::Nada, stmt.span().clone());
+            }
+            Stmt::DeclPega {
+                nombre,
+                params,
+                cuerpo,
+                ..
+            } => {
+                self.stmt_decl_pega(nombre, params, cuerpo, stmt.span())?;
+                self.emit_opcode(OpCode::Nada, stmt.span().clone());
+            }
+            Stmt::Cachai {
+                cond,
+                entonces,
+                si_no,
+                ..
+            } => self.stmt_cachai_tail(cond, entonces, si_no.as_deref())?,
+            Stmt::Mientras { cond, cuerpo, .. } => {
+                self.stmt_mientras(cond, cuerpo)?;
+                self.emit_opcode(OpCode::Nada, stmt.span().clone());
+            }
+            Stmt::Devolver { valor, span } => {
+                if self.current_context().kind == FunctionKind::Script {
+                    return Err(self.compile_error(
+                        span.clone(),
+                        CompileErrorKind::DevolverFueraDeFuncion,
+                    ));
+                }
+                self.expr(valor)?;
+                self.emit_opcode(OpCode::Devolver, span.clone());
+            }
+            Stmt::Para {
+                var,
+                iterable,
+                cuerpo,
+                ..
+            } => {
+                self.stmt_para(var, iterable, cuerpo)?;
+                self.emit_opcode(OpCode::Nada, stmt.span().clone());
+            }
+            Stmt::Ojo {
+                cuerpo,
+                error_var,
+                manejo,
+                ..
+            } => self.stmt_ojo_tail(cuerpo, error_var, manejo)?,
+            Stmt::Cortala(span) => self.stmt_cortala(span)?,
+            Stmt::Sigue(span) => self.stmt_sigue(span)?,
+        }
+        Ok(())
+    }
+
     fn stmt_decl_pega(
         &mut self,
         nombre: &str,
@@ -241,6 +308,51 @@ impl Compiler {
         }
 
         self.patch_jump(patch_fin);
+        Ok(())
+    }
+
+    fn stmt_cachai_tail(
+        &mut self,
+        cond: &Expr,
+        entonces: &[Stmt],
+        si_no: Option<&[Stmt]>,
+    ) -> Result<(), WnDiagnostic> {
+        self.emit_opcode(OpCode::Nada, cond.span().clone());
+        let result_slot = self.define_hidden_local("if_result");
+
+        self.expr(cond)?;
+
+        let patch_falso = self.emit_jump(OpCode::SaltarSiFalso, cond.span().clone());
+        self.emit_opcode(OpCode::Pop, cond.span().clone());
+
+        self.begin_scope();
+        self.compile_stmts_tail(entonces)?;
+        self.emit_opcode(OpCode::AsignarLocal, cond.span().clone());
+        self.emit_byte(result_slot, cond.span().clone());
+        self.emit_opcode(OpCode::Pop, cond.span().clone());
+        self.end_scope();
+
+        let patch_fin = self.emit_jump(OpCode::Saltar, cond.span().clone());
+        self.patch_jump(patch_falso);
+        self.emit_opcode(OpCode::Pop, cond.span().clone());
+
+        if let Some(rama_no) = si_no {
+            self.begin_scope();
+            self.compile_stmts_tail(rama_no)?;
+            self.emit_opcode(OpCode::AsignarLocal, cond.span().clone());
+            self.emit_byte(result_slot, cond.span().clone());
+            self.emit_opcode(OpCode::Pop, cond.span().clone());
+            self.end_scope();
+        } else {
+            self.emit_opcode(OpCode::Nada, cond.span().clone());
+            self.emit_opcode(OpCode::AsignarLocal, cond.span().clone());
+            self.emit_byte(result_slot, cond.span().clone());
+            self.emit_opcode(OpCode::Pop, cond.span().clone());
+        }
+
+        self.patch_jump(patch_fin);
+        self.emit_opcode(OpCode::ObtenerLocal, cond.span().clone());
+        self.emit_byte(result_slot, cond.span().clone());
         Ok(())
     }
 
@@ -338,6 +450,55 @@ impl Compiler {
         self.end_scope();
 
         self.patch_jump(patch_end);
+        self.end_scope();
+        Ok(())
+    }
+
+    fn stmt_ojo_tail(
+        &mut self,
+        cuerpo: &[Stmt],
+        error_var: &str,
+        manejo: &[Stmt],
+    ) -> Result<(), WnDiagnostic> {
+        let span = cuerpo
+            .first()
+            .map(|stmt| stmt.span().clone())
+            .unwrap_or_else(|| self.eof_span());
+        self.begin_scope();
+        self.emit_opcode(OpCode::Nada, span.clone());
+        let hidden_error = self.hidden_name("error");
+        self.define_local(hidden_error, false);
+        let hidden_slot = (self.current_context().locals.len() - 1) as u8;
+
+        self.emit_opcode(OpCode::Nada, span.clone());
+        let result_slot = self.define_hidden_local("try_result");
+
+        let patch_handler = self.emit_handler(hidden_slot, span.clone());
+
+        self.begin_scope();
+        self.compile_stmts_tail(cuerpo)?;
+        self.emit_opcode(OpCode::AsignarLocal, span.clone());
+        self.emit_byte(result_slot, span.clone());
+        self.emit_opcode(OpCode::Pop, span.clone());
+        self.end_scope();
+
+        self.emit_opcode(OpCode::PopHandler, span.clone());
+        let patch_end = self.emit_jump(OpCode::Saltar, span.clone());
+
+        self.patch_handler(patch_handler);
+        self.begin_scope();
+        self.emit_opcode(OpCode::ObtenerLocal, span.clone());
+        self.emit_byte(hidden_slot, span.clone());
+        self.define_local(error_var.to_string(), false);
+        self.compile_stmts_tail(manejo)?;
+        self.emit_opcode(OpCode::AsignarLocal, span.clone());
+        self.emit_byte(result_slot, span.clone());
+        self.emit_opcode(OpCode::Pop, span.clone());
+        self.end_scope();
+
+        self.patch_jump(patch_end);
+        self.emit_opcode(OpCode::ObtenerLocal, span.clone());
+        self.emit_byte(result_slot, span.clone());
         self.end_scope();
         Ok(())
     }
@@ -562,11 +723,7 @@ impl Compiler {
             self.define_local(param.clone(), false);
         }
 
-        for stmt in cuerpo {
-            self.stmt(stmt)?;
-        }
-
-        self.emit_opcode(OpCode::Nada, span.clone());
+        self.compile_stmts_tail(cuerpo)?;
         self.emit_opcode(OpCode::Devolver, span.clone());
 
         let ctx = self.contexts.pop().expect("function context");
@@ -712,6 +869,24 @@ impl Compiler {
         let counter = self.current_context().hidden_counter;
         self.current_context_mut().hidden_counter += 1;
         format!("__wn_{base}_{counter}")
+    }
+
+    fn define_hidden_local(&mut self, base: &str) -> u8 {
+        let hidden_name = self.hidden_name(base);
+        self.define_local(hidden_name, false);
+        (self.current_context().locals.len() - 1) as u8
+    }
+
+    fn compile_stmts_tail(&mut self, stmts: &[Stmt]) -> Result<(), WnDiagnostic> {
+        if let Some((last, init)) = stmts.split_last() {
+            for stmt in init {
+                self.stmt(stmt)?;
+            }
+            self.stmt_tail(last)?;
+        } else {
+            self.emit_opcode(OpCode::Nada, self.eof_span());
+        }
+        Ok(())
     }
 
     fn push_loop(&mut self, continue_target: usize, scope_depth: u32) {
