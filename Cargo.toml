@@ -5,6 +5,7 @@ members = [
     "crates/wn-core",
     "crates/wn-cli",
     "crates/wn-vm",
+    "crates/wn-wasm",
 ]
 
 [workspace.package]
@@ -14,7 +15,7 @@ repository = "https://github.com/cuervolu/wn"
 license = "MIT"
 
 [workspace.dependencies]
-miette    = { version = "7", features = ["fancy"] }
+miette    = "7"
 thiserror = "2"
 
 id-arena = "2"

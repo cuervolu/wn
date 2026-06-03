@@ -14,7 +14,7 @@ path = "src/main.rs"
 [dependencies]
 clap.workspace        = true
 dialoguer.workspace   = true
-miette.workspace      = true
+miette = { workspace = true, features = ["fancy"] }
 owo-colors.workspace    = true
 rustyline.workspace   = true
 self-replace.workspace = true

@@ -54,6 +54,9 @@ pub enum VmError {
     #[error("No pude convertir {0:?} a número.")]
     TextoNoConvertibleANumero(String),
 
+    #[error("pregunta() pidió más entrada que la provista.")]
+    EntradaAgotada,
+
     #[error(
         "Opcode inválido: {0:#04x} - bug del compilador, reportar issue en https://github.com/cuervolu/wn/issues"
     )]
@@ -535,10 +538,14 @@ impl VM {
                 self.salida.borrow_mut().flush().ok();
 
                 let mut input = String::new();
-                self.entrada
+                let leidos = self
+                    .entrada
                     .borrow_mut()
                     .read_line(&mut input)
                     .map_err(|e| VmError::TipoInvalido(format!("Error leyendo input: {e}")))?;
+                if leidos == 0 {
+                    return Err(VmError::EntradaAgotada);
+                }
 
                 Ok(self.alloc_text(
                     input
@@ -1186,6 +1193,7 @@ impl VM {
             VmError::TextoNoConvertibleANumero(valor) => {
                 WnDiagnostic::texto_no_convertible(&source, source_span, valor.clone())
             }
+            VmError::EntradaAgotada => WnDiagnostic::runtime(&source, source_span, err.to_string()),
             VmError::OpcodeInvalido(_) | VmError::StackUnderflow => {
                 WnDiagnostic::interno(err.to_string())
             }
@@ -1445,6 +1453,24 @@ mod tests {
             WnDiagnostic::TextoNoConvertibleANumero { span, .. } => {
                 assert_eq!(span.offset(), 0usize);
                 assert_eq!(span.len(), 14);
+            }
+            other => panic!("diagnóstico inesperado: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn pregunta_sin_entrada_falla_con_runtime_explicito() {
+        let tokens = tokenizar(r#"pregunta("Edad: ")"#).unwrap();
+        let stmts = parsear(tokens, r#"pregunta("Edad: ")"#, "<test>").unwrap();
+        let source = Arc::new(SourceFile::new("<test>", r#"pregunta("Edad: ")"#));
+        let chunk = compilar(&stmts, source).unwrap();
+        let mut vm = VM::con_io(Vec::<u8>::new(), Cursor::new(Vec::<u8>::new()));
+
+        let err = vm.run(&chunk).unwrap_err();
+
+        match err {
+            WnDiagnostic::Runtime { mensaje, .. } => {
+                assert_eq!(mensaje, "pregunta() pidió más entrada que la provista.");
             }
             other => panic!("diagnóstico inesperado: {other:?}"),
         }
