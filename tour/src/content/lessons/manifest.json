@@ -12,5 +12,40 @@
     "section": "El lenguaje",
     "order": 2,
     "dir": "02-variables"
+  },
+  {
+    "slug": "operadores",
+    "title": "Operadores y expresiones",
+    "section": "El lenguaje",
+    "order": 3,
+    "dir": "03-operadores"
+  },
+  {
+    "slug": "cachai",
+    "title": "Condicionales",
+    "section": "El lenguaje",
+    "order": 4,
+    "dir": "04-cachai"
+  },
+  {
+    "slug": "pega",
+    "title": "Funciones",
+    "section": "El lenguaje",
+    "order": 5,
+    "dir": "05-pega"
+  },
+  {
+    "slug": "bucles",
+    "title": "Bucles",
+    "section": "El lenguaje",
+    "order": 6,
+    "dir": "06-bucles"
+  },
+  {
+    "slug": "listas-mapas",
+    "title": "Listas y mapas",
+    "section": "El lenguaje",
+    "order": 7,
+    "dir": "07-listas-mapas"
   }
 ]
