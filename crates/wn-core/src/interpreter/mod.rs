@@ -371,6 +371,32 @@ impl Interprete {
                 }
                 Ok(Valor::Mapa(Rc::new(RefCell::new(map))))
             }
+
+            Expr::AsignacionIndice { objeto, indice, valor, .. } => {
+                let obj = self.eval_expr(objeto, Rc::clone(&env))?;
+                let idx = self.eval_expr(indice, Rc::clone(&env))?;
+                let val = self.eval_expr(valor, Rc::clone(&env))?;
+                match obj {
+                    Valor::Lista(items) => {
+                        let i = numeric_idx(&idx, "lista")?;
+                        let real = resolver_indice(i, items.borrow().len())?;
+                        items.borrow_mut()[real] = val.clone();
+                        Ok(val)
+                    }
+                    Valor::Mapa(map) => {
+                        let clave = match idx {
+                            Valor::Texto(s) => s,
+                            other => other.to_string(),
+                        };
+                        map.borrow_mut().insert(clave, val.clone());
+                        Ok(val)
+                    }
+                    other => Err(RuntimeError::TipoInvalido(format!(
+                        "No podí asignar por índice sobre un '{}'.",
+                        other.tipo_nombre()
+                    ))),
+                }
+            }
         }
     }
 

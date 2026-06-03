@@ -365,11 +365,23 @@ impl Parser {
                     self.advance();
                     let indice = self.parse_expr()?;
                     let cierre = self.consume(&TokenKind::RCorchete)?.span.end;
-                    expr = Expr::Indice {
-                        objeto: Box::new(expr),
-                        indice: Box::new(indice),
-                        span: Span::new(span_start, cierre),
-                    };
+
+                    if self.check(&TokenKind::Asignar) {
+                        self.advance();
+                        let valor = self.parse_expr()?;
+                        expr = Expr::AsignacionIndice {
+                            objeto: Box::new(expr),
+                            indice: Box::new(indice),
+                            valor: Box::new(valor.clone()),
+                            span: Span::new(span_start, valor.span().end),
+                        };
+                    } else {
+                        expr = Expr::Indice {
+                            objeto: Box::new(expr),
+                            indice: Box::new(indice),
+                            span: Span::new(span_start, cierre),
+                        };
+                    }
                 }
                 _ => break,
             }
