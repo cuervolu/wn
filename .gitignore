@@ -26,3 +26,5 @@ wasm/
 .wn_history
 
 **/*.snap.new
+tour/src/lib/wasm/pkg/
+crates/wn-wasm/pkg/

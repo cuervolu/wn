@@ -8,9 +8,9 @@ export default defineConfig({
     starlight({
       title: 'WN++',
       description: 'Un lenguaje de programación chileno, simple y directo.',
-      favicon: './src/assets/logo.svg',
+      favicon: './src/assets/favicon.svg',
       logo: {
-        src: './src/assets/logo.svg',  
+        src: './src/assets/favicon.svg',
       },
 
      social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/cuervolu/wn' }],
