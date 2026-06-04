@@ -372,7 +372,12 @@ impl Interprete {
                 Ok(Valor::Mapa(Rc::new(RefCell::new(map))))
             }
 
-            Expr::AsignacionIndice { objeto, indice, valor, .. } => {
+            Expr::AsignacionIndice {
+                objeto,
+                indice,
+                valor,
+                ..
+            } => {
                 let obj = self.eval_expr(objeto, Rc::clone(&env))?;
                 let idx = self.eval_expr(indice, Rc::clone(&env))?;
                 let val = self.eval_expr(valor, Rc::clone(&env))?;

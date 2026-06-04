@@ -162,6 +162,11 @@ impl DiagnosticoWasm {
         self.len
     }
 
+    #[wasm_bindgen(js_name = isEmpty)]
+    pub fn is_empty(&self) -> Option<bool> {
+        self.len.map(|len| len == 0)
+    }
+
     #[wasm_bindgen(getter)]
     pub fn linea(&self) -> Option<u32> {
         self.linea

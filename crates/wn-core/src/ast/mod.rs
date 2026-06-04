@@ -145,7 +145,7 @@ impl Expr {
             | Expr::Llamada { span, .. }
             | Expr::Indice { span, .. }
             | Expr::Asignacion { span, .. } => span,
-            | Expr::AsignacionIndice { span, .. } => span,
+            Expr::AsignacionIndice { span, .. } => span,
         }
     }
 }
