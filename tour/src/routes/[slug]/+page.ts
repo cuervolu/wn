@@ -1,9 +1,12 @@
-import type { PageLoad } from './$types';
+import type { EntryGenerator, PageLoad } from './$types';
 import type { SvelteComponent } from 'svelte';
 import { error } from '@sveltejs/kit';
 import manifest from '$lib/content';
 
 export const prerender = true;
+export const entries: EntryGenerator = () => {
+	return manifest.map((lesson) => ({ slug: lesson.slug }));
+};
 
 type MdsvexModule = {
 	default: typeof SvelteComponent;
