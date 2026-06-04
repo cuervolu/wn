@@ -101,7 +101,7 @@
 	</PaneGroup>
 </div>
 
-<div class="flex h-screen w-full flex-col overflow-hidden bg-surface-950 md:hidden">
+<div class="flex min-h-dvh w-full flex-col bg-surface-950 md:hidden">
 	<header class="shrink-0 border-b border-surface-800 bg-surface-900">
 		<div class="flex items-center justify-between px-4 py-2">
 			<span class="font-mono text-sm font-bold text-surface-50">WN++ Tour</span>
@@ -110,13 +110,13 @@
 		<MobileNav bind:activeTab={mobileTab} title={lesson.title} />
 	</header>
 
-	<main class="min-h-0 flex-1 overflow-hidden">
+	<main class="min-h-0 flex-1 overflow-y-auto">
 		{#if mobileTab === 'lesson'}
-			<div class="h-full overflow-y-auto">
+			<div class="min-h-full">
 				<LessonContent {lesson} />
 			</div>
 		{:else}
-			<div class="flex h-full flex-col">
+			<div class="flex h-full min-h-0 flex-col overflow-hidden">
 				<div class="min-h-0 flex-1">
 					<Editor />
 				</div>
