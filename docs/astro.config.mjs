@@ -1,16 +1,16 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
-import wnGrammar from './src/grammars/wn.tmLanguage.json';
+import wnGrammar from '../grammars/wn.tmLanguage.json';
 
 export default defineConfig({
   integrations: [
     starlight({
       title: 'WN++',
       description: 'Un lenguaje de programación chileno, simple y directo.',
-      favicon: './src/assets/logo.svg',
+      favicon: './src/assets/favicon.svg',
       logo: {
-        src: './src/assets/logo.svg',  
+        src: './src/assets/favicon.svg',
       },
 
      social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/cuervolu/wn' }],

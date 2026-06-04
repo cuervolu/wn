@@ -264,6 +264,21 @@ impl DotGraph {
                 self.add_edge(node, value_id, Some("value"));
                 node
             }
+            Expr::AsignacionIndice {
+                objeto,
+                indice,
+                valor,
+                ..
+            } => {
+                let node = self.add_node("AsignacionIndice");
+                let obj_id = self.expr(objeto);
+                let idx_id = self.expr(indice);
+                let val_id = self.expr(valor);
+                self.add_edge(node, obj_id, Some("objeto"));
+                self.add_edge(node, idx_id, Some("indice"));
+                self.add_edge(node, val_id, Some("valor"));
+                node
+            }
         }
     }
 }

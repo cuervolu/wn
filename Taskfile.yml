@@ -1,0 +1,162 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+vars:
+  # Directorio de salida de wasm-pack — debe coincidir con el import en wasm/index.ts
+  WASM_OUT: '{{.ROOT_DIR}}/tour/src/lib/wasm/pkg'
+
+tasks:
+  default:
+    desc: "Lista todas las tareas disponibles"
+    silent: true
+    cmds:
+      - task --list
+
+  # Rust
+  build:
+    desc: "Compila el workspace completo"
+    cmds:
+      - cargo build --workspace {{.CLI_ARGS}}
+
+  test:
+    desc: "Pruebas del workspace con cargo-nextest"
+    cmds:
+      - cargo nextest run --workspace {{.CLI_ARGS}}
+
+  test:watch:
+    desc: "Pruebas en modo watch (requiere cargo-watch)"
+    cmds:
+      - cargo watch -x "nextest run --workspace"
+
+  lint:
+    desc: "Clippy en modo strict"
+    cmds:
+      - cargo clippy --workspace --all-targets -- -D warnings
+
+  fmt:
+    desc: "Formatea todo el código Rust"
+    cmds:
+      - cargo fmt --all
+
+  fmt:check:
+    desc: "Verifica el formateo sin modificar archivos"
+    cmds:
+      - cargo fmt --all -- --check
+
+  clean:
+    desc: "Limpia artefactos de cargo y wasm-pack"
+    cmds:
+      - cargo clean
+      - task: wasm:clean
+
+  # WASM
+
+  wasm:build:
+    desc: "Compila wn-wasm (release) a tour/src/lib/wasm/pkg/"
+    dir: crates/wn-wasm
+    cmds:
+      - wasm-pack build --target web --out-dir {{.WASM_OUT}}
+
+  wasm:dev:
+    desc: "Compila wn-wasm (debug, sin optimizar) a tour/src/lib/wasm/pkg/"
+    dir: crates/wn-wasm
+    cmds:
+      - wasm-pack build --target web --dev --out-dir {{.WASM_OUT}}
+
+  wasm:clean:
+    desc: "Elimina el output de wasm-pack"
+    cmds:
+      - rm -rf {{.WASM_OUT}}
+
+  # Docs (Astro Starlight)
+
+  docs:dev:
+    desc: "Servidor de desarrollo de los docs"
+    dir: docs
+    cmds:
+      - pnpm dev
+
+  docs:build:
+    desc: "Build de producción de los docs"
+    dir: docs
+    cmds:
+      - pnpm build
+
+  docs:preview:
+    desc: "Preview del build de los docs"
+    dir: docs
+    cmds:
+      - pnpm preview
+
+  # Tour
+
+  tour:dev:
+    desc: "Servidor de desarrollo del tour (requiere wasm compilado; corre 'task wasm:dev' primero)"
+    dir: tour
+    cmds:
+      - pnpm dev
+
+  tour:dev:full:
+    desc: "Compila wasm:dev + levanta el servidor del tour"
+    cmds:
+      - task: wasm:dev
+      - task: tour:dev
+
+  tour:build:
+    desc: "Build de producción del tour (compila wasm release primero)"
+    cmds:
+      - task: wasm:build
+      - cd tour && pnpm build
+
+  tour:preview:
+    desc: "Preview del build del tour"
+    dir: tour
+    cmds:
+      - pnpm preview
+
+  tour:check:
+    desc: "Chequeo de tipos TypeScript del tour"
+    dir: tour
+    cmds:
+      - pnpm check
+
+  # Changelog
+
+  changelog:
+    desc: "Genera CHANGELOG.md con git-cliff"
+    cmds:
+      - git cliff -o CHANGELOG.md {{.CLI_ARGS}}
+
+  changelog:preview:
+    desc: "Previsualiza el changelog sin escribir al archivo"
+    cmds:
+      - git cliff {{.CLI_ARGS}}
+
+  changelog:unreleased:
+    desc: "Muestra solo los cambios no publicados"
+    cmds:
+      - git cliff --unreleased
+
+  # Release
+
+  release:
+    desc: "Script de release en Linux/macOS — uso: task release -- create v0.2.1"
+    platforms: [ linux, darwin ]
+    cmds:
+      - bash scripts/release.sh {{.CLI_ARGS}}
+
+  release:win:
+    desc: "Script de release en Windows — uso: task release:win -- create v0.2.1"
+    platforms: [ windows ]
+    cmds:
+      - pwsh -ExecutionPolicy Bypass -File scripts/release.ps1 {{.CLI_ARGS}}
+
+  # CI local
+
+  ci:
+    desc: "Pipeline completo local: fmt, lint, tests"
+    cmds:
+      - task: fmt:check
+      - task: lint
+      - task: test

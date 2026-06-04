@@ -1,0 +1,60 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+
+@import '@skeletonlabs/skeleton'; 
+@import '@skeletonlabs/skeleton-svelte'; 
+@import '@skeletonlabs/skeleton/themes/cerberus';
+@import '@skeletonlabs/skeleton/themes/mona';
+
+
+:root {
+	--font-body: 'Space Grotesk', sans-serif;
+	--font-mono: 'JetBrains Mono', monospace;
+	--sidebar-width: 260px;
+	--lesson-width: 420px;
+	--editor-min-height: 300px;
+}
+
+body {
+	font-family: var(--font-body);
+}
+
+code, pre, kbd, samp {
+	font-family: var(--font-mono);
+}
+
+.lesson-prose {
+	@apply text-surface-100 leading-relaxed;
+}
+
+.lesson-prose h1 {
+	@apply text-2xl font-bold text-surface-50 mb-4 mt-0;
+}
+
+.lesson-prose h2 {
+	@apply text-lg font-semibold text-surface-100 mb-3 mt-6;
+}
+
+.lesson-prose p {
+	@apply mb-4 text-surface-200;
+}
+
+.lesson-prose code {
+	@apply bg-surface-800 text-primary-400 px-1.5 py-0.5 rounded text-sm font-mono;
+}
+
+.lesson-prose pre {
+	@apply bg-surface-900 rounded-lg p-4 mb-4 overflow-x-auto border border-surface-700;
+}
+
+.lesson-prose pre code {
+	@apply bg-transparent p-0 text-surface-100;
+}
+
+.lesson-prose ul {
+	@apply list-disc list-inside mb-4 space-y-1 text-surface-200;
+}
+
+.lesson-prose a {
+	@apply text-primary-400 hover:text-primary-300 underline underline-offset-2;
+}

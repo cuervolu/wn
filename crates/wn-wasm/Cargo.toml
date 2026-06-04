@@ -1,0 +1,23 @@
+[package]
+name = "wn-wasm"
+version.workspace = true
+edition.workspace = true
+description = "Runner WASM para el playground web de WN++"
+repository.workspace = true
+license.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+console_error_panic_hook = "0.1"
+wasm-bindgen = "0.2"
+wn-core = { path = "../wn-core" }
+wn-diagnostics = { path = "../wn-diagnostics" }
+wn-vm = { path = "../wn-vm" }
+
+[package.metadata.dist]
+dist = false
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false

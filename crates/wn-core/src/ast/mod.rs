@@ -43,6 +43,12 @@ pub enum Expr {
         valor: Box<Expr>,
         span: Span,
     },
+    AsignacionIndice {
+        objeto: Box<Expr>,
+        indice: Box<Expr>,
+        valor: Box<Expr>,
+        span: Span,
+    },
 }
 
 #[derive(Debug, Clone)]
@@ -139,6 +145,7 @@ impl Expr {
             | Expr::Llamada { span, .. }
             | Expr::Indice { span, .. }
             | Expr::Asignacion { span, .. } => span,
+            Expr::AsignacionIndice { span, .. } => span,
         }
     }
 }

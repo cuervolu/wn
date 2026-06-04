@@ -613,6 +613,17 @@ impl Compiler {
                 self.expr(indice)?;
                 self.emit_opcode(OpCode::ObtenerIndice, span.clone());
             }
+            Expr::AsignacionIndice {
+                objeto,
+                indice,
+                valor,
+                span,
+            } => {
+                self.expr(objeto)?;
+                self.expr(indice)?;
+                self.expr(valor)?;
+                self.emit_opcode(OpCode::AsignarIndice, span.clone());
+            }
         }
         Ok(())
     }

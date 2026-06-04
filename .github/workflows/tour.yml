@@ -1,0 +1,75 @@
+name: Deploy Tour
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tour/**'
+      - 'crates/wn-wasm/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Build wn-wasm
+        # Correr desde el crate y usar path absoluto para evitar ambigüedad con --out-dir
+        working-directory: crates/wn-wasm
+        run: wasm-pack build --target web --out-dir $GITHUB_WORKSPACE/tour/src/lib/wasm/pkg
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 11
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: 'pnpm'
+          cache-dependency-path: tour/pnpm-lock.yaml
+
+      - name: Install tour dependencies
+        working-directory: tour
+        run: pnpm install --frozen-lockfile
+
+      - name: Build tour
+        working-directory: tour
+        run: pnpm build
+        env:
+          NODE_ENV: production
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: tour/build
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
