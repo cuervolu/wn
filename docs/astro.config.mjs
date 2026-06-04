@@ -1,7 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
-import wnGrammar from './src/grammars/wn.tmLanguage.json';
+import wnGrammar from '../grammars/wn.tmLanguage.json';
 
 export default defineConfig({
   integrations: [

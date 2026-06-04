@@ -1,5 +1,3 @@
-# Condicionales
-
 `cachai` evalúa una condición y ejecuta un bloque si es `verdad`.
 
 ```wn
@@ -71,5 +69,5 @@ cachai (temperatura > 25) {
   lorea(comentario)
 }
 
-// lorea(comentario)  ← Error: 'comentario' no existe acá
+// lorea(comentario)   Error: 'comentario' no existe acá
 ```

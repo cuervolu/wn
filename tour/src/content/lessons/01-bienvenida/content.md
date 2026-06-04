@@ -1,5 +1,3 @@
-# Bienvenida a WN++
-
 WN++ es un lenguaje de programación dinámico con sabor chileno, implementado en Rust.
 Este tour es la forma más rápida de conocerlo, sin instalar nada.
 

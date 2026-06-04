@@ -1,5 +1,3 @@
-# Variables y constantes
-
 En WN++, toda variable se declara con `wea`. Es mutable: puedes cambiarle el valor cuando quieras.
 
 ```wn
@@ -11,13 +9,13 @@ banda = "Los Prisioneros"   // válido, wea es mutable
 Las constantes usan `duro`. Una vez asignadas, no cambian, intentarlo es un error en runtime.
 
 ```wn
-duro AÑO_DEBUT = 1999
-AÑO_DEBUT = 2000   // Error
+duro ANO_DEBUT = 1999
+ANO_DEBUT = 2000   // Error
 ```
 
 ## Tipos de datos
 
-WN++ es dinámico: la variable no tiene tipo fijo, el *valor* sí.
+WN++ es dinámico: la variable no tiene tipo fijo, el _valor_ sí.
 
 ```wn
 wea x = 42             // numero  (siempre f64 internamente)
@@ -29,10 +27,10 @@ wea w = nada           // nada  (ausencia de valor)
 Puedes consultar el tipo de cualquier valor con `cachar()`:
 
 ```wn
-lorea(cachar(42))        // → "numero"
-lorea(cachar("Tulio"))   // → "texto"
-lorea(cachar(verdad))    // → "booleano"
-lorea(cachar(nada))      // → "nada"
+lorea(cachar(42))        //  "numero"
+lorea(cachar("Tulio"))   //  "texto"
+lorea(cachar(verdad))    //  "booleano"
+lorea(cachar(nada))      //  "nada"
 ```
 
 ## Scope de bloque
@@ -44,7 +42,7 @@ wea popularidad = 100
 
 cachai (popularidad > 50) {
   wea estado = "legendario"
-  lorea(estado)    // → "legendario"
+  lorea(estado)    //  "legendario"
 }
 
 lorea(estado)      // Error: 'estado' no existe acá
@@ -57,8 +55,8 @@ lorea(estado)      // Error: 'estado' no existe acá
 Para convertir entre tipos, usa `numero()` y `texto()`:
 
 ```wn
-wea año = "2001"
-wea siguiente = numero(año) + 1   // → 2002
+wea ano = "2001"
+wea siguiente = numero(ano) + 1   //  2002
 
 wea canciones = 12
 lorea("Tiene " + texto(canciones) + " canciones")

@@ -1,5 +1,3 @@
-# Funciones
-
 Una función se define con `pega`. Agrupa código que puedes reutilizar.
 
 ```wn

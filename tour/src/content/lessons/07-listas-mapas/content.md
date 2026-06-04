@@ -1,5 +1,3 @@
-# Listas y mapas
-
 ## Listas
 
 Una lista es una colección ordenada de valores. Se define con `[]` y puede mezclar tipos.

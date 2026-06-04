@@ -22,17 +22,19 @@
       "name": "string.quoted.wn",
       "begin": "[\"']",
       "end": "[\"']",
-      "patterns": [{
-        "match": "\\\\[ntr\\\\\"']",
-        "name": "constant.character.escape.wn"
-      }]
+      "patterns": [
+        {
+          "match": "\\\\[ntr\\\\\"']",
+          "name": "constant.character.escape.wn"
+        }
+      ]
     },
     "numbers": {
       "match": "\\b[0-9]+(\\.[0-9]+)?\\b",
       "name": "constant.numeric.wn"
     },
     "keywords": {
-      "match": "\\b(wea|duro|pega|cachai|si|no|mientras|para|en|ojo|cago|devolver|cortala|sigue)\\b",
+      "match": "\\b(wea|duro|pega|cachai|si|mientras|para|en|ojo|cago|devolver|cortala|sigue)\\b",
       "name": "keyword.control.wn"
     },
     "builtins": {
@@ -44,7 +46,7 @@
       "name": "constant.language.wn"
     },
     "operators": {
-      "match": "\\b(y|o)\\b|[+\\-*/%=<>!]=?|==|!=",
+      "match": "\\b(y|o|no)\\b|[+\\-*/%=<>!]=?|==|!=",
       "name": "keyword.operator.wn"
     },
     "identifiers": {

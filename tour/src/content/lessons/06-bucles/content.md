@@ -1,5 +1,3 @@
-# Bucles
-
 ## mientras
 
 Repite un bloque mientras la condición sea `verdad`. Úsalo cuando no sabes de antemano cuántas veces vas a iterar.

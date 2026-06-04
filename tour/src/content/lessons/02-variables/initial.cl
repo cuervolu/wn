@@ -4,7 +4,7 @@ duro ANO_DEBUT = 2000
 wea activa = verdad
 
 lorea("Banda: " + banda)
-lorea("Año debut: " + texto(AÑO_DEBUT))
+lorea("Año debut: " + texto(ANO_DEBUT))
 lorea("¿Activa? " + texto(activa))
 lorea("Tipo de 'activa': " + cachar(activa))
 

@@ -1,5 +1,3 @@
-# Operadores y expresiones
-
 ## Aritméticos
 
 Los operadores básicos funcionan como en cualquier lenguaje. El módulo (`%`) devuelve el resto de una división.
@@ -27,17 +25,17 @@ lorea((2 + 3) * 4)   // 20
 Devuelven `verdad` o `falso`.
 
 ```wn
-wea año = 1995
+wea ano = 1995
 
-lorea(año == 1995)   // verdad
-lorea(año != 2000)   // verdad
-lorea(año > 2000)    // falso
-lorea(año <= 1995)   // verdad
+lorea(ano == 1995)   // verdad
+lorea(ano != 2000)   // verdad
+lorea(ano > 2000)    // falso
+lorea(ano <= 1995)   // verdad
 ```
 
 ## Lógicos
 
-`y`, `o`, y `no` — en español, sin símbolos.
+`y`, `o`, y `no` — en espanol, sin símbolos.
 
 ```wn
 wea tiene_entrada = verdad
@@ -56,8 +54,8 @@ El operador `+` con texto une strings. Si un lado es texto, el otro debe serlo t
 
 ```wn
 wea banda = "Los Bunkers"
-wea año = 1999
+wea ano = 1999
 
-lorea("Fundados en " + texto(año))         // "Fundados en 1999"
-lorea(banda + " — " + texto(año))          // "Los Bunkers — 1999"
+lorea("Fundados en " + texto(ano))         // "Fundados en 1999"
+lorea(banda + " — " + texto(ano))          // "Los Bunkers — 1999"
 ```
