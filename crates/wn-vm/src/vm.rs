@@ -1188,7 +1188,6 @@ fn numeric_idx(idx: &Value, contexto: &str) -> Result<i64, VmError> {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use std::sync::Arc;

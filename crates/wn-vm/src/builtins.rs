@@ -105,7 +105,8 @@ pub(crate) fn parsear_numero(s: &str) -> Result<Value, VmError> {
     if limpio.is_empty() || !es_numero_simple(limpio) {
         return Err(VmError::TextoNoConvertibleANumero(s.to_string()));
     }
-    let n = limpio.parse::<f64>()
+    let n = limpio
+        .parse::<f64>()
         .map_err(|_| VmError::TextoNoConvertibleANumero(s.to_string()))?;
     if !n.is_finite() {
         return Err(VmError::TextoNoConvertibleANumero(s.to_string()));
@@ -291,7 +292,7 @@ mod tests {
         ];
 
         for (valor, nombre_esperado) in casos {
-            let resultado = cachar(&mut ctx(&w, &r), &[valor.clone()]).unwrap();
+            let resultado = cachar(&mut ctx(&w, &r), std::slice::from_ref(&valor)).unwrap();
             assert_eq!(
                 resultado,
                 Value::Texto(Rc::from(nombre_esperado)),
