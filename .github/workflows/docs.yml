@@ -1,32 +1,87 @@
-name: Deploy docs
+name: Deploy Pages
 
 on:
-    push:
-        branches: [main]
-        paths:
-            - "docs/**"
-            - ".github/workflows/docs.yml"
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "tour/**"
+      - "crates/wn-wasm/**"
+      - ".github/workflows/docs.yml"
+      - ".github/workflows/tour.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
-    deploy:
-        runs-on: ubuntu-latest
-        permissions:
-            contents: read
-            pages: write
-            id-token: write
-        steps:
-            - uses: actions/checkout@v6
-            - uses: actions/setup-node@v6
-              with:
-                  node-version: 22   
-            - uses: pnpm/action-setup@v6
-              with:
-                  version: 10
-            - run: pnpm install
-              working-directory: docs
-            - run: pnpm run build
-              working-directory: docs
-            - uses: actions/upload-pages-artifact@v5
-              with:
-                  path: docs/dist
-            - uses: actions/deploy-pages@v5
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Build wn-wasm
+        working-directory: crates/wn-wasm
+        run: wasm-pack build --target web --out-dir $GITHUB_WORKSPACE/tour/src/lib/wasm/pkg
+
+      - name: Install docs dependencies
+        working-directory: docs
+        run: pnpm install --frozen-lockfile
+
+      - name: Build docs
+        working-directory: docs
+        run: pnpm build
+
+      - name: Install tour dependencies
+        working-directory: tour
+        run: pnpm install --frozen-lockfile
+
+      - name: Build tour
+        working-directory: tour
+        run: pnpm build
+        env:
+          NODE_ENV: production
+
+      - name: Assemble Pages artifact
+        run: |
+          rm -rf /tmp/github-pages
+          mkdir -p /tmp/github-pages/tour
+          cp -R docs/dist/. /tmp/github-pages/
+          cp -R tour/build/. /tmp/github-pages/tour/
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: /tmp/github-pages
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
