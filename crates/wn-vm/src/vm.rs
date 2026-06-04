@@ -11,7 +11,9 @@ use std::{
     sync::Arc,
 };
 
+use crate::native::NativeContext;
 use crate::{
+    builtins,
     chunk::Chunk,
     opcode::OpCode,
     value::{NativeFn, ObjClosure, ObjFunction, ObjUpvalue, UpvalueState, Value},
@@ -459,18 +461,10 @@ impl VM {
     }
 
     fn registrar_nativas(&mut self) {
-        self.globals
-            .insert(Rc::from("lorea"), Value::Nativa(NativeFn::Lorea));
-        self.globals
-            .insert(Rc::from("largo"), Value::Nativa(NativeFn::Largo));
-        self.globals
-            .insert(Rc::from("cachar"), Value::Nativa(NativeFn::Cachar));
-        self.globals
-            .insert(Rc::from("pregunta"), Value::Nativa(NativeFn::Pregunta));
-        self.globals
-            .insert(Rc::from("numero"), Value::Nativa(NativeFn::Numero));
-        self.globals
-            .insert(Rc::from("texto"), Value::Nativa(NativeFn::Texto));
+        for nativa in builtins::NATIVAS_CORE {
+            self.globals
+                .insert(Rc::from(nativa.nombre), Value::Nativa(*nativa));
+        }
     }
 
     fn call_value(&mut self, callee: Value, argc: usize) -> Result<(), VmError> {
@@ -501,75 +495,20 @@ impl VM {
     }
 
     fn call_native(&mut self, nativa: NativeFn, argc: usize) -> Result<Value, VmError> {
+        if let Some(aridad) = nativa.aridad {
+            self.expect_arity(nativa.nombre, aridad, argc)?;
+        }
         let callee_idx = self.stack.len() - argc - 1;
         let args = self.stack.split_off(callee_idx + 1);
         self.stack.pop();
 
-        match nativa {
-            NativeFn::Lorea => {
-                let linea = args
-                    .iter()
-                    .map(ToString::to_string)
-                    .collect::<Vec<_>>()
-                    .join(" ");
-                writeln!(self.salida.borrow_mut(), "{linea}")
-                    .map_err(|e| VmError::TipoInvalido(format!("Error escribiendo output: {e}")))?;
-                Ok(Value::Nada)
-            }
-            NativeFn::Largo => {
-                self.expect_arity("largo", 1, argc)?;
-                match &args[0] {
-                    Value::Texto(s) => Ok(Value::Numero(s.chars().count() as f64)),
-                    Value::Lista(items) => Ok(Value::Numero(items.borrow().len() as f64)),
-                    other => Err(VmError::TipoInvalido(format!(
-                        "largo() solo funciona con texto o lista, no con '{}'.",
-                        other.tipo_nombre()
-                    ))),
-                }
-            }
-            NativeFn::Cachar => {
-                self.expect_arity("cachar", 1, argc)?;
-                Ok(self.alloc_text(args[0].tipo_nombre()))
-            }
-            NativeFn::Pregunta => {
-                self.expect_arity("pregunta", 1, argc)?;
-                write!(self.salida.borrow_mut(), "{}", args[0])
-                    .map_err(|e| VmError::TipoInvalido(format!("Error escribiendo output: {e}")))?;
-                self.salida.borrow_mut().flush().ok();
-
-                let mut input = String::new();
-                let leidos = self
-                    .entrada
-                    .borrow_mut()
-                    .read_line(&mut input)
-                    .map_err(|e| VmError::TipoInvalido(format!("Error leyendo input: {e}")))?;
-                if leidos == 0 {
-                    return Err(VmError::EntradaAgotada);
-                }
-
-                Ok(self.alloc_text(
-                    input
-                        .trim_end_matches('\n')
-                        .trim_end_matches('\r')
-                        .to_string(),
-                ))
-            }
-            NativeFn::Numero => {
-                self.expect_arity("numero", 1, argc)?;
-                match &args[0] {
-                    Value::Numero(n) => Ok(Value::Numero(*n)),
-                    Value::Texto(texto) => parsear_numero(texto),
-                    other => Err(VmError::TipoInvalido(format!(
-                        "numero() solo convierte textos o números, no un '{}'.",
-                        other.tipo_nombre()
-                    ))),
-                }
-            }
-            NativeFn::Texto => {
-                self.expect_arity("texto", 1, argc)?;
-                Ok(self.alloc_text(args[0].to_string()))
-            }
-        }
+        let mut ctx = NativeContext {
+            salida: &self.salida,
+            entrada: &self.entrada,
+        };
+        let result = (nativa.func)(&mut ctx, &args)?;
+        self.track_value(&result);
+        Ok(result)
     }
 
     fn expect_arity(&self, _name: &str, esperados: usize, recibidos: usize) -> Result<(), VmError> {
@@ -1249,46 +1188,6 @@ fn numeric_idx(idx: &Value, contexto: &str) -> Result<i64, VmError> {
     }
 }
 
-fn parsear_numero(texto: &str) -> Result<Value, VmError> {
-    let limpio = texto.trim();
-    if limpio.is_empty() || !es_texto_numerico_simple(limpio) {
-        return Err(VmError::TextoNoConvertibleANumero(texto.to_string()));
-    }
-
-    let numero = limpio
-        .parse::<f64>()
-        .map_err(|_| VmError::TextoNoConvertibleANumero(texto.to_string()))?;
-
-    if !numero.is_finite() {
-        return Err(VmError::TextoNoConvertibleANumero(texto.to_string()));
-    }
-
-    Ok(Value::Numero(numero))
-}
-
-fn es_texto_numerico_simple(texto: &str) -> bool {
-    let sin_signo = if let Some(resto) = texto.strip_prefix('-') {
-        if resto.is_empty() {
-            return false;
-        }
-        resto
-    } else {
-        texto
-    };
-
-    let mut partes = sin_signo.split('.');
-    let entero = partes.next().unwrap_or_default();
-    let decimal = partes.next();
-
-    if partes.next().is_some() || entero.is_empty() || !entero.chars().all(|c| c.is_ascii_digit()) {
-        return false;
-    }
-
-    match decimal {
-        Some(fraccion) => !fraccion.is_empty() && fraccion.chars().all(|c| c.is_ascii_digit()),
-        None => true,
-    }
-}
 
 #[cfg(test)]
 mod tests {

@@ -7,3 +7,5 @@ pub mod compiler;
 pub mod opcode;
 pub mod value;
 pub mod vm;
+mod native;
+mod builtins;

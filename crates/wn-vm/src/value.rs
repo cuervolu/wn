@@ -7,6 +7,7 @@
 use std::{cell::RefCell, collections::HashMap, fmt, rc::Rc};
 
 use crate::chunk::Chunk;
+pub use crate::native::NativeFn;
 
 /// Descriptor compile-time de una captura léxica.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -44,17 +45,6 @@ pub struct ObjUpvalue {
 pub struct ObjClosure {
     pub funcion: Rc<ObjFunction>,
     pub upvalues: RefCell<Vec<Rc<RefCell<ObjUpvalue>>>>,
-}
-
-/// Funciones nativas que el VM registra en el entorno global.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum NativeFn {
-    Lorea,
-    Largo,
-    Cachar,
-    Pregunta,
-    Numero,
-    Texto,
 }
 
 /// Iterador interno del VM. Siempre snapshot-ea al iniciar el `para`.
