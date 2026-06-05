@@ -193,12 +193,14 @@ impl DotGraph {
                 node
             }
             Stmt::Cortala(_) => self.add_node("Cortala"),
-            Stmt::Importar { path, items, alias, .. } => {
+            Stmt::Importar {
+                path, items, alias, ..
+            } => {
                 use wn::ast::ImportItems;
                 let label = match items {
                     ImportItems::Todo => match alias {
                         Some(a) => format!("Importar({} como {a})", path.join("::")),
-                        None    => format!("Importar({})", path.join("::")),
+                        None => format!("Importar({})", path.join("::")),
                     },
                     ImportItems::Selectivo(names) => {
                         format!("Importar({}::{{{}}})", path.join("::"), names.join(", "))

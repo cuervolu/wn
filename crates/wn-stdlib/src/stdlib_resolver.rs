@@ -14,8 +14,8 @@
 //! let vm = VM::con_resolver(io::stdout(), BufReader::new(io::stdin()), resolver);
 //! ```
 
-use crate::lista::LISTA;
 use crate::cadena::CADENA;
+use crate::lista::LISTA;
 use std::{collections::HashMap, rc::Rc};
 use wn_vm::{native::NativeFn, resolver::ModuleResolver, value::Value};
 

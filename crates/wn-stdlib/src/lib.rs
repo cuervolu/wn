@@ -9,6 +9,6 @@
 //! texto::dividir("hola wn", " ")
 //! ```
 
+pub mod cadena;
 pub mod lista;
 pub mod stdlib_resolver;
-pub mod cadena;
