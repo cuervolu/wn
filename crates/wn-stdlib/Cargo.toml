@@ -1,0 +1,19 @@
+[package]
+name = "wn-stdlib"
+version.workspace = true
+edition.workspace = true
+description = "Biblioteca estándar del lenguaje WN++"
+repository.workspace = true
+license.workspace = true
+
+[lib]
+name = "wn_stdlib"
+
+[dependencies]
+wn-vm = { path = "../wn-vm" }
+
+[package.metadata.dist]
+dist = false
+
+[dev-dependencies]
+insta.workspace = true

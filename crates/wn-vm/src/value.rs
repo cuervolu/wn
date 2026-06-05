@@ -63,6 +63,7 @@ pub enum Value {
     Texto(Rc<str>),
     Lista(Rc<RefCell<Vec<Value>>>),
     Mapa(Rc<RefCell<HashMap<String, Value>>>),
+    Modulo(Rc<HashMap<String, Value>>),
     Funcion(Rc<ObjFunction>),
     Closure(Rc<ObjClosure>),
     Nativa(NativeFn),
@@ -78,6 +79,7 @@ impl Value {
             Value::Booleano(b) => *b,
             Value::Nada => false,
             Value::Texto(s) => !s.is_empty(),
+            Value::Modulo(_) => true,
             Value::Lista(_)
             | Value::Mapa(_)
             | Value::Funcion(_)
@@ -96,6 +98,7 @@ impl Value {
             Value::Texto(_) => "texto",
             Value::Lista(_) => "lista",
             Value::Mapa(_) => "mapa",
+            Value::Modulo(_) => "modulo",
             Value::Funcion(_) | Value::Closure(_) | Value::Nativa(_) => "pega",
             Value::Iterador(_) => "iterador",
         }
@@ -150,6 +153,7 @@ impl fmt::Display for Value {
             Value::Closure(closure) => write!(f, "<pega {}>", closure.funcion.nombre),
             Value::Nativa(_) => write!(f, "<pega nativa>"),
             Value::Iterador(_) => write!(f, "<iterador>"),
+            Value::Modulo(m) => write!(f, "<modulo ({} funciones)>", m.len()),
         }
     }
 }

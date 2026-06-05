@@ -8,6 +8,8 @@ use std::{
 use wasm_bindgen::prelude::*;
 use wn::{lexer::tokenizar, parser::parsear};
 use wn_diagnostics::{SourceFile, WnDiagnostic};
+use wn_stdlib::stdlib_resolver::StdlibResolver;
+use wn_vm::resolver::CompositeResolver;
 use wn_vm::{compiler::compilar, vm::VM};
 
 #[wasm_bindgen]
@@ -34,7 +36,11 @@ fn ejecutar_impl(fuente: &str, stdin: &str, captura: CapturaSalida) -> Result<()
         .map_err(|err| DiagnosticoWasm::from_diagnostic(err, fuente))?;
     let chunk =
         compilar(&stmts, source).map_err(|err| DiagnosticoWasm::from_diagnostic(err, fuente))?;
-    let mut vm = VM::con_io(captura, Cursor::new(stdin.as_bytes().to_vec()));
+    let mut vm = VM::con_resolver(
+        captura,
+        Cursor::new(stdin.as_bytes().to_vec()),
+        Box::new(CompositeResolver::new(vec![Box::new(StdlibResolver)])),
+    );
     vm.run(&chunk)
         .map(|_| ())
         .map_err(|err| DiagnosticoWasm::from_diagnostic(err, fuente))

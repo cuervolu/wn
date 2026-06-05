@@ -193,6 +193,20 @@ impl DotGraph {
                 node
             }
             Stmt::Cortala(_) => self.add_node("Cortala"),
+            Stmt::Importar { path, items, alias, .. } => {
+                use wn::ast::ImportItems;
+                let label = match items {
+                    ImportItems::Todo => match alias {
+                        Some(a) => format!("Importar({} como {a})", path.join("::")),
+                        None    => format!("Importar({})", path.join("::")),
+                    },
+                    ImportItems::Selectivo(names) => {
+                        format!("Importar({}::{{{}}})", path.join("::"), names.join(", "))
+                    }
+                };
+                self.add_node(label)
+            }
+
             Stmt::Sigue(_) => self.add_node("Sigue"),
         }
     }
@@ -257,6 +271,9 @@ impl DotGraph {
                     self.add_edge(pair_id, value_id, Some("value"));
                 }
                 node
+            }
+            Expr::PathAccess { segmentos, .. } => {
+                self.add_node(format!("PathAccess({})", segmentos.join("::")))
             }
             Expr::Asignacion { nombre, valor, .. } => {
                 let node = self.add_node(format!("Asignacion({nombre})"));

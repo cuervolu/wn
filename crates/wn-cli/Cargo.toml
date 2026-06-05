@@ -22,3 +22,4 @@ self_update.workspace = true
 wn-core = { path = "../wn-core" }
 wn-vm = { path = "../wn-vm" }
 wn-diagnostics = { path = "../wn-diagnostics" }
+wn-stdlib = { path = "../wn-stdlib" }

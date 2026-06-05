@@ -105,6 +105,20 @@ pub enum OpCode {
     /// Imprime y descarta el tope del stack.
     Lorea,
 
+    // Módulos
+    /// `IMPORTAR <u16:path_idx> <u16:name_idx>`
+    ///
+    /// Carga el módulo en `constants[path_idx]` (texto con el path unido por `::`)
+    /// y lo vincula en globals con el nombre en `constants[name_idx]`.
+    Importar,
+
+    /// `OBTENER_PATH <u16:path_idx>`
+    ///
+    /// `constants[path_idx]` es un texto `"modulo::campo"`.
+    /// Busca `modulo` en globals (debe ser `Value::Modulo`), obtiene `campo` y
+    /// empuja el valor resultante al stack.
+    ObtenerPath,
+
     // Fin de ejecución
     /// Retorno implícito al final de un script de nivel raíz.
     RetornarNada,

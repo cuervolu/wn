@@ -12,6 +12,7 @@ use std::{
 };
 
 use crate::native::NativeContext;
+use crate::resolver::{ModuleResolver, NoopResolver};
 use crate::{
     builtins,
     chunk::Chunk,
@@ -59,6 +60,15 @@ pub enum VmError {
     #[error("pregunta() pidió más entrada que la provista.")]
     EntradaAgotada,
 
+    #[error("El módulo '{0}' no existe. ¿Lo registraste con queri?")]
+    ModuloNoEncontrado(String),
+
+    #[error("El módulo '{modulo}' no tiene '{campo}'.")]
+    CampoNoExisteEnModulo { modulo: String, campo: String },
+
+    #[error("'{0}' no es un módulo.")]
+    NoEsModulo(String),
+
     #[error(
         "Opcode inválido: {0:#04x} - bug del compilador, reportar issue en https://github.com/cuervolu/wn/issues"
     )]
@@ -99,6 +109,7 @@ enum GcKind {
     Funcion,
     Closure,
     Iterador,
+    Modulo,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -141,6 +152,7 @@ pub struct VM {
     gc: GcArena,
     salida: Rc<RefCell<Box<dyn Write>>>,
     entrada: Rc<RefCell<Box<dyn BufRead>>>,
+    resolver: Box<dyn ModuleResolver>,
 }
 
 impl VM {
@@ -168,8 +180,21 @@ impl VM {
             gc: GcArena::default(),
             salida: Rc::new(RefCell::new(Box::new(salida))),
             entrada: Rc::new(RefCell::new(Box::new(entrada))),
+            resolver: Box::new(NoopResolver),
         };
         vm.registrar_nativas();
+        vm
+    }
+
+    /// Crea un VM con un resolver de módulos personalizado.
+    /// `wn-cli` usa esto para conectar stdlib + módulos de usuario.
+    pub fn con_resolver<W, R>(salida: W, entrada: R, resolver: Box<dyn ModuleResolver>) -> Self
+    where
+        W: Write + 'static,
+        R: BufRead + 'static,
+    {
+        let mut vm = Self::con_io(salida, entrada);
+        vm.resolver = resolver;
         vm
     }
 
@@ -256,6 +281,78 @@ impl VM {
                     self.push(valor);
                     Ok(StepAction::Continue)
                 }
+                OpCode::Importar => {
+                    let path_idx = self.read_u16_operand(frame_idx) as usize;
+                    let name_idx = self.read_u16_operand(frame_idx) as usize;
+
+                    let (path_str, name) = {
+                        let chunk = &self.frames[frame_idx].closure.funcion.chunk;
+                        let path_str = match &chunk.constants[path_idx] {
+                            Value::Texto(s) => s.clone(),
+                            _ => unreachable!("Importar: path_idx no apunta a Texto"),
+                        };
+                        let name = match &chunk.constants[name_idx] {
+                            Value::Texto(s) => s.to_string(),
+                            _ => unreachable!("Importar: name_idx no apunta a Texto"),
+                        };
+                        (path_str, name)
+                    };
+
+                    let path_parts: Vec<&str> = path_str.split("::").collect();
+                    let modulo = self
+                        .resolver
+                        .resolver(&path_parts)
+                        .ok_or_else(|| VmError::ModuloNoEncontrado(path_str.to_string()))?;
+
+                    self.track_value(&modulo);
+                    self.globals.insert(Rc::from(name.as_str()), modulo);
+                    Ok(StepAction::Continue)
+                }
+                OpCode::ObtenerPath => {
+                    let path_idx = self.read_u16_operand(frame_idx) as usize;
+
+                    let path_str = {
+                        let chunk = &self.frames[frame_idx].closure.funcion.chunk;
+                        match &chunk.constants[path_idx] {
+                            Value::Texto(s) => s.clone(),
+                            _ => unreachable!("ObtenerPath: path_idx no apunta a Texto"),
+                        }
+                    };
+
+                    // El penúltimo segmento es el nombre con el que se vinculó el módulo.
+                    // `texto::dividir` = binding="texto",    campo="dividir"
+                    // `math::vectores::rotar` = binding="vectores", campo="rotar"
+                    let partes: Vec<&str> = path_str.split("::").collect();
+                    if partes.len() < 2 {
+                        return Err(VmError::TipoInvalido(format!(
+                            "'{path_str}' no es un path calificado."
+                        )));
+                    }
+                    let (campo, modulo_partes) = partes.split_last().unwrap();
+                    let binding = modulo_partes.last().unwrap();
+
+                    let modulo = self
+                        .globals
+                        .get(*binding)
+                        .ok_or_else(|| VmError::VarNoDefinida(binding.to_string()))?
+                        .clone();
+
+                    match modulo {
+                        Value::Modulo(ref map) => {
+                            let valor = map
+                                .get(*campo)
+                                .ok_or_else(|| VmError::CampoNoExisteEnModulo {
+                                    modulo: binding.to_string(),
+                                    campo: campo.to_string(),
+                                })?
+                                .clone();
+                            self.push(valor);
+                            Ok(StepAction::Continue)
+                        }
+                        other => Err(VmError::NoEsModulo(other.tipo_nombre().to_string())),
+                    }
+                }
+
                 OpCode::AsignarGlobal => {
                     let nombre = self.read_nombre_constante(frame_idx);
                     let valor = self.peek()?.clone();
@@ -579,25 +676,28 @@ impl VM {
             Value::Lista(lista) => self.track_ptr(
                 Rc::as_ptr(lista) as *const () as usize,
                 GcKind::Lista,
-                lista.borrow().len() * std::mem::size_of::<Value>(),
+                lista.borrow().len() * size_of::<Value>(),
             ),
             Value::Mapa(mapa) => self.track_ptr(
                 Rc::as_ptr(mapa) as *const () as usize,
                 GcKind::Mapa,
-                mapa.borrow().len()
-                    * (std::mem::size_of::<String>() + std::mem::size_of::<Value>()),
+                mapa.borrow().len() * (size_of::<String>() + size_of::<Value>()),
+            ),
+            Value::Modulo(m) => self.track_ptr(
+                Rc::as_ptr(m) as *const () as usize,
+                GcKind::Modulo,
+                m.len() * (size_of::<String>() + size_of::<Value>()),
             ),
             Value::Funcion(funcion) => self.track_ptr(
                 Rc::as_ptr(funcion) as *const () as usize,
                 GcKind::Funcion,
-                funcion.chunk.code.len()
-                    + funcion.chunk.constants.len() * std::mem::size_of::<Value>(),
+                funcion.chunk.code.len() + funcion.chunk.constants.len() * size_of::<Value>(),
             ),
             Value::Closure(closure) => {
                 self.track_ptr(
                     Rc::as_ptr(closure) as *const () as usize,
                     GcKind::Closure,
-                    closure.upvalues.borrow().len() * std::mem::size_of::<usize>(),
+                    closure.upvalues.borrow().len() * size_of::<usize>(),
                 );
                 self.track_value(&Value::Funcion(closure.funcion.clone()));
             }
@@ -647,6 +747,16 @@ impl VM {
                 let items = mapa.borrow().values().cloned().collect::<Vec<_>>();
                 for item in &items {
                     self.mark_value(item);
+                }
+            }
+            Value::Modulo(m) => {
+                let key = Rc::as_ptr(m) as *const () as usize;
+                if !self.mark_ptr(key) {
+                    return;
+                }
+                let values: Vec<Value> = m.values().cloned().collect();
+                for val in &values {
+                    self.mark_value(val);
                 }
             }
             Value::Funcion(funcion) => {
@@ -1131,6 +1241,11 @@ impl VM {
             }
             VmError::TextoNoConvertibleANumero(valor) => {
                 WnDiagnostic::texto_no_convertible(&source, source_span, valor.clone())
+            }
+            VmError::ModuloNoEncontrado(_)
+            | VmError::CampoNoExisteEnModulo { .. }
+            | VmError::NoEsModulo(_) => {
+                WnDiagnostic::runtime(&source, source_span, err.to_string())
             }
             VmError::EntradaAgotada => WnDiagnostic::runtime(&source, source_span, err.to_string()),
             VmError::OpcodeInvalido(_) | VmError::StackUnderflow => {

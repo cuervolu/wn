@@ -15,6 +15,8 @@ wasm-bindgen = "0.2"
 wn-core = { path = "../wn-core" }
 wn-diagnostics = { path = "../wn-diagnostics" }
 wn-vm = { path = "../wn-vm" }
+wn-stdlib = { path = "../wn-stdlib" }
+
 
 [package.metadata.dist]
 dist = false

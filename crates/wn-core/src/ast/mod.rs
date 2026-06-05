@@ -49,6 +49,23 @@ pub enum Expr {
         valor: Box<Expr>,
         span: Span,
     },
+    /// `texto::dividir` acceso calificado a un campo de módulo.
+    ///
+    /// El compilador convierte esto en `ObtenerPath`.
+    /// Los segmentos son `["texto", "dividir"]`.
+    PathAccess {
+        segmentos: Vec<String>,
+        span: Span,
+    },
+}
+
+/// Qué se importa de un módulo.
+#[derive(Debug, Clone)]
+pub enum ImportItems {
+    /// `queri texto` importa el módulo completo bajo su nombre (o alias).
+    Todo,
+    /// `queri std::{texto, lista}` importa submódulos específicos.
+    Selectivo(Vec<String>),
 }
 
 #[derive(Debug, Clone)]
@@ -62,6 +79,19 @@ pub enum Stmt {
         nombre: String,
         valor: Expr,
         es_duro: bool,
+        span: Span,
+    },
+
+    /// `queri texto`
+    /// `queri std::{texto, lista}`
+    /// `queri utils como u`
+    Importar {
+        /// Segmentos del path: `["std", "texto"]` o `["utils"]`.
+        path: Vec<String>,
+        items: ImportItems,
+        /// Nombre con el que se vincula el módulo en el scope.
+        /// Calculado en el compilador; no necesita vivir en el AST.
+        alias: Option<String>,
         span: Span,
     },
 
@@ -145,6 +175,7 @@ impl Expr {
             | Expr::Llamada { span, .. }
             | Expr::Indice { span, .. }
             | Expr::Asignacion { span, .. } => span,
+            Expr::PathAccess { span, .. } => span,
             Expr::AsignacionIndice { span, .. } => span,
         }
     }
@@ -163,6 +194,7 @@ impl Stmt {
             | Stmt::Ojo { span, .. }
             | Stmt::Cortala(span)
             | Stmt::Sigue(span) => span,
+            Stmt::Importar { span, .. } => span,
         }
     }
 }

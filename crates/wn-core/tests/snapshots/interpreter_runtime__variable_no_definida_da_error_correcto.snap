@@ -1,5 +1,0 @@
----
-source: crates/wn/tests/interpreter_runtime.rs
-expression: render_error(&err)
----
-La wea 'x_que_no_existe' no existe papito.

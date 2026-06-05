@@ -170,6 +170,8 @@ impl Chunk {
                 OpCode::DefinirGlobal | OpCode::ObtenerGlobal | OpCode::AsignarGlobal => {
                     self.fmt_u16_con_nombre(f, op, offset)
                 }
+                OpCode::Importar => self.fmt_importar(f, offset),
+                OpCode::ObtenerPath => self.fmt_u16_con_nombre(f, op, offset),
 
                 OpCode::ObtenerLocal | OpCode::AsignarLocal => self.fmt_u8_arg(f, op, offset),
 
@@ -195,6 +197,17 @@ impl Chunk {
                 }
             },
         }
+    }
+
+    fn fmt_importar(&self, f: &mut impl fmt::Write, offset: usize) -> Result<usize, fmt::Error> {
+        let path_idx = self.read_u16(offset + 1) as usize;
+        let name_idx = self.read_u16(offset + 3) as usize;
+        writeln!(
+            f,
+            "{:<20} path='{}' as='{}'",
+            "Importar", self.constants[path_idx], self.constants[name_idx]
+        )?;
+        Ok(offset + 5) // 1 opcode + 2 u16
     }
 
     fn fmt_constante(&self, f: &mut impl fmt::Write, offset: usize) -> Result<usize, fmt::Error> {
