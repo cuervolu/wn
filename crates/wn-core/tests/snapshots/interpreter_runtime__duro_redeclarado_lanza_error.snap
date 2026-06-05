@@ -1,5 +1,0 @@
----
-source: crates/wn/tests/interpreter_runtime.rs
-expression: render_error(&err)
----
-Oe, 'PI' es duro, no lo podí cambiar.

@@ -2812,6 +2812,7 @@ dependencies = [
  "self_update",
  "wn-core",
  "wn-diagnostics",
+ "wn-stdlib",
  "wn-vm",
 ]
 
@@ -2834,6 +2835,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "wn-stdlib"
+version = "0.2.1"
+dependencies = [
+ "insta",
+ "wn-vm",
+]
+
+[[package]]
 name = "wn-vm"
 version = "0.2.1"
 dependencies = [
@@ -2852,6 +2861,7 @@ dependencies = [
  "wasm-bindgen",
  "wn-core",
  "wn-diagnostics",
+ "wn-stdlib",
  "wn-vm",
 ]
 

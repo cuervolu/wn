@@ -5,6 +5,7 @@
 
 use std::{collections::HashSet, rc::Rc, sync::Arc};
 
+use wn::ast::ImportItems;
 use wn::{
     ast::{Expr, OpBin, OpUn, Stmt},
     lexer::token::Span,
@@ -164,6 +165,14 @@ impl Compiler {
                     self.define_local(nombre.clone(), *es_duro);
                 }
             }
+            Stmt::Importar {
+                path,
+                items,
+                alias,
+                span,
+            } => {
+                self.stmt_importar(path, items, alias.as_deref(), span)?;
+            }
             Stmt::DeclPega {
                 nombre,
                 params,
@@ -267,8 +276,51 @@ impl Compiler {
                 manejo,
                 ..
             } => self.stmt_ojo_tail(cuerpo, error_var, manejo)?,
+            Stmt::Importar {
+                path,
+                items,
+                alias,
+                span,
+            } => {
+                self.stmt_importar(path, items, alias.as_deref(), span)?;
+                self.emit_opcode(OpCode::Nada, span.clone());
+            }
             Stmt::Cortala(span) => self.stmt_cortala(span)?,
             Stmt::Sigue(span) => self.stmt_sigue(span)?,
+        }
+        Ok(())
+    }
+
+    fn stmt_importar(
+        &mut self,
+        path: &[String],
+        items: &ImportItems,
+        alias: Option<&str>,
+        span: &Span,
+    ) -> Result<(), WnDiagnostic> {
+        match items {
+            ImportItems::Todo => {
+                // `queri texto` o `queri std::texto` o `queri utils como u`
+                let path_str = path.join("::");
+                let name = alias.unwrap_or_else(|| path.last().unwrap().as_str());
+                let path_idx = self.pool_str(&path_str);
+                let name_idx = self.pool_str(name);
+                self.emit_opcode(OpCode::Importar, span.clone());
+                self.emit_u16(path_idx, span.clone());
+                self.emit_u16(name_idx, span.clone());
+            }
+            ImportItems::Selectivo(items) => {
+                // `queri std::{texto, lista}` un Importar por item
+                let base = path.join("::");
+                for item in items {
+                    let full_path = format!("{base}::{item}");
+                    let path_idx = self.pool_str(&full_path);
+                    let name_idx = self.pool_str(item);
+                    self.emit_opcode(OpCode::Importar, span.clone());
+                    self.emit_u16(path_idx, span.clone());
+                    self.emit_u16(name_idx, span.clone());
+                }
+            }
         }
         Ok(())
     }
@@ -572,6 +624,12 @@ impl Compiler {
             Expr::Booleano(false, span) => self.emit_opcode(OpCode::Falso, span.clone()),
             Expr::Nada(span) => self.emit_opcode(OpCode::Nada, span.clone()),
             Expr::Ident(nombre, span) => self.expr_ident(nombre, span.clone()),
+            Expr::PathAccess { segmentos, span } => {
+                let path_str = segmentos.join("::");
+                let path_idx = self.pool_str(&path_str);
+                self.emit_opcode(OpCode::ObtenerPath, span.clone());
+                self.emit_u16(path_idx, span.clone());
+            }
             Expr::Asignacion {
                 nombre,
                 valor,
@@ -913,6 +971,11 @@ impl Compiler {
                 self.emit_opcode(OpCode::Pop, span);
             }
         }
+    }
+
+    fn pool_str(&mut self, s: &str) -> u16 {
+        let val = Value::from(s);
+        self.current_context_mut().chunk.add_constant(val)
     }
 
     fn emit_unwind_to_depth(&mut self, target_depth: u32, span: &Span) {

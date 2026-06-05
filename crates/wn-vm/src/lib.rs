@@ -2,10 +2,11 @@
 //!
 //! Pipeline: AST → [`compiler::Compiler`] → [`chunk::Chunk`] → [`vm::VM`]
 
-mod builtins;
+pub mod builtins;
 pub mod chunk;
 pub mod compiler;
-mod native;
+pub mod native;
 pub mod opcode;
+pub mod resolver;
 pub mod value;
 pub mod vm;

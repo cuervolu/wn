@@ -170,6 +170,8 @@ impl Lexer {
             "devolver" => TokenKind::Devolver,
             "cortala" => TokenKind::Cortala,
             "sigue" => TokenKind::Sigue,
+            "queri" => TokenKind::Queri,
+            "como" => TokenKind::Como,
             _ => TokenKind::Ident(s),
         }
     }
@@ -196,7 +198,15 @@ impl Lexer {
             '[' => TokenKind::LCorchete,
             ']' => TokenKind::RCorchete,
             ',' => TokenKind::Coma,
-            ':' => TokenKind::Colon,
+            ':' => {
+                if self.peek() == Some(':') {
+                    self.advance();
+                    TokenKind::ColonColon
+                } else {
+                    TokenKind::Colon
+                }
+            }
+
             '=' => {
                 if self.peek() == Some('=') {
                     self.advance();

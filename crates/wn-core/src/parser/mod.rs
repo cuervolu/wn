@@ -1,6 +1,7 @@
 use miette::NamedSource;
 use wn_diagnostics::WnDiagnostic;
 
+use crate::ast::ImportItems;
 use crate::{
     ast::{Expr, OpBin, OpUn, Stmt},
     lexer::token::{Span, Token, TokenKind},
@@ -101,6 +102,7 @@ impl Parser {
             TokenKind::Para => self.parse_para(),
             TokenKind::Ojo => self.parse_ojo(),
             TokenKind::Devolver => self.parse_devolver(),
+            TokenKind::Queri => self.parse_importar(),
             TokenKind::Cortala => {
                 let span = self.peek_span().clone();
                 self.advance();
@@ -276,6 +278,57 @@ impl Parser {
         })
     }
 
+    fn parse_importar(&mut self) -> Result<Stmt, WnDiagnostic> {
+        let start = self.peek_span().start;
+        self.advance();
+
+        let mut path = vec![self.expect_ident()?];
+
+        // Consume segmentos adicionales con `::`, o abre `{` para import selectivo
+        while self.check(&TokenKind::ColonColon) {
+            self.advance(); // consume `::`
+
+            if self.check(&TokenKind::LLave) {
+                // `queri std::{texto, lista}`
+                self.advance(); // consume `{`
+                let items = self.parse_import_list()?;
+                self.consume(&TokenKind::RLlave)?;
+                return Ok(Stmt::Importar {
+                    path,
+                    items: ImportItems::Selectivo(items),
+                    alias: None,
+                    span: Span::new(start, self.previous_span().end),
+                });
+            }
+
+            path.push(self.expect_ident()?);
+        }
+
+        // `queri utils como u`
+        let alias = if self.check(&TokenKind::Como) {
+            self.advance();
+            Some(self.expect_ident()?)
+        } else {
+            None
+        };
+
+        Ok(Stmt::Importar {
+            path,
+            items: ImportItems::Todo,
+            alias,
+            span: Span::new(start, self.previous_span().end),
+        })
+    }
+
+    fn parse_import_list(&mut self) -> Result<Vec<String>, WnDiagnostic> {
+        let mut items = vec![self.expect_ident()?];
+        while self.check(&TokenKind::Coma) {
+            self.advance();
+            items.push(self.expect_ident()?);
+        }
+        Ok(items)
+    }
+
     fn parse_expr(&mut self) -> Result<Expr, WnDiagnostic> {
         self.parse_pratt(0)
     }
@@ -382,6 +435,28 @@ impl Parser {
                             span: Span::new(span_start, cierre),
                         };
                     }
+                }
+                TokenKind::ColonColon => {
+                    let span_start = expr.span().start;
+                    self.advance(); // consume `::`
+                    let campo = self.expect_ident()?;
+
+                    let mut segmentos = match expr {
+                        Expr::Ident(name, _) => vec![name],
+                        Expr::PathAccess { segmentos, .. } => segmentos,
+                        other => {
+                            return Err(self.error(
+                                other.span(),
+                                "Se esperaba un identificador antes de '::'.",
+                            ));
+                        }
+                    };
+                    segmentos.push(campo);
+
+                    expr = Expr::PathAccess {
+                        segmentos,
+                        span: Span::new(span_start, self.previous_span().end),
+                    };
                 }
                 _ => break,
             }

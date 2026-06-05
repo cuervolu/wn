@@ -55,6 +55,8 @@ pub enum TokenKind {
     Wea,
     Duro,
     Pega,
+    Queri,
+    Como,
 
     // Control flow keywords
     Cachai,
@@ -101,6 +103,7 @@ pub enum TokenKind {
     RCorchete,
     Coma,
     Colon,
+    ColonColon,
 
     Cortala,
     Sigue,

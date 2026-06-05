@@ -1,18 +1,20 @@
 mod ast_dot;
 mod updater;
 
-use std::{collections::HashSet, path::Path, path::PathBuf, rc::Rc, sync::Arc};
-
 use clap::Parser;
 use miette::IntoDiagnostic;
 use owo_colors::OwoColorize;
 use rustyline::{DefaultEditor, error::ReadlineError};
+use std::io::BufReader;
+use std::{collections::HashSet, io, path::Path, path::PathBuf, rc::Rc, sync::Arc};
 use wn::{
     ast::Stmt,
     lexer::{Lexer, tokenizar},
     parser::parsear,
 };
 use wn_diagnostics::{SourceFile, WnDiagnostic};
+use wn_stdlib::stdlib_resolver::StdlibResolver;
+use wn_vm::resolver::CompositeResolver;
 use wn_vm::{
     chunk::Chunk,
     compiler::{compilar, compilar_repl},
@@ -89,10 +91,8 @@ fn run_file(path: PathBuf) -> miette::Result<()> {
     let loaded = load_source_file(&path)?;
     let stmts = parse_source(&loaded)?;
     let chunk = compile_stmts(&loaded, &stmts)?;
-
-    let mut vm = VM::new();
+    let mut vm = crear_vm();
     let _ = vm.run(&chunk)?;
-
     Ok(())
 }
 
@@ -118,6 +118,14 @@ fn run_chunk(path: PathBuf) -> miette::Result<()> {
     Ok(())
 }
 
+fn crear_vm() -> VM {
+    VM::con_resolver(
+        io::stdout(),
+        BufReader::new(io::stdin()),
+        Box::new(CompositeResolver::new(vec![Box::new(StdlibResolver)])),
+    )
+}
+
 fn run_repl() {
     let mut rl = match DefaultEditor::new() {
         Ok(rl) => rl,
@@ -129,7 +137,7 @@ fn run_repl() {
 
     let _ = rl.load_history(".wn_history");
 
-    let mut vm = VM::new();
+    let mut vm = crear_vm();
 
     // Banner de bienvenida
     println!(
