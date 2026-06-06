@@ -1,6 +1,10 @@
 # WN++
 
 <p align="center">
+  <img src="assets/logo.png" alt="Logo de WN++" width="220" />
+</p>
+
+<p align="center">
   <img src="assets/demo.gif" alt="Demo del REPL de WN++" width="700" />
 </p>
 
@@ -115,3 +119,8 @@ WN++ es de código abierto. Si te interesa contribuir, sea código, documentaci�
 Lo más valioso que puedes hacer en esta etapa es escribir programas en WN++ y reportar qué se siente natural y qué no. El lenguaje mejora con uso real, no solo con teoría.
 
 Para entender la filosofía del proyecto antes de contribuir, lee [`docs/filosofia`](https://cuervolu.github.io/wn/filosofia/).
+
+
+## Créditos
+- [iriata18](http://instagram.com/iriata18), por el diseño del logo y la identidad visual de WN++.
+- [r/ChileIT](https://www.reddit.com/r/chileIT/), por el apoyo y feedback que dieron cuando se anunció el proyecto. De esa comunidad salió el nombre, el keyword `lorea`, y muchas ideas sobre la identidad chilena del lenguaje.
