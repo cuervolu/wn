@@ -1,5 +1,5 @@
 import { mdsvex, escapeSvelte } from 'mdsvex';
-import adapter from '@sveltejs/adapter-static';
+import adapter from '@sveltejs/adapter-cloudflare';
 import { createHighlighter } from 'shiki';
 import wnGrammar from '../grammars/wn.tmLanguage.json' with { type: 'json' };
 
@@ -15,9 +15,6 @@ const config = {
 		runes: ({ filename }) => (filename.split(/[/\\]/).includes('node_modules') ? undefined : true)
 	},
 	kit: { adapter: adapter() },
-	paths: {
-		base: process.env.NODE_ENV === 'production' ? '/wn/tour' : ''
-	},
 	preprocess: [
 		mdsvex({
 			extensions: ['.svx', '.md'],

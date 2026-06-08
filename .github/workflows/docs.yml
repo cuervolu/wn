@@ -8,20 +8,17 @@ on:
       - "tour/**"
       - "crates/wn-wasm/**"
       - ".github/workflows/docs.yml"
-      - ".github/workflows/tour.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
   cancel-in-progress: false
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -54,6 +51,13 @@ jobs:
         working-directory: docs
         run: pnpm build
 
+      - name: Deploy docs to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy docs/.output/public --project-name=wn-docs
+
       - name: Install tour dependencies
         working-directory: tour
         run: pnpm install --frozen-lockfile
@@ -64,24 +68,9 @@ jobs:
         env:
           NODE_ENV: production
 
-      - name: Assemble Pages artifact
-        run: |
-          rm -rf /tmp/github-pages
-          mkdir -p /tmp/github-pages/tour
-          cp -R docs/.output/public/. /tmp/github-pages/
-          cp -R tour/build/. /tmp/github-pages/tour/
-
-      - uses: actions/upload-pages-artifact@v5
+      - name: Deploy tour to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
         with:
-          path: /tmp/github-pages
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v5
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy tour/.svelte-kit/cloudflare --project-name=wn-tour

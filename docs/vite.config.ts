@@ -23,6 +23,9 @@ export default defineConfig({
 
       pages: [
         {
+          path: '/',
+        },
+        {
           path: '/docs',
         },
         {
@@ -38,7 +41,7 @@ export default defineConfig({
     }),
     react(),
     // please see https://tanstack.com/start/latest/docs/framework/react/guide/hosting#nitro for guides on hosting
-    nitro(),
+    nitro({ preset: 'cloudflare-pages' }),
   ],
   resolve: {
     tsconfigPaths: true,
