@@ -32,9 +32,11 @@ WN++ ya no está en la etapa de "toy language que apenas corre". Hoy el repo tra
   </Card>
 </Cards>
 
-## v0.3 - Pulir el lenguaje que ya existe
+## v1.0 - Lenguaje completo y consolidado
 
-Todo lo que hace falta para que escribir programas reales sea más cómodo, consistente y expresivo, sin reabrir el motor desde cero.
+La diferencia entre v0.x y v1.0 ya no pasa por "tener VM algún día". Esa parte existe. La meta real de 1.0 es consolidar semántica, librería base y ergonomía para que WN++ se sienta consistente de punta a punta.
+
+Todo lo que sigue acá cae en ese mismo paraguas: cerrar el lenguaje que ya existe, volverlo más cómodo para escribir programas reales y hacer crecer la base estándar sobre una semántica estable.
 
 ### Interpolación de strings
 
@@ -71,7 +73,25 @@ wea duplicar = (x) -> x * 2
 lorea(duplicar(4))
 ```
 
-## v1.0 - Herramientas
+### Biblioteca estandar mas util
+
+El sistema de modulos ya existe, asi que ahora tiene sentido crecer la stdlib con mas funciones utiles sobre texto, listas, archivos, tiempo y utilidades practicas.
+
+El alcance exacto se define mejor a medida que existan programas reales escritos en WN++ que muestren que duele repetir.
+
+### Estabilidad del lenguaje
+
+Congelar la sintaxis y los comportamientos centrales para que escribir ejemplos, tutoriales y programas de verdad no sea dispararle a una meta en movimiento.
+
+### Runtime mas robusto
+
+Mas benchmarks, mejor perfilado, mejor ergonomia de errores y mas cobertura sobre corner cases del VM, imports, closures y GC.
+
+### Distribucion mas redonda
+
+Pulir instalacion, actualizacion, wasm y experiencia general para que WN++ sea facil de probar, entender y compartir.
+
+## v1.2 - Herramientas
 
 ### `wn fmt`
 
@@ -89,28 +109,6 @@ Soporte básico de editor: resaltado de sintaxis, detección de errores mientras
 ### Mejor experiencia de inspección 
 
 El CLI ya puede exportar AST y desensamblar bytecode. El siguiente paso natural es mejorar esa historia con salidas más claras, snapshots más legibles y debugging más amable.
-
-## v0.4 - Biblioteca estándar
-
-El sistema de módulos ya existe, así que ahora tiene sentido crecer la stdlib con más funciones útiles sobre texto, listas, archivos, tiempo y utilidades prácticas.
-
-El alcance exacto se define mejor a medida que existan programas reales escritos en WN++ que muestren que duele repetir.
-
-## v1.0 - Consolidación         
-
-La diferencia entre v0.x y v1.0 ya no pasa por "tener VM algún día". Esa parte existe. La meta de 1.0 es consolidar semántica, tooling y estabilidad para que el lenguaje sea consistente de punta a punta.
-
-### Estabilidad del lenguaje
-
-Congelar la sintaxis y los comportamientos centrales para que escribir ejemplos, tutoriales y programas de verdad no sea dispararle a una meta en movimiento.
-
-### Runtime más robusto
-
-Más benchmarks, mejor perfilado, mejor ergonomía de errores y más cobertura sobre corner cases del VM, imports, closures y GC.
-
-### Distribución más redonda
-
-Pulir instalación, actualización, wasm y experiencia de editor para que WN++ sea fácil de probar, entender y compartir.
 
 <Callout title="Nota">
   Esta hoja de ruta es una intención, no un contrato. El orden puede cambiar según lo que se aprenda escribiendo programas reales en WN++. Lo importante es que el roadmap ya parte desde una base concreta: el compilador a bytecode, la VM y el GC ya no son promesas.
