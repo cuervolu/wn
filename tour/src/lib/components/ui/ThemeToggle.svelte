@@ -1,18 +1,28 @@
 <script lang="ts">
-	import Sun from '@lucide/svelte/icons/sun';
 	import Moon from '@lucide/svelte/icons/moon';
+	import Sun from '@lucide/svelte/icons/sun';
 	import { themeStore } from '$lib/stores/theme.svelte';
 </script>
 
-<button
-	onclick={themeStore.toggle}
-	class="text-surface-500 hover:text-surface-200 transition-colors p-1 rounded"
-	title="Cambiar tema ({themeStore.current})"
-	aria-label="Toggle theme"
->
-	{#if themeStore.isDark}
-		<Sun size={16} />
-	{:else}
-		<Moon size={16} />
-	{/if}
-</button>
+<div class="theme-toggle" aria-label="Cambiar tema">
+	<button
+		type="button"
+		class:theme-toggle__button={true}
+		class:is-on={!themeStore.isDark}
+		title="Tema claro"
+		aria-label="Tema claro"
+		onclick={() => themeStore.set('mona')}
+	>
+		<Sun />
+	</button>
+	<button
+		type="button"
+		class:theme-toggle__button={true}
+		class:is-on={themeStore.isDark}
+		title="Tema oscuro"
+		aria-label="Tema oscuro"
+		onclick={() => themeStore.set('cerberus')}
+	>
+		<Moon />
+	</button>
+</div>

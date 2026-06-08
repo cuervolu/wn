@@ -2,34 +2,26 @@
 	type Tab = 'lesson' | 'editor';
 
 	let {
-		activeTab = $bindable<Tab>('lesson'),
-		title
+		activeTab = $bindable<Tab>('lesson')
 	}: {
 		activeTab: Tab;
-		title: string;
 	} = $props();
 </script>
 
-<div class="flex border-b border-surface-700">
+<div class="mobile-nav">
 	<button
+		type="button"
 		onclick={() => (activeTab = 'lesson')}
-		class="
-			flex-1 border-b-2 py-2 text-sm font-medium transition-colors
-			{activeTab === 'lesson'
-			? 'border-primary-400 text-primary-300'
-			: 'border-transparent text-surface-400 hover:text-surface-200'}
-		"
+		class:mobile-nav__button={true}
+		class:is-active={activeTab === 'lesson'}
 	>
 		Lección
 	</button>
 	<button
+		type="button"
 		onclick={() => (activeTab = 'editor')}
-		class="
-			flex-1 border-b-2 py-2 text-sm font-medium transition-colors
-			{activeTab === 'editor'
-			? 'border-primary-400 text-primary-300'
-			: 'border-transparent text-surface-400 hover:text-surface-200'}
-		"
+		class:mobile-nav__button={true}
+		class:is-active={activeTab === 'editor'}
 	>
 		Editor
 	</button>

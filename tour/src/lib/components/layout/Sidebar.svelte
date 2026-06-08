@@ -8,55 +8,43 @@
 	const sections = groupBySections(manifest);
 </script>
 
-<nav class="flex h-full flex-col py-4">
-	<div class="mb-6 px-4">
-		<a href={resolve('/')} class="group flex items-center gap-2">
-			<span class="font-mono text-lg font-bold text-primary-400">WN++</span>
-			<span class="text-sm text-surface-500 transition-colors group-hover:text-surface-300">
-				tour
-			</span>
+<nav class="tour-sidebar">
+	<div class="tour-sidebar__top">
+		<a href={resolve('/')} class="tour-sidebar__brand">
+			<span>Wn</span>
+			<span class="tour-sidebar__brand-plus">++</span>
 		</a>
+		<span class="tour-sidebar__tag">tour</span>
 	</div>
 
-	<!-- ToC -->
-	<div class="flex-1 space-y-4 overflow-y-auto px-2">
+	<div class="tour-sidebar__nav tour-scroll">
 		{#each sections as section}
-			<div>
-				<p class="mb-1 px-2 text-xs font-semibold tracking-widest text-surface-500 uppercase">
-					{section.title}
-				</p>
-				<ul class="space-y-0.5">
+			<section class="tour-sidebar__group">
+				<p class="tour-sidebar__label">{section.title}</p>
+				<ul class="tour-sidebar__list">
 					{#each section.lessons as lesson}
-						{@const isActive = lesson.slug === activeSlug}
 						<li>
 							<a
 								href={resolve('/[slug]', { slug: lesson.slug })}
-								class="
-									flex items-center gap-2 rounded px-2 py-1.5 text-sm transition-colors
-									{isActive
-										? 'bg-primary-500/20 font-medium text-primary-300'
-										: 'text-surface-300 hover:bg-surface-800 hover:text-surface-50'}
-								"
+								class:tour-sidebar__item={true}
+								class:is-active={lesson.slug === activeSlug}
 							>
-								<span
-									class="h-1.5 w-1.5 shrink-0 rounded-full
-										{isActive ? 'bg-primary-400' : 'bg-transparent'}"
-								></span>
+								<span class="tour-sidebar__num">{String(lesson.order).padStart(2, '0')}</span>
 								{lesson.title}
 							</a>
 						</li>
 					{/each}
 				</ul>
-			</div>
+			</section>
 		{/each}
 	</div>
 
-	<div class="mt-4 border-t border-surface-800 px-4 pt-4">
+	<div class="tour-sidebar__footer">
 		<a
 			href="https://github.com/cuervolu/wn"
 			target="_blank"
 			rel="noopener noreferrer"
-			class="flex items-center gap-2 font-mono text-xs text-surface-500 transition-colors hover:text-surface-300"
+			class="tour-sidebar__repo"
 		>
 			<ExternalLink size={12} />
 			cuervolu/wn

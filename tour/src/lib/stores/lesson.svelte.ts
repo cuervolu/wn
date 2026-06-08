@@ -1,5 +1,6 @@
 import { untrack } from 'svelte';
 import type { Lesson } from '$lib/content';
+import { outputStore } from '$lib/stores/output.svelte';
 
 function createLessonStore() {
 	let activeLesson = $state<Lesson | null>(null);
@@ -19,6 +20,10 @@ function createLessonStore() {
 		// Solo resetea el código si es una lección distinta o el editor está vacío
 		if (currentCode === '' || prevSlug !== lesson.slug) {
 			userCode = lesson.initialCode;
+		}
+
+		if (prevSlug !== lesson.slug) {
+			outputStore.reset();
 		}
 
 		stdin = '';
