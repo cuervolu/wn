@@ -96,15 +96,15 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11
+
       - uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: pnpm
           cache-dependency-path: docs/pnpm-lock.yaml
-
-      - uses: pnpm/action-setup@v6
-        with:
-          version: 11
 
       - name: Install docs dependencies
         working-directory: docs
@@ -129,15 +129,15 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11
+
       - uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: pnpm
           cache-dependency-path: tour/pnpm-lock.yaml
-
-      - uses: pnpm/action-setup@v6
-        with:
-          version: 11
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
