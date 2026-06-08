@@ -99,7 +99,7 @@ El intérprete está escrito en Rust, es deliberadamente simple, y cada fase del
 
 ## Estado actual
 
-El flujo completo — lexer, parser, AST e intérprete tree-walking — está implementado y funcional. Las siguientes fases — compilador a bytecode, VM y recolector de basura — están en la hoja de ruta. El detalle de cada fase está en [`docs/roadmap`](https://cuervolu.github.io/wn/roadmap/).
+El flujo completo — lexer, parser, AST e intérprete tree-walking — está implementado y funcional. Las siguientes fases — compilador a bytecode, VM y recolector de basura — están en la hoja de ruta. El detalle de cada fase está en [`docs/roadmap`](https://wnpp.cl/docs/roadmap).
 
 ## Construir desde el código fuente
 
@@ -118,7 +118,7 @@ WN++ es de código abierto. Si te interesa contribuir, sea código, documentaci�
 
 Lo más valioso que puedes hacer en esta etapa es escribir programas en WN++ y reportar qué se siente natural y qué no. El lenguaje mejora con uso real, no solo con teoría.
 
-Para entender la filosofía del proyecto antes de contribuir, lee [`docs/filosofia`](https://cuervolu.github.io/wn/filosofia/).
+Para entender la filosofía del proyecto antes de contribuir, lee [`docs/filosofia`](https://wnpp.cl/docs/filosofia/).
 
 
 ## Créditos
