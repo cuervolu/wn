@@ -70,6 +70,11 @@
 
 	onDestroy(() => view?.destroy());
 
+	function resetEditor() {
+		lessonStore.resetCode();
+		outputStore.reset();
+	}
+
 	async function run() {
 		if (running) return;
 		running = true;
@@ -85,7 +90,7 @@
 		<div class="flex items-center gap-2">
 			<button
 				type="button"
-				onclick={lessonStore.resetCode}
+				onclick={resetEditor}
 				class="editor-panel__tool"
 				title="Restaurar código inicial"
 			>

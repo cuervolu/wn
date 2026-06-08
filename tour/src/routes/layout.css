@@ -1015,6 +1015,38 @@ button {
 	white-space: pre-wrap;
 }
 
+html[data-theme='mona'] .output-panel {
+	background: color-mix(in srgb, var(--wn-surface) 96%, var(--wn-bg-alt));
+}
+
+html[data-theme='mona'] .output-panel__head {
+	border-bottom-color: var(--wn-border);
+	background: color-mix(in srgb, var(--wn-surface-alt) 92%, var(--wn-surface));
+}
+
+html[data-theme='mona'] .output-panel__title {
+	color: #4a5568;
+}
+
+html[data-theme='mona'] .output-panel__meta,
+html[data-theme='mona'] .output-panel__empty,
+html[data-theme='mona'] .output-panel__mark,
+html[data-theme='mona'] .output-panel__error-loc {
+	color: #667085;
+}
+
+html[data-theme='mona'] .output-panel__line {
+	color: #243041;
+}
+
+html[data-theme='mona'] .output-panel__error {
+	background: color-mix(in srgb, var(--wn-rose) 10%, var(--wn-surface));
+}
+
+html[data-theme='mona'] .output-panel__error-msg {
+	color: #c53b5c;
+}
+
 .mobile-nav {
 	display: flex;
 	padding: 0 1rem 0.75rem;
