@@ -1459,6 +1459,10 @@ textarea {
   .wn-examples__note {
     position: static;
   }
+
+  .wn-hero__grid {
+    gap: 34px;
+  }
 }
 
 @media (max-width: 820px) {
@@ -1506,6 +1510,103 @@ textarea {
 
   .wn-theme-switch {
     margin-right: auto;
+  }
+
+  .wn-hero {
+    padding-block: 34px 24px;
+  }
+
+  .wn-hero__grid {
+    gap: 28px;
+  }
+
+  .wn-hero__pill {
+    margin-bottom: 16px;
+    padding: 7px 13px;
+    font-size: 11.5px;
+  }
+
+  .wn-hero__logo {
+    width: min(280px, 88vw);
+  }
+
+  .wn-hero__tag {
+    max-width: 31ch;
+    margin-top: 12px;
+    font-size: 1.05rem;
+    line-height: 1.65;
+  }
+
+  .wn-hero__tag-mono {
+    justify-content: center;
+    row-gap: 0.42rem;
+  }
+
+  .wn-hero__actions {
+    width: 100%;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .wn-hero__actions > * {
+    flex: 1 1 100%;
+  }
+
+  .wn-hero__actions a,
+  .wn-hero__actions button {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .wn-hero__meta {
+    gap: 10px;
+    margin-top: 20px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .wn-hero__meta-separator {
+    display: none;
+  }
+
+  .wn-hero__code {
+    width: 100%;
+  }
+
+  .wn-code-window {
+    border-radius: 16px;
+  }
+
+  .wn-code-window__bar {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .wn-code-window__body {
+    padding: 14px 14px 16px;
+  }
+
+  .wn-inline-codeblock code {
+    font-size: 13px;
+    line-height: 1.65;
+  }
+
+  .wn-inline-codeblock.is-compact code {
+    font-size: 12.5px;
+    line-height: 1.6;
+  }
+
+  .wn-code-window__output-head {
+    padding: 8px 14px;
+  }
+
+  .wn-code-window__output-body {
+    padding: 10px 14px 14px;
+  }
+
+  .wn-output-line {
+    padding-left: 18px;
+    font-size: 12.5px;
   }
 }
 
