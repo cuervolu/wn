@@ -1,0 +1,147 @@
+---
+title: Tipos de datos
+description: numero, texto, booleano, nada, lista y mapa.
+icon: Shapes
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+WN++ es de **tipado dinámico**: una variable puede guardar cualquier tipo de valor, y ese tipo puede cambiar. No declaras el tipo; WN++ lo infiere.
+
+## Tipos primitivos
+
+### `numero` (`f64`)
+
+Todos los números en WN++ son punto flotante de 64 bits. No hay distinción entre entero y decimal.
+
+```wn
+wea goles_alexis = 47
+wea promedio_gol = 0.72
+wea deuda_fifa = 1.5e6
+
+lorea(cachar(goles_alexis))  // -> numero
+```
+
+```wn
+wea partidos = 180
+wea victorias = 98
+wea porcentaje = victorias / partidos * 100
+```
+
+<Callout type="warning">
+  División por cero es un error en ejecución.
+</Callout>
+
+### `texto`
+
+Cadenas de caracteres entre comillas dobles o simples. Se concatenan con `+`.
+
+```wn
+wea jugador = "Arturo Vidal"
+wea apodo = 'El Rey'
+wea completo = jugador + " - " + apodo
+```
+
+Texto con números se convierte automáticamente al concatenar:
+
+```wn
+lorea("Gary Medel tiene " + 15 + " tarjetas amarillas")
+```
+
+### `booleano`
+
+Solo dos valores posibles: `verdad` y `falso`.
+
+```wn
+wea es_titular = verdad
+wea esta_lesionado = falso
+wea puede_jugar = es_titular y no esta_lesionado
+```
+
+Valores tratados como falsos en un `cachai`:
+
+| Valor | Se evalúa como falso |
+| --- | --- |
+| `falso` | Si |
+| `nada` | Si |
+| `0` | Si |
+| `""` | Si |
+| Todo lo demás | No |
+
+### `nada`
+
+Representa la ausencia de valor.
+
+```wn
+wea transferencia = nada
+```
+
+<Callout>
+  `nada` es distinto de `0`, `falso` o `""`. Es ausencia, no solo un valor vacío.
+</Callout>
+
+## Colecciones
+
+### `lista`
+
+Colección ordenada de valores. Se define con `[]` y puede mezclar tipos.
+
+```wn
+wea plantel = ["Bravo", "Medel", "Maripan", "Isla", "Alexis", "Vidal"]
+wea mixta = [1, "dos", verdad, nada]
+```
+
+Acceso por índice:
+
+```wn
+lorea(plantel[0])
+lorea(plantel[-1])
+```
+
+### `mapa`
+
+Colección de pares clave-valor. Se define con `{}`. Las claves son texto.
+
+```wn
+wea tramite = {
+  "nombre": "certificado de residencia",
+  "costo": 0
+}
+
+lorea(tramite["nombre"])
+```
+
+## Conversiones útiles
+
+WN++ ya trae conversiones nativas que aparecen mucho al trabajar con input y salida:
+
+```wn
+wea edad = numero("42")
+wea etiqueta = texto(edad)
+```
+
+`numero()` acepta textos numéricos simples o números. `texto()` convierte números, booleanos y `nada` a su forma textual.
+
+## Resumen rápido
+
+<Cards>
+  <Card title="numero">
+    Punto flotante de 64 bits para enteros y decimales.
+  </Card>
+  <Card title="texto">
+    Cadenas entre comillas, con concatenación por `+`.
+  </Card>
+  <Card title="booleano">
+    `verdad` y `falso`.
+  </Card>
+  <Card title="nada">
+    Ausencia de valor.
+  </Card>
+  <Card title="lista">
+    Colección ordenada con índices.
+  </Card>
+  <Card title="mapa">
+    Pares clave-valor con acceso por texto.
+  </Card>
+</Cards>

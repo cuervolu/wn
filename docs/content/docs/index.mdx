@@ -1,0 +1,243 @@
+---
+title: Partida rápida
+description: Instala WN++, corre tu primer .cl y cacha cómo se mueve el lenguaje por dentro.
+icon: Rocket
+---
+
+import { File, Files, Folder } from 'fumadocs-ui/components/files';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+<Callout title="wena, wn">
+  WN++ es un lenguaje dinámico escrito en Rust que habla en chileno. Sirve pa' aprender cómo
+  funcionan los lenguajes sin quedarse solo en la teoría.
+</Callout>
+
+## Instalación
+
+La forma recomendada hoy es instalar el binario oficial con los scripts de release. Si prefieres
+compilarlo tú mismo, eso queda como camino alternativo.
+
+<Tabs items={['macOS / Linux', 'Windows', 'Desde la fuente']}>
+  <Tab value="macOS / Linux">
+
+  ```sh
+  curl --proto '=https' --tlsv1.2 -LsSf https://github.com/cuervolu/wn/releases/latest/download/wn-cli-installer.sh | sh
+  ```
+
+  </Tab>
+  <Tab value="Windows">
+
+  ```powershell
+  powershell -ExecutionPolicy Bypass -c "irm https://github.com/cuervolu/wn/releases/latest/download/wn-cli-installer.ps1 | iex"
+  ```
+
+  </Tab>
+  <Tab value="Desde la fuente">
+
+  ```sh
+  git clone https://github.com/cuervolu/wn
+  cd wn
+  cargo build --release
+  ./target/release/wn
+  ```
+
+  </Tab>
+</Tabs>
+
+<Tabs items={['Verificar', 'Actualizar']}>
+  <Tab value="Verificar">
+
+  ```sh
+  wn --version
+  ```
+
+  </Tab>
+  <Tab value="Actualizar">
+
+  ```sh
+  wn update
+  ```
+
+  </Tab>
+</Tabs>
+
+## Tu primer `.cl`
+
+<Steps>
+  <Step>
+
+  ### Crea el archivo
+
+  Guarda esto como `hola.cl`:
+
+  ```wn
+  pega saludar(nombre) {
+    "wena, " + nombre + ", wn!"
+  }
+
+  lorea(saludar("mundo"))
+  ```
+
+  </Step>
+  <Step>
+
+  ### Ejecútalo
+
+  ```sh
+  wn hola.cl
+  ```
+
+  </Step>
+  <Step>
+
+  ### Métete al REPL si quieres webear más
+
+  Si corres `wn` sin archivo, entras al REPL interactivo. Para salir, dile `chao`.
+
+  </Step>
+</Steps>
+
+<Cards>
+  <Card title="Ver la sintaxis" href="/docs/lenguaje/variables">
+    Mira la base del lenguaje sin salirte de la documentacion.
+  </Card>
+  <Card title="Instalar WN++" href="/docs/instalacion">
+    Scripts de release, build desde fuente y primeros pasos en CLI.
+  </Card>
+  <Card title="Mirar el repo" href="https://github.com/cuervolu/wn">
+    El código está ordenado por etapas, así que se puede seguir sin sufrir.
+  </Card>
+  <Card title="Leer la filosofia" href="/docs/filosofia">
+    Por que el lenguaje habla chileno y por que los errores tienen personalidad.
+  </Card>
+</Cards>
+
+## Sintaxis en 30 segundos
+
+Las variables mutables se declaran con `wea`, las constantes con `duro`, y las funciones con
+`pega`. No necesitai punto y coma obligatorio, y la última expresión de una función puede devolver
+sola.
+
+```wn
+wea n = 42
+duro pi = 3.14
+wea xs = [1, 2, 3]
+wea m = { lenguaje: "WN++" }
+
+pega saludar(nombre) {
+  "wena, " + nombre + ", wn!"
+}
+
+lorea(cachar(xs))
+lorea(largo(xs))
+lorea(saludar("Cuervo"))
+```
+
+## Palabras clave
+
+<Tabs items={['Base', 'Control de flujo']}>
+  <Tab value="Base">
+
+  | Chileno | Equivale a | Pa' qué sirve |
+  | --- | --- | --- |
+  | `wea` | `let` | Declara una variable mutable |
+  | `duro` | `const` | Declara una constante |
+  | `pega` | `fn` | Define una función |
+  | `devolver` | `return` | Devuelve antes de tiempo |
+  | `ojo / cago` | `try / catch` | Maneja errores |
+
+  </Tab>
+  <Tab value="Control de flujo">
+
+  | Chileno | Equivale a | Pa' qué sirve |
+  | --- | --- | --- |
+  | `cachai` | `if` | Condicional |
+  | `si no` | `else` | La otra rama |
+  | `mientras` | `while` | Repite mientras se cumpla |
+  | `para ... en` | `for in` | Itera sobre colecciones |
+  | `cortala / sigue` | `break / continue` | Controla loops |
+
+  </Tab>
+</Tabs>
+
+## Qué hay por dentro
+
+WN++ ya no se queda solo en el intérprete tree-walking. Hoy el repo trae piezas reales para
+recorrer varias capas del lenguaje, y eso se nota en todo el workspace:
+
+<Files>
+  <Folder name="crates" defaultOpen>
+    <Folder name="wn-core" defaultOpen>
+      <File name="src/" />
+    </Folder>
+    <Folder name="wn-diagnostics" defaultOpen>
+      <File name="src/" />
+    </Folder>
+    <Folder name="wn-stdlib" defaultOpen>
+      <File name="src/" />
+    </Folder>
+    <Folder name="wn-vm" defaultOpen>
+      <File name="compiler.rs" />
+      <File name="vm.rs" />
+      <File name="chunk.rs" />
+      <File name="opcode.rs" />
+      <File name="benches/" />
+    </Folder>
+    <Folder name="wn-cli" defaultOpen>
+      <File name="main.rs" />
+    </Folder>
+    <Folder name="wn-wasm" defaultOpen>
+      <File name="src/" />
+    </Folder>
+  </Folder>
+</Files>
+
+---
+
+<Cards>
+  <Card title="wn-core">
+    El corazón del lenguaje: lexer, parser, AST y semántica base.
+  </Card>
+  <Card title="wn-diagnostics">
+    La capa de errores y reportes para que los mensajes del lenguaje salgan bien armados.
+  </Card>
+  <Card title="wn-stdlib">
+    El puente entre el runtime y la librería estándar que usa la CLI y el VM.
+  </Card>
+  <Card title="wn-vm">
+    Compilador a bytecode, stack VM, benches y GC mark-and-sweep con `collect_garbage()`.
+  </Card>
+  <Card title="wn-cli">
+    La herramienta `wn`: ejecuta archivos, abre el REPL, desensambla bytecode y exporta AST.
+  </Card>
+  <Card title="wn-wasm">
+    La capa para correr WN++ desde WebAssembly y conectar el runtime con superficies web.
+  </Card>
+</Cards>
+
+Si te interesa aprender implementación de lenguajes, esa progresión es parte de la gracia: puedes
+leer el pipeline completo y ver cómo cambia el modelo de ejecución sin salir del mismo proyecto.
+
+## Sigue leyendo
+
+<Cards>
+  <Card title="Variables y constantes" href="/docs/lenguaje/variables">
+    `wea`, `duro`, scope de bloque y errores comunes.
+  </Card>
+  <Card title="Tipos de datos" href="/docs/lenguaje/tipos">
+    `numero`, `texto`, `booleano`, `nada`, listas y mapas.
+  </Card>
+  <Card title="Funciones" href="/docs/lenguaje/funciones">
+    `pega`, retorno implicito, closures y funciones como valores.
+  </Card>
+  <Card title="Control de flujo" href="/docs/lenguaje/control-flujo">
+    `cachai`, `mientras`, `para`, `cortala` y `sigue`.
+  </Card>
+  <Card title="Manejo de errores" href="/docs/lenguaje/errores">
+    `ojo`, `cago` y el catalogo de errores del runtime.
+  </Card>
+  <Card title="Hoja de ruta" href="/docs/roadmap">
+    Que falta, que ya esta listo y donde entra `wn-vm`.
+  </Card>
+</Cards>

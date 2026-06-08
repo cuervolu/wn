@@ -1,0 +1,134 @@
+---
+title: Filosofía
+description: Por que WN++ existe, por que habla chileno, y por que los errores te insultan.
+icon: MessageCircleMore
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+<Callout title="wena, wn">
+  *WN++: wena plus plus, pero sin ponerse solemne.*
+</Callout>
+
+## No es un chiste
+
+La identidad chilena de WN++ no es marketing. No es poner palabras en español para que quede gracioso en Twitter. Es un intento genuino de construir algo que **se sienta natural para alguien que creció hablando chileno**.
+
+El nombre cambió, pero el pacto sigue igual: código simple, humor con intención, y un proyecto que sirve para aprender sin fingir que entender un lenguaje de programación tiene que ser solemne.
+
+El español tiene estructura propia. Tiene ritmo propio. Y resulta que ese ritmo cabe perfectamente en un lenguaje de programación, si uno se toma el tiempo de diseñarlo bien en vez de traducir mecánicamente.
+
+```wn
+wea x = 10
+pega sumar(a, b) {
+  a + b
+}
+lorea(sumar(x, 5))  // -> 15
+```
+
+## Por que cada keyword es la que es
+
+Cada palabra clave fue elegida con criterio. No son traducciones del inglés ni palabras random. Son palabras que un chileno ya usa, y cuyo significado se mapea bien al concepto técnico.
+
+<Cards>
+  <Card title="wea = variable">
+    Una variable es un contenedor para casi cualquier cosa. En chileno, `wea` cumple exactamente ese rol: puede ser un objeto, una situación, un concepto, lo que sea.
+  </Card>
+  <Card title="pega = función">
+    Una función es un bloque de trabajo que le encargas a la máquina. Defines una `pega`, y después la mandas a hacer.
+  </Card>
+  <Card title="duro = constante">
+    Algo duro no se dobla. No cambia. La constante de pi no negocia su valor.
+  </Card>
+  <Card title="cachai = condicional">
+    Es una pregunta implícita: "cachas que esto es verdad?". Si si, ejecuta. La interrogación está en el nombre.
+  </Card>
+  <Card title="lorea = print">
+    Significa hablarle al mundo exterior al tiro. Imprimir es justamente eso.
+  </Card>
+  <Card title="ojo / cago = try / catch">
+    `ojo` es advertencia, cuidado. Metes ahi el código que puede fallar. Si falla, `cago` es exactamente lo que paso.
+  </Card>
+</Cards>
+  
+Lo que se evito fue la traducción mecánica: `si` para `if`, `entonces` para `then`, `mientras_que` para `while`. Eso resulta en código que suena como manual pasado por traductor. WN++ prefiere palabras que un chileno diría de verdad.
+
+De verdad se intento evitar que una IA decidiera esto sola. Fue un proceso iterativo de probar palabras, leerlas en voz alta, imaginar como sonarían en código real, y elegir las que mejor encajaban.
+
+## De donde viene y que rechaza
+
+**Lo que tomo:**
+
+- **De Lua**: que un lenguaje liviano puede ser completo sin ser complicado.
+- **De Python**: la preferencia por retorno implícito y la idea de que el código debe leerse casi como prosa.
+- **De Ruby**: el tono. Ruby tiene personalidad. Los errores de WN++ heredan de esa filosofía.
+- **De Rust**: la obsesión con errores informativos que apuntan exactamente al problema.
+
+**Lo que rechazo:**
+
+- **El silencio de JavaScript**. Las coerciones raras y los fallos silenciosos.
+- **La verbosidad del Java antiguo**. `public static void main` no aporta aprendizaje.
+- **La magia implícita**. En WN++, lo que lees es lo que hay.
+
+## Sobre el humor en los errores
+
+El humor en los errores de WN++ es una **decisión técnica** disfrazada de personalidad.
+
+Un error tiene que ser memorable. Si es genérico y frío, lo lees y lo cierras. Si tiene carácter, lo lees, te ríes, y lo recuerdas.
+
+```text
+Error: No podi sumar un 'numero' con un 'texto' pedazo de saco wea.
+Error: La wea 'x' no existe papito.
+Error: Te fuiste al chancho, el indice 10 no existe en la lista (largo: 2).
+```
+
+Cada uno de esos errores tiene tres partes: **que fallo**, **que estaba involucrado**, y **el tono**. Quita la tercera parte y el error sigue siendo util. Quita las primeras dos y es solo un insulto sin contexto.
+
+<Callout type="success">
+  El humor nunca reemplaza la información. Es condimento, no sustituto.
+</Callout>
+
+## Los cinco principios
+
+### 1. Lo que lees es lo que hay
+
+Sin magia. Sin comportamiento oculto. El código hace exactamente lo que dice que hace.
+
+```wn
+wea contador = 0
+mientras (contador < 5) {
+  contador = contador + 1
+}
+```
+
+### 2. Los errores son parte del lenguaje
+
+Un error no es una falla del sistema, es información. Cada mensaje debe decir que salió mal, dónde, y por qué cuando el contexto lo justifica.
+
+### 3. Simple primero, poderoso después
+
+WN++ prioriza una implementación simple y correcta por sobre tener muchas features. Cada cosa que se agrega debe justificar su complejidad.
+
+### 4. Dinámico por elección, no por descuido
+
+WN++ es de tipado dinámico. Permite entender primero cómo funciona la evaluación de expresiones, el scoping y el manejo de errores antes de meter un sistema de tipos estático.
+
+```wn
+wea x = 42
+x = "ahora soy texto"
+```
+
+### 5. El flujo es el aprendizaje
+
+La arquitectura de WN++ deja ver las fases clásicas de implementación:
+
+```text
+Fuente -> Lexer -> Parser -> AST -> Bytecode -> VM
+```
+
+Hoy esa última parte ya no es teoría: `wn-vm` compila a bytecode, lo ejecuta en una stack VM y mantiene un recolector de basura mark-and-sweep.
+
+<Callout>
+  Si en algún momento lees el runtime y piensas "oye, esto es exactamente lo que hace un lenguaje de verdad", sí, esa es la idea.
+</Callout>

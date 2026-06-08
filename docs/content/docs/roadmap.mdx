@@ -1,0 +1,117 @@
+---
+title: Hoja de ruta
+description: Que viene, que ya esta listo, y por que.
+icon: Map
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+WN++ ya no está en la etapa de "toy language que apenas corre". Hoy el repo trae CLI, compilación a bytecode, stack VM, sistema de módulos, funciones de primera clase, conversiones nativas y recolector de basura en `wn-vm`. La hoja de ruta cambia por eso: ya no se trata de imaginar el motor, sino de empujar el lenguaje y las herramientas encima de una base que existe.
+
+## Ya está funcionando
+
+<Cards>
+  <Card title="Compilador a bytecode">
+    `wn-cli` ya parsea, compila con `compilar()` y puede desensamblar el resultado con `wn chunk`.
+  </Card>
+  <Card title="Stack VM">
+    `wn-vm` ejecuta bytecode real con opcodes, frames, globals, closures y manejo de errores.
+  </Card>
+  <Card title="GC mark-and-sweep">
+    El VM ya expone `collect_garbage()` y tiene pruebas para sweep de temporales y conservación de closures.
+  </Card>
+  <Card title="REPL con estado">
+    El REPL reutiliza el mismo `VM`, así que variables y funciones sobreviven entre líneas.
+  </Card>
+  <Card title="Funciones como valores">
+    Las funciones ya se guardan en variables, se retornan y capturan upvalues.
+  </Card>
+  <Card title="Conversiones y módulos">
+    `numero()`, `texto()`, `pregunta()` y `queri` ya forman parte de la base útil del lenguaje.
+  </Card>
+</Cards>
+
+## v0.3 - Pulir el lenguaje que ya existe
+
+Todo lo que hace falta para que escribir programas reales sea más cómodo, consistente y expresivo, sin reabrir el motor desde cero.
+
+### Interpolación de strings
+
+Concatenar con `+` funciona, pero se vuelve ilegible rápido. Los strings interpolados siguen siendo una mejora clara pendiente.
+
+```wn
+wea nombre = "Bodoque"
+wea edad = 42
+
+lorea($"Wena {nombre}, tienes {edad} años.")
+// -> Wena Bodoque, tienes 42 años.
+```
+
+### Pattern matching (`segun`)
+
+Una forma mas limpia de comparar un valor contra multiples posibilidades.
+
+```wn
+wea tipo = cachar(x)
+
+segun tipo {
+  "numero" -> lorea(texto(x) + " es un numero")
+  "texto" -> lorea(texto(x) + " es un texto")
+  _ -> lorea("no se que wea es esto")
+}
+```
+
+### Lambdas ergonomicas
+
+La base de funciones ya esta, pero una sintaxis corta para callbacks o transformaciones chicas todavia seria bienvenida.
+
+```wn
+wea duplicar = (x) -> x * 2
+lorea(duplicar(4))
+```
+
+## v1.0 - Herramientas
+
+### `wn fmt`
+
+Un formateador oficial para que todo el código WN++ se vea igual, independiente de quien lo escribió.
+
+```bash
+wn fmt mi_programa.cl
+wn fmt src/
+```
+
+### Extensión para VS Code
+
+Soporte básico de editor: resaltado de sintaxis, detección de errores mientras escribes y autocompletado simple.
+
+### Mejor experiencia de inspección 
+
+El CLI ya puede exportar AST y desensamblar bytecode. El siguiente paso natural es mejorar esa historia con salidas más claras, snapshots más legibles y debugging más amable.
+
+## v0.4 - Biblioteca estándar
+
+El sistema de módulos ya existe, así que ahora tiene sentido crecer la stdlib con más funciones útiles sobre texto, listas, archivos, tiempo y utilidades prácticas.
+
+El alcance exacto se define mejor a medida que existan programas reales escritos en WN++ que muestren que duele repetir.
+
+## v1.0 - Consolidación         
+
+La diferencia entre v0.x y v1.0 ya no pasa por "tener VM algún día". Esa parte existe. La meta de 1.0 es consolidar semántica, tooling y estabilidad para que el lenguaje sea consistente de punta a punta.
+
+### Estabilidad del lenguaje
+
+Congelar la sintaxis y los comportamientos centrales para que escribir ejemplos, tutoriales y programas de verdad no sea dispararle a una meta en movimiento.
+
+### Runtime más robusto
+
+Más benchmarks, mejor perfilado, mejor ergonomía de errores y más cobertura sobre corner cases del VM, imports, closures y GC.
+
+### Distribución más redonda
+
+Pulir instalación, actualización, wasm y experiencia de editor para que WN++ sea fácil de probar, entender y compartir.
+
+<Callout title="Nota">
+  Esta hoja de ruta es una intención, no un contrato. El orden puede cambiar según lo que se aprenda escribiendo programas reales en WN++. Lo importante es que el roadmap ya parte desde una base concreta: el compilador a bytecode, la VM y el GC ya no son promesas.
+</Callout>
