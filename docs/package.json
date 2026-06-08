@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
-    "start": "serve .output/public --config ../../serve.json",
     "preview": "vite preview",
+    "deploy": "pnpm run build && wrangler deploy",
+    "cf-typegen": "wrangler types",
     "types:check": "fumadocs-mdx && tsc --noEmit",
     "postinstall": "fumadocs-mdx",
     "lint": "oxlint"
@@ -41,12 +42,13 @@
     "@types/node": "^25.9.1",
     "@types/react": "^19.2.16",
     "@types/react-dom": "^19.2.3",
+    "@cloudflare/vite-plugin": "^1.40.0",
     "@vitejs/plugin-react": "^6.0.2",
-    "nitro": "3.0.260603-beta",
     "oxlint": "^1.68.0",
     "serve": "^14.2.6",
     "srvx": "^0.11.16",
     "tailwindcss": "^4.3.0",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "wrangler": "^4.98.0"
   }
 }

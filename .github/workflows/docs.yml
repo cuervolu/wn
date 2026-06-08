@@ -1,4 +1,4 @@
-name: Deploy Pages
+name: Deploy Cloudflare Workers
 
 on:
   push:
@@ -9,23 +9,131 @@ on:
       - "crates/wn-wasm/**"
       - ".github/workflows/docs.yml"
   workflow_dispatch:
+    inputs:
+      target:
+        description: "What to deploy"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - docs
+          - tour
 
 permissions:
   contents: read
 
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: cloudflare-deploy-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build-and-deploy:
+  detect-changes:
     runs-on: ubuntu-latest
+    outputs:
+      deploy_docs: ${{ steps.changes.outputs.deploy_docs }}
+      deploy_tour: ${{ steps.changes.outputs.deploy_tour }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
+
+      - name: Detect deployment targets
+        id: changes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          deploy_docs=false
+          deploy_tour=false
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            case "${{ github.event.inputs.target }}" in
+              all)
+                deploy_docs=true
+                deploy_tour=true
+                ;;
+              docs)
+                deploy_docs=true
+                ;;
+              tour)
+                deploy_tour=true
+                ;;
+            esac
+          else
+            base="${{ github.event.before }}"
+            head="${{ github.sha }}"
+
+            if [[ -z "$base" || "$base" == "0000000000000000000000000000000000000000" ]]; then
+              deploy_docs=true
+              deploy_tour=true
+            else
+              while IFS= read -r path; do
+                [[ -z "$path" ]] && continue
+
+                case "$path" in
+                  docs/*|.github/workflows/docs.yml)
+                    deploy_docs=true
+                    ;;
+                esac
+
+                case "$path" in
+                  tour/*|crates/wn-wasm/*|.github/workflows/docs.yml)
+                    deploy_tour=true
+                    ;;
+                esac
+              done < <(git diff --name-only "$base" "$head")
+            fi
+          fi
+
+          echo "deploy_docs=$deploy_docs" >> "$GITHUB_OUTPUT"
+          echo "deploy_tour=$deploy_tour" >> "$GITHUB_OUTPUT"
+
+  deploy-docs:
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.deploy_docs == 'true'
     steps:
       - uses: actions/checkout@v6
 
       - uses: actions/setup-node@v6
         with:
           node-version: 22
+          cache: pnpm
+          cache-dependency-path: docs/pnpm-lock.yaml
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11
+
+      - name: Install docs dependencies
+        working-directory: docs
+        run: pnpm install --frozen-lockfile
+
+      - name: Build docs
+        working-directory: docs
+        run: pnpm build
+
+      - name: Deploy docs to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: docs
+          command: deploy
+
+  deploy-tour:
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.deploy_tour == 'true'
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: tour/pnpm-lock.yaml
 
       - uses: pnpm/action-setup@v6
         with:
@@ -39,28 +147,13 @@ jobs:
       - name: Install wasm-pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
-      - name: Build wn-wasm
-        working-directory: crates/wn-wasm
-        run: wasm-pack build --target web --out-dir $GITHUB_WORKSPACE/tour/src/lib/wasm/pkg
-
-      - name: Install docs dependencies
-        working-directory: docs
-        run: pnpm install --frozen-lockfile
-
-      - name: Build docs
-        working-directory: docs
-        run: pnpm build
-
-      - name: Deploy docs to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy docs/.output/public --project-name=wn-docs
-
       - name: Install tour dependencies
         working-directory: tour
         run: pnpm install --frozen-lockfile
+
+      - name: Build wn-wasm
+        working-directory: crates/wn-wasm
+        run: wasm-pack build --target web --out-dir $GITHUB_WORKSPACE/tour/src/lib/wasm/pkg
 
       - name: Build tour
         working-directory: tour
@@ -68,9 +161,10 @@ jobs:
         env:
           NODE_ENV: production
 
-      - name: Deploy tour to Cloudflare Pages
+      - name: Deploy tour to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy tour/.svelte-kit/cloudflare --project-name=wn-tour
+          workingDirectory: tour
+          command: deploy

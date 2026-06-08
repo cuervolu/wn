@@ -3,8 +3,10 @@ node_modules
 .DS_Store
 .cache
 .vercel
+.wrangler
 .output
 .nitro
+/dist
 /build/
 /api/
 /server/build

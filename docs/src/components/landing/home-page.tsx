@@ -7,6 +7,7 @@ import { SectionHeading } from './section-heading';
 import { StickerButton } from './sticker-button';
 
 const runtimeStages = ['lexer', 'parser', 'AST', 'bytecode', 'VM'] as const;
+const tourUrl = 'https://tour.wnpp.cl';
 
 const manifestoCards = [
   {
@@ -94,7 +95,7 @@ function LandingNav() {
           <StickerButton href="docs/" kind="ghost" size="sm">
             Docs
           </StickerButton>
-          <StickerButton href="tour/" size="sm">
+          <StickerButton href={tourUrl} size="sm">
             Tour <ArrowUpRight size={16} strokeWidth={2.25} aria-hidden="true" />
           </StickerButton>
         </div>
@@ -144,7 +145,7 @@ function Hero() {
           </p>
 
           <div className="wn-hero__actions">
-            <StickerButton href="tour/" size="lg">
+            <StickerButton href={tourUrl} size="lg">
               Hacer el tour
             </StickerButton>
             <StickerButton href="docs/" kind="ghost" size="lg">
@@ -259,7 +260,7 @@ function ExamplesSection() {
         <aside className="wn-examples__note">
           <span className="wn-examples__note-label">{`// ${activeExample.label.toLowerCase()}`}</span>
           <p>{activeExample.blurb}</p>
-          <a href="tour/">
+          <a href={tourUrl}>
             Probarlo en el tour <ArrowRight size={16} strokeWidth={2.25} aria-hidden="true" />
           </a>
         </aside>
@@ -304,7 +305,7 @@ function FooterCta() {
       <div className="wn-footer__cta">
         <h2>¿Le entrai o no le entrai?</h2>
         <div className="wn-footer__actions">
-          <StickerButton href="tour/" size="lg">
+          <StickerButton href={tourUrl} size="lg">
             Hacer el tour
           </StickerButton>
           <StickerButton href="docs/" kind="ghost" size="lg">
@@ -321,7 +322,7 @@ function FooterCta() {
 
         <nav className="wn-footer__links" aria-label="Footer">
           <a href="docs/">Documentación</a>
-          <a href="tour/">Tour interactivo</a>
+          <a href={tourUrl}>Tour interactivo</a>
           <a href="https://github.com/cuervolu/wn" target="_blank" rel="noreferrer">
             GitHub
           </a>
