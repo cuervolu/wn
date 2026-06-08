@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
-	import { EditorView, keymap, lineNumbers, highlightActiveLine } from '@codemirror/view';
 	import { EditorState } from '@codemirror/state';
-	import { defaultKeymap, historyKeymap, history } from '@codemirror/commands';
+	import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 	import { oneDark } from '@codemirror/theme-one-dark';
+	import { EditorView, highlightActiveLine, keymap, lineNumbers } from '@codemirror/view';
+	import { onDestroy, onMount } from 'svelte';
 	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
 	import Terminal from '@lucide/svelte/icons/terminal';
-	import { wnLanguage, wnHighlight } from '$lib/editor/wn-mode';
+	import { wnHighlight, wnLanguage } from '$lib/editor/wn-mode';
 	import { lessonStore } from '$lib/stores/lesson.svelte';
 	import { outputStore } from '$lib/stores/output.svelte';
 	import { ejecutarWasm } from '$lib/wasm';
@@ -16,7 +16,6 @@
 	let editorContainer: HTMLDivElement;
 	let view: EditorView | null = null;
 	let running = $state(false);
-
 	let syncingFromStore = false;
 
 	onMount(() => {
@@ -37,8 +36,6 @@
 				}),
 				EditorView.theme({
 					'&': { height: '100%', fontSize: '14px' },
-					// Aplicar en todos los selectores donde CM renderiza texto —
-					// oneDark sobreescribe fontFamily en .cm-content
 					'.cm-content': {
 						padding: '12px 0',
 						fontFamily: "'JetBrains Mono Variable', 'JetBrains Mono', monospace"
@@ -73,6 +70,11 @@
 
 	onDestroy(() => view?.destroy());
 
+	function resetEditor() {
+		lessonStore.resetCode();
+		outputStore.reset();
+	}
+
 	async function run() {
 		if (running) return;
 		running = true;
@@ -83,35 +85,37 @@
 	}
 </script>
 
-<div class="flex h-full flex-col bg-surface-950">
-	<div
-		class="flex items-center justify-between border-b border-surface-800 bg-surface-900 px-3 py-1.5"
-	>
-		<div class="flex items-center gap-3">
+<div class="editor-panel">
+	<div class="editor-panel__tools">
+		<div class="flex items-center gap-2">
 			<button
-				onclick={lessonStore.resetCode}
-				class="flex items-center gap-1 font-mono text-xs text-surface-500 transition-colors hover:text-surface-300"
+				type="button"
+				onclick={resetEditor}
+				class="editor-panel__tool"
 				title="Restaurar código inicial"
 			>
 				<RotateCcw size={12} />
 				reset
 			</button>
 			<button
+				type="button"
 				onclick={lessonStore.toggleStdin}
-				class="flex items-center gap-1 font-mono text-xs transition-colors
-					{lessonStore.stdinOpen ? 'text-primary-400' : 'text-surface-500 hover:text-surface-300'}"
+				class:editor-panel__tool={true}
+				class:is-on={lessonStore.stdinOpen}
 				title="Entrada para pregunta()"
 			>
 				<Terminal size={12} />
 				stdin
 			</button>
 		</div>
-		<RunButton {running} onclick={run} />
+		<div class="editor-panel__run">
+			<RunButton {running} onclick={run} />
+		</div>
 	</div>
 
 	{#if lessonStore.stdinOpen}
 		<StdinDrawer />
 	{/if}
 
-	<div bind:this={editorContainer} class="min-h-0 flex-1 overflow-hidden"></div>
+	<div bind:this={editorContainer} class="editor-panel__editor"></div>
 </div>

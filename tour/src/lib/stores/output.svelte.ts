@@ -15,6 +15,10 @@ function createOutputStore() {
 			result = r;
 			loading = false;
 		},
+		reset() {
+			result = null;
+			loading = false;
+		},
 		clear() {
 			result = null;
 			loading = true;

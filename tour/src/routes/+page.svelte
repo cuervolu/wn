@@ -10,5 +10,5 @@
 </script>
 
 <div class="flex min-h-screen items-center justify-center">
-	<p class="font-mono text-surface-400">No hay lecciones disponibles.</p>
+	<p class="font-mono text-sm" style="color: var(--wn-muted)">No hay lecciones disponibles.</p>
 </div>

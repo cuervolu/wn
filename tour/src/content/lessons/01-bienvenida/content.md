@@ -1,13 +1,17 @@
-WN++ es un lenguaje de programación dinámico con sabor chileno, implementado en Rust.
-Este tour es la forma más rápida de conocerlo, sin instalar nada.
+Wn++ es un lenguaje de programación dinámico con sabor chileno, escrito en Rust. 
+Este tour es la forma más rápida de cacharlo, sin instalar nada.
+
+
 
 ## Cómo funciona el playground
 
-El editor de la derecha tiene código wn++ editable. Cuando presiones **▶ ejecutar**,
-el código corre directamente en tu browser usando WebAssembly, no hay servidor involucrado.
+El editor de la derecha tiene código `wn` editable de verdad. Cuando apretís **▶ ejecutar**, el código corre al tiro acá en tu navegador, no hay servidor metío en la wea.
 
-El resultado aparece en el panel de abajo. Si hay un error, también aparece ahí,
-con la línea y el mensaje correspondiente.
+El resultado aparece en el panel output de abajo. Si hay un error, también cae ahí, con la línea y el mensaje correspondiente.
+
+> **tip**
+>
+> Todo es editable: cambiá los valores, rompé cosas a propósito y volvé a ejecutar. Así se cacha más rápido. El botón reset te devuelve el código original de la lección.
 
 ### stdin
 

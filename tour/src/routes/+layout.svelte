@@ -1,6 +1,7 @@
 <script lang="ts">
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
+	import '@fontsource-variable/fredoka/wght.css';
 	import '@fontsource-variable/space-grotesk/wght.css';
 	import '@fontsource-variable/jetbrains-mono/wght.css';
 	import { themeStore } from '$lib/stores/theme.svelte';

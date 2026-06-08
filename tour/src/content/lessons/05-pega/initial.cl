@@ -1,20 +1,22 @@
-// Calculadora de boleta chilena
-duro IVA = 0.19
-
-pega neto(bruto) {
-  bruto / (1 + IVA)
+// Retorno implícito: la última expresión se devuelve
+pega saludar(nombre) {
+  "Wena, " + nombre + ", ¿cómo estai?"
 }
 
-pega impuesto(bruto) {
-  bruto - neto(bruto)
+// devolver pa' cortar antes
+pega clasificar(nota) {
+  cachai (nota < 4) {
+    devolver "rojo, pa' la casa"
+  }
+  "azul, gané el ramo"
 }
 
-pega resumen(nombre, bruto) {
-  lorea("--- " + nombre + " ---")
-  lorea("Bruto:    $" + texto(bruto))
-  lorea("Neto:     $" + texto(neto(bruto)))
-  lorea("IVA:      $" + texto(impuesto(bruto)))
-}
+lorea(saludar("Tulio"))
+lorea(clasificar(3.2))
+lorea(clasificar(6.0))
 
-resumen("Computador", 599990)
-resumen("Teclado", 49990)
+// Funciones que usan otras funciones
+pega promedio(a, b) {
+  (a + b) / 2
+}
+lorea("Promedio: " + texto(promedio(5, 7)))

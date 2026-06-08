@@ -1,3 +1,5 @@
+Aritmética, comparación y lógica. Casi todo funciona como te lo imaginái.
+
 ## Aritméticos
 
 Los operadores básicos funcionan como en cualquier lenguaje. El módulo (`%`) devuelve el resto de una división.
