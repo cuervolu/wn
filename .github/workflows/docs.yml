@@ -68,7 +68,7 @@ jobs:
         run: |
           rm -rf /tmp/github-pages
           mkdir -p /tmp/github-pages/tour
-          cp -R docs/dist/. /tmp/github-pages/
+          cp -R docs/.output/public/. /tmp/github-pages/
           cp -R tour/build/. /tmp/github-pages/tour/
 
       - uses: actions/upload-pages-artifact@v5
