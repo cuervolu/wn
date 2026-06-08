@@ -1,0 +1,132 @@
+---
+title: Control de flujo
+description: cachai, mientras, para, cortala y sigue.
+icon: GitBranch
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+El control de flujo es lo que hace que un programa tome decisiones, repita cosas y sepa cuando parar.
+
+## `cachai` - condicional
+
+```wn
+wea temperatura_horno = 180
+
+cachai (temperatura_horno >= 200) {
+  lorea("Listo para las empanadas")
+} si no {
+  lorea("Espera un poco mas, weon")
+}
+```
+
+Puedes anidar condiciones cuando necesitas varias ramas:
+
+```wn
+wea ingredientes = 3
+
+cachai (ingredientes == 0) {
+  lorea("No hay nada, pide delivery")
+} si no {
+  cachai (ingredientes < 3) {
+    lorea("Alcanza para un completo no mas")
+  } si no {
+    lorea("Suficiente para una cazuela")
+  }
+}
+```
+
+## Operadores logicos
+
+Usa `y`, `o` y `no` para combinar condiciones:
+
+```wn
+wea tiene_palta = verdad
+wea tiene_tomate = verdad
+wea tiene_mayo = falso
+```
+
+## `mientras` - bucle condicional
+
+```wn
+wea masa_restante = 500
+
+mientras (masa_restante > 0) {
+  lorea("Friendo sopaipilla... quedan " + masa_restante + "g de masa")
+  masa_restante = masa_restante - 50
+}
+```
+
+<Callout type="warning">
+  Si la condicion nunca se vuelve falsa, el bucle no termina nunca.
+</Callout>
+
+## `para` - bucle sobre colecciones
+
+```wn
+wea ingredientes = ["vacuno", "papas", "choclo", "zanahoria", "zapallo"]
+
+para (ingrediente en ingredientes) {
+  lorea("Agregar " + ingrediente + " a la olla")
+}
+```
+
+También funciona con texto:
+
+```wn
+para (letra en "pebre") {
+  lorea(letra)
+}
+```
+
+## `cortala` - salir del bucle
+
+```wn
+wea completos_comidos = 0
+
+mientras (verdad) {
+  completos_comidos = completos_comidos + 1
+
+  cachai (completos_comidos >= 3) {
+    cortala
+  }
+}
+```
+
+## `sigue` - saltar a la siguiente iteracion
+
+```wn
+wea toppings = ["papas fritas", "cebolla", "carne mechada", "huevo", "cebolla"]
+
+para (topping en toppings) {
+  cachai (topping == "cebolla") {
+    sigue
+  }
+  lorea("Agregando " + topping)
+}
+```
+
+## Combinando todo
+
+```wn
+wea pedido = ["pino", "queso", "pino", "camaron", "pino"]
+wea total = 0
+wea cant_pino = 0
+
+para (sabor en pedido) {
+  cachai (sabor == "camaron") {
+    sigue
+  }
+
+  wea precio = 0
+
+  cachai (sabor == "pino") {
+    precio = 2500
+    cant_pino = cant_pino + 1
+  } si no {
+    precio = 2000
+  }
+
+  total = total + precio
+}
+```

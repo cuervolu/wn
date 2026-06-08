@@ -1,0 +1,154 @@
+---
+title: Instalacion
+description: Como instalar WN++ en macOS, Linux y Windows.
+icon: Download
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+WN++ se distribuye como un binario unico, sin dependencias. Lo instalas y funciona al tiro.
+
+## Instalacion rapida
+
+<Tabs items={['macOS / Linux', 'Windows']}>
+  <Tab value="macOS / Linux">
+
+  ```bash
+  curl --proto '=https' --tlsv1.2 -LsSf https://github.com/cuervolu/wn/releases/latest/download/wn-cli-installer.sh | sh
+  ```
+
+  El script detecta tu arquitectura automaticamente, ya sea Intel, Apple Silicon o ARM, y descarga el binario correcto.
+
+  </Tab>
+  <Tab value="Windows">
+
+  Abre PowerShell y ejecuta:
+
+  ```powershell
+  powershell -ExecutionPolicy Bypass -c "irm https://github.com/cuervolu/wn/releases/latest/download/wn-cli-installer.ps1 | iex"
+  ```
+
+  </Tab>
+</Tabs>
+
+## Verificar la instalacion
+
+```bash
+wn --version
+```
+
+Si ves algo como `wn 0.1.0`, estas listo.
+
+## Instalacion manual
+
+Si prefieres no usar scripts porque no confias en mis habilidades como programador de bash, descarga el binario directamente desde [GitHub Releases](https://github.com/cuervolu/wn/releases/latest) y agregalo a tu `PATH`.
+
+| Plataforma | Archivo |
+| --- | --- |
+| macOS Apple Silicon | `wn-cli-aarch64-apple-darwin.tar.gz` |
+| macOS Intel | `wn-cli-x86_64-apple-darwin.tar.gz` |
+| Linux x86_64 | `wn-cli-x86_64-unknown-linux-gnu.tar.gz` |
+| Linux ARM64 | `wn-cli-aarch64-unknown-linux-gnu.tar.gz` |
+| Windows 64-bit | `wn-cli-x86_64-pc-windows-msvc.zip` |
+
+## Compilar desde el codigo fuente
+
+Si quieres la version mas reciente del repositorio o simplemente tienes curiosidad de como esta hecho.
+
+<Steps>
+  <Step>
+
+  ### Instala Rust
+
+  Necesitas Rust 1.80 o superior. Si no lo tienes:
+
+  ```bash
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+  ```
+
+  </Step>
+  <Step>
+
+  ### Clona el repositorio
+
+  ```bash
+  git clone https://github.com/cuervolu/wn
+  cd wn
+  ```
+
+  </Step>
+  <Step>
+
+  ### Compila en modo optimizado
+
+  ```bash
+  cargo build --release
+  ```
+
+  </Step>
+  <Step>
+
+  ### Ejecuta
+
+  ```bash
+  ./target/release/wn
+  ```
+
+  </Step>
+</Steps>
+
+<Callout>
+  El primer `cargo build` descarga dependencias y puede tomar un par de minutos. Los builds siguientes son considerablemente mas rapidos.
+</Callout>
+
+## Actualizar
+
+WN++ incluye un comando de actualizacion incorporado:
+
+```bash
+wn update
+```
+
+Descarga la ultima version disponible y reemplaza el binario actual.
+
+<Callout title="Migracion desde Piola">
+  Si tenias instalado el binario antiguo `piola`, reinstala WN++ con el script nuevo. El comando `piola update` no migra al nuevo nombre ni mueve archivos a `~/.wn/bin`; instala `wn`, confirma que funciona y luego elimina la instalacion antigua cuando ya no la necesites.
+</Callout>
+
+## Primeros pasos
+
+Con WN++ instalado, tienes dos formas de usarlo:
+
+**REPL interactivo**: escribe expresiones y ve el resultado de inmediato.
+
+```bash
+wn
+```
+
+```text
+WN++ v0.1 - escribe 'chao' para salir
+>>> 1 + 1
+2
+>>> lorea("Wena!")
+Wena!
+>>> chao
+¡Chao!
+```
+
+**Ejecutar un archivo**: crea un archivo con extension `.cl`.
+
+```bash
+wn mi_programa.cl
+```
+
+```wn
+// mi_programa.cl
+wea nombre = "Tulio"
+lorea("Wena, " + nombre + "!")
+```
+
+```text
+Wena, Tulio!
+```

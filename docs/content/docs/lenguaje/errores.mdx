@@ -1,0 +1,198 @@
+---
+title: Manejo de errores
+description: ojo, cago y los errores en ejecución.
+icon: TriangleAlert
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+En WN++ hay dos categorías de cosas que pueden salir mal: los **errores en ejecución** que el lenguaje lanza automáticamente, y los errores que tu capturas con `ojo`/`cago`.
+
+## `ojo` / `cago`
+
+Envuelve en `ojo` el código que puede fallar. Si algo explota, `cago` lo captura.
+
+```wn
+ojo {
+  wea resultado = 10 / 0
+} cago(error) {
+  lorea("La cago: " + error)
+}
+```
+
+`error` dentro del `cago` es un texto con el mensaje del error.
+
+## Errores que se pueden capturar
+
+### Error de tipo
+
+```wn
+ojo {
+  wea x = "fosforos" + 42
+} cago(error) {
+  lorea(error)
+}
+```
+
+<Callout type="success">
+  Sumar texto con numero funciona cuando el objetivo es concatenar. Lo que no funciona es intentar usar operadores aritméticos inválidos sobre texto.
+</Callout>
+
+### Variable no definida
+
+```wn
+ojo {
+  lorea(boleta_electronica)
+} cago(error) {
+  lorea(error)
+}
+```
+
+### Division por cero
+
+```wn
+ojo {
+  wea promedio = 100 / 0
+} cago(error) {
+  lorea(error)
+}
+```
+
+### Indice invalido
+
+```wn
+wea fila_banco = ["senora Rosa", "don Lucho", "el cabro chico"]
+
+ojo {
+  lorea(fila_banco[99])
+} cago(error) {
+  lorea(error)
+}
+```
+
+### Clave inexistente en mapa
+
+```wn
+wea tramite = {"nombre": "certificado de residencia", "costo": 0}
+
+ojo {
+  lorea(tramite["tiempo_estimado"])
+} cago(error) {
+  lorea(error)
+}
+```
+
+### Constante inmutable
+
+```wn
+duro PRECIO_MICRO = 800
+
+ojo {
+  PRECIO_MICRO = 750
+} cago(error) {
+  lorea(error)
+}
+```
+
+### Argumentos incorrectos
+
+```wn
+pega recargar_bip(monto) {
+  "Recargando $" + monto
+}
+
+ojo {
+  recargar_bip(500, "efectivo", "por favor")
+} cago(error) {
+  lorea(error)
+}
+```
+
+### Llamar algo que no es una función
+
+```wn
+wea direccion = "Avenida Libertador Bernardo O'Higgins 1234"
+
+ojo {
+  direccion()
+} cago(error) {
+  lorea(error)
+}
+```
+
+## Lo que `ojo`/`cago` no captura
+
+Las señales de control de flujo no son errores. `cortala`, `sigue` y `devolver` pasan de largo.
+
+```wn
+para (i en [1, 2, 3, 4, 5]) {
+  ojo {
+    cachai (i == 3) {
+      cortala
+    }
+    lorea(i)
+  } cago(e) {
+    lorea("error: " + e)
+  }
+}
+```
+
+## Errores de sintaxis y léxicos
+
+Estos ocurren antes de que el programa corra, así que no se pueden capturar con `ojo`/`cago`.
+
+```text
+wea x = @#$
+
+Error léxico
+  x Caracter inesperado '@'.
+```
+
+## Catálogo de errores
+
+<Cards>
+  <Card title="Error de tipo">
+    Operación entre tipos incompatibles.
+  </Card>
+  <Card title="Variable no definida">
+    Usar una variable que no fue declarada.
+  </Card>
+  <Card title="División por cero">
+    Dividir o hacer módulo con cero.
+  </Card>
+  <Card title="Índice inválido">
+    Acceder fuera del rango de una lista.
+  </Card>
+  <Card title="Clave inexistente">
+    Acceder a una clave que no existe en un mapa.
+  </Card>
+  <Card title="Constante inmutable">
+    Intentar modificar una variable `duro`.
+  </Card>
+  <Card title="Argumentos incorrectos">
+    Llamar una función con el número equivocado de argumentos.
+  </Card>
+  <Card title="No es una función">
+    Intentar llamar algo que no es una `pega`.
+  </Card>
+</Cards>
+
+## Patrón recomendado
+
+En vez de envolver todo en un `ojo` gigante, captura cerca del origen del problema.
+
+```wn
+wea datos = nada
+
+ojo {
+  datos = obtener_datos()
+} cago(e) {
+  lorea("No se pudieron obtener los datos: " + e)
+}
+
+cachai (datos != nada) {
+  wea procesado = procesar(datos)
+  lorea(procesado)
+}
+```

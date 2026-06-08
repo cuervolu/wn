@@ -69,25 +69,43 @@ tasks:
     cmds:
       - rm -rf {{.WASM_OUT}}
 
-  # Docs (Astro Starlight)
+  # Docs (Fumadocs + TanStack Start)
 
   docs:dev:
-    desc: "Servidor de desarrollo de los docs"
+    desc: "Servidor de desarrollo de la app de docs"
     dir: docs
     cmds:
       - pnpm dev
 
   docs:build:
-    desc: "Build de producción de los docs"
+    desc: "Build de producción de la app de docs"
     dir: docs
     cmds:
       - pnpm build
 
   docs:preview:
-    desc: "Preview del build de los docs"
+    desc: "Preview local de la app de docs"
     dir: docs
     cmds:
       - pnpm preview
+
+  docs:start:
+    desc: "Sirve la salida estática generada en .output/public"
+    dir: docs
+    cmds:
+      - pnpm start
+
+  docs:check:
+    desc: "Chequeo de tipos y generación MDX de la app de docs"
+    dir: docs
+    cmds:
+      - pnpm types:check
+
+  docs:lint:
+    desc: "Lint de la app de docs con oxlint"
+    dir: docs
+    cmds:
+      - pnpm lint
 
   # Tour
 

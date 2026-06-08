@@ -1,0 +1,152 @@
+---
+title: Funciones
+description: pega, retornos, closures y composicion en WN++.
+icon: SquareFunction
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+En WN++, las funciones se llaman `pega`. Defines un bloque de trabajo, le das un nombre y despues lo mandas a hacer.
+
+## Declaracion basica
+
+```wn
+pega saludar(nombre) {
+  "Wena, " + nombre + "!"
+}
+
+lorea(saludar("Tulio"))
+lorea(saludar("Bodoque"))
+```
+
+La sintaxis es `pega nombre(parametros) { cuerpo }`.
+
+## Retorno implicito
+
+La **ultima expresion** del cuerpo es el valor que devuelve la funcion.
+
+```wn
+pega titular(periodista, noticia) {
+  periodista + " informa: " + noticia
+}
+```
+
+<Callout type="success">
+  Si el cuerpo tiene varias lineas, el valor de retorno es la ultima expresion evaluada, no la ultima sentencia.
+</Callout>
+
+## `devolver` explicito
+
+A veces necesitas salir antes del final:
+
+```wn
+pega pronostico_policarpo(temperatura) {
+  cachai (temperatura > 100) {
+    devolver "Senal de mal pronostico, como siempre"
+  }
+  "Pronostico: " + temperatura + " grados"
+}
+```
+
+## Sin parametros y con multiples parametros
+
+```wn
+pega es_hora_de_noticias() {
+  lorea("¡Buenas noches!")
+}
+
+pega reporte_de_campo(reportera, lugar, noticia) {
+  reportera + " desde " + lugar + ": " + noticia
+}
+```
+
+## Funciones como valores
+
+Las funciones ya son ciudadanos de primera clase en WN++. Se pueden guardar en variables, pasar como argumentos y retornar desde otras funciones.
+
+```wn
+wea investigar = pega misterio(ser_vivo) {
+  "El misterio de los seres vivos: ¿Por qué " + ser_vivo + " hace lo que hace?"
+}
+
+lorea(investigar("el oso"))
+```
+
+```wn
+pega presentar(intro_fn, contenido) {
+  wea intro = intro_fn()
+  intro + " - " + contenido
+}
+
+pega intro_bodoque() {
+  "Juan Carlos Bodoque"
+}
+
+lorea(presentar(intro_bodoque, "Hoy: los pinguinos"))
+```
+
+## Recursion
+
+```wn
+pega fibonacci(n) {
+  cachai (n <= 1) {
+    n
+  } si no {
+    fibonacci(n - 1) + fibonacci(n - 2)
+  }
+}
+
+lorea(fibonacci(10))
+```
+
+## Closures
+
+Una `pega` recuerda el entorno donde fue creada.
+
+```wn
+pega crear_corresponsal(nombre) {
+  pega reportar(noticia) {
+    nombre + " reporta: " + noticia
+  }
+  reportar
+}
+
+wea patana = crear_corresponsal("Patana Tufillo")
+lorea(patana("hay trafico en la autopista"))
+```
+
+<Callout>
+  Esto es un cierre: `reportar` se lleva `nombre` aunque `crear_corresponsal` ya haya terminado. El VM actual incluso lo cubre con pruebas de closures y upvalues.
+</Callout>
+
+## Errores comunes
+
+<Tabs items={['Argumentos incorrectos', 'Llamar algo que no es pega', 'devolver fuera de una pega']}>
+  <Tab value="Argumentos incorrectos">
+
+  ```wn
+  pega titular(periodista, noticia) {
+    periodista + ": " + noticia
+  }
+
+  titular("Tulio")
+  ```
+
+  </Tab>
+  <Tab value="Llamar algo que no es pega">
+
+  ```wn
+  wea nombre = "Calcetin con Rombos Man"
+  nombre()
+  ```
+
+  </Tab>
+  <Tab value="devolver fuera de una pega">
+
+  ```wn
+  devolver "esto no esta dentro de nada"
+  ```
+
+  </Tab>
+</Tabs>
