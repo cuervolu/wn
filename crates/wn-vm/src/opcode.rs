@@ -88,17 +88,17 @@ pub enum OpCode {
     CerrarUpvalue,
 
     // Colecciones
-    /// `CONSTRUIR_LISTA <u16>` — pop n valores → push Lista
+    /// `CONSTRUIR_LISTA <u16>` — pop n valores  push Lista
     ConstruirLista,
-    /// `CONSTRUIR_MAPA <u16>` — pop 2*n valores (clave, valor) → push Mapa
+    /// `CONSTRUIR_MAPA <u16>` — pop 2*n valores (clave, valor)  push Mapa
     ConstruirMapa,
-    /// `ITER_INIT` — pop colección → push iterador snapshot
+    /// `ITER_INIT` — pop colección  push iterador snapshot
     IterInit,
     /// `ITER_NEXT <u8>` — usa el iterador en un local y empuja `verdad + valor` o `falso`.
     IterNext,
-    /// pop índice, pop objeto → push objeto[índice]
+    /// pop índice, pop objeto  push objeto[índice]
     ObtenerIndice,
-    /// pop valor, pop índice, pop objeto → objeto[índice] = valor
+    /// pop valor, pop índice, pop objeto  objeto[índice] = valor
     AsignarIndice,
 
     // I/O

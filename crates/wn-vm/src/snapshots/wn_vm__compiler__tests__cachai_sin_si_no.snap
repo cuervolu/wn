@@ -4,12 +4,12 @@ expression: chunk.to_string()
 ---
 ══ <script> ══
 0000     1  Verdad
-0001     |  SaltarSiFalso            1 → 0011
+0001     |  SaltarSiFalso            1  0011
 0004     |  Pop
 0005     |  ObtenerGlobal            0  'lorea'
 0008     |  Constante                1  '1'
 000b     |  Llamar                   1
 000d     |  Pop
-000e     |  Saltar                  14 → 0012
+000e     |  Saltar                  14  0012
 0011     |  Pop
 0012     |  RetornarNada

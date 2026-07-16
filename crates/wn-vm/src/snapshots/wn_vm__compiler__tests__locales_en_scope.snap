@@ -4,7 +4,7 @@ expression: chunk.to_string()
 ---
 ══ <script> ══
 0000     0  Verdad
-0001     |  SaltarSiFalso            1 → 0011
+0001     |  SaltarSiFalso            1  0011
 0004     |  Pop
 0005     |  Constante                0  '5'
 0008     |  ObtenerLocal             0
@@ -12,6 +12,6 @@ expression: chunk.to_string()
 000b     |  Nada
 000c     |  Pop
 000d     |  Pop
-000e     |  Saltar                  14 → 0012
+000e     |  Saltar                  14  0012
 0011     |  Pop
 0012     |  RetornarNada

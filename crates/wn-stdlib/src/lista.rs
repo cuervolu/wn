@@ -4,7 +4,7 @@
 //! ```text
 //! queri lista
 //! lista::agregar(xs, 42)
-//! lista::ordenar([3, 1, 2])   // → [1, 2, 3]
+//! lista::ordenar([3, 1, 2])   //  [1, 2, 3]
 //! ```
 //!
 //! ## Mutación vs. valor nuevo
@@ -80,7 +80,7 @@ pub static LISTA: &[NativeFn] = &[
     },
 ];
 
-/// `agregar(lista, valor) → nada` — agrega `valor` al final. Muta la lista.
+/// `agregar(lista, valor)  nada` — agrega `valor` al final. Muta la lista.
 fn agregar(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> {
     match &args[0] {
         Value::Lista(xs) => {
@@ -91,7 +91,7 @@ fn agregar(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> {
     }
 }
 
-/// `quitar(lista) → valor` — elimina y retorna el último elemento. Muta la lista.
+/// `quitar(lista)  valor` — elimina y retorna el último elemento. Muta la lista.
 ///
 /// Error si la lista está vacía.
 fn quitar(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> {
@@ -105,7 +105,7 @@ fn quitar(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> {
     }
 }
 
-/// `insertar(lista, indice, valor) → nada` — inserta `valor` en la posición `indice`. Muta la lista.
+/// `insertar(lista, indice, valor)  nada` — inserta `valor` en la posición `indice`. Muta la lista.
 /// Acepta índices negativos (se cuentan desde el final).
 fn insertar(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> {
     match (&args[0], &args[1]) {
@@ -125,7 +125,7 @@ fn insertar(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> 
     }
 }
 
-/// `eliminar(lista, indice) → valor` — elimina y retorna el elemento en `indice`. Muta la lista.
+/// `eliminar(lista, indice)  valor` — elimina y retorna el elemento en `indice`. Muta la lista.
 ///
 /// Acepta índices negativos.
 fn eliminar(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> {
@@ -149,7 +149,7 @@ fn eliminar(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> 
     }
 }
 
-/// `contiene(lista, valor) → booleano` — indica si `valor` está en la lista.
+/// `contiene(lista, valor)  booleano` — indica si `valor` está en la lista.
 ///
 /// Usa igualdad estructural (mismo tipo y valor).
 fn contiene(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> {
@@ -159,7 +159,7 @@ fn contiene(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> 
     }
 }
 
-/// `invertir(lista) → lista` — retorna una nueva lista con los elementos en orden inverso.
+/// `invertir(lista)  lista` — retorna una nueva lista con los elementos en orden inverso.
 ///
 /// La lista original no se modifica.
 fn invertir(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> {
@@ -173,7 +173,7 @@ fn invertir(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> 
     }
 }
 
-/// `ordenar(lista) → lista` — retorna una nueva lista ordenada.
+/// `ordenar(lista)  lista` — retorna una nueva lista ordenada.
 ///
 /// Solo funciona con listas homogéneas de `numero` o `texto`.
 /// Error si la lista mezcla tipos.
@@ -198,7 +198,7 @@ fn ordenar(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> {
     }
 }
 
-/// `slice(lista, inicio, fin) → lista` — retorna los elementos entre `inicio` (inclusivo)
+/// `slice(lista, inicio, fin)  lista` — retorna los elementos entre `inicio` (inclusivo)
 /// y `fin` (exclusivo).
 ///
 /// Acepta índices negativos al estilo Python: `slice(xs, -2, largo(xs))` retorna los
@@ -225,7 +225,7 @@ fn slice(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> {
     }
 }
 
-/// `primero(lista) → valor | nada` — retorna el primer elemento, o `nada` si la lista está vacía.
+/// `primero(lista)  valor | nada` — retorna el primer elemento, o `nada` si la lista está vacía.
 fn primero(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> {
     match &args[0] {
         Value::Lista(xs) => Ok(xs.borrow().first().cloned().unwrap_or(Value::Nada)),
@@ -233,7 +233,7 @@ fn primero(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> {
     }
 }
 
-/// `ultimo(lista) → valor | nada` — retorna el último elemento, o `nada` si la lista está vacía.
+/// `ultimo(lista)  valor | nada` — retorna el último elemento, o `nada` si la lista está vacía.
 fn ultimo(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> {
     match &args[0] {
         Value::Lista(xs) => Ok(xs.borrow().last().cloned().unwrap_or(Value::Nada)),
@@ -241,9 +241,9 @@ fn ultimo(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> {
     }
 }
 
-/// `aplanar(lista) → lista` — aplana un nivel de anidamiento.
+/// `aplanar(lista)  lista` — aplana un nivel de anidamiento.
 ///
-/// `aplanar([[1, 2], [3, 4]])` → `[1, 2, 3, 4]`
+/// `aplanar([[1, 2], [3, 4]])`  `[1, 2, 3, 4]`
 /// Los elementos que no son listas se incluyen tal cual.
 fn aplanar(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> {
     match &args[0] {
@@ -398,7 +398,7 @@ mod tests {
     #[test]
     fn insertar_indice_negativo() {
         let (w, r) = null_io();
-        // insertar en -1 de [1, 3] → [1, 2, 3]
+        // insertar en -1 de [1, 3]  [1, 2, 3]
         let xs = lista(vec![num(1.0), num(3.0)]);
         insertar(&mut ctx(&w, &r), &[xs.clone(), num(-1.0), num(2.0)]).unwrap();
         assert_eq!(extraer(xs), vec![num(1.0), num(2.0), num(3.0)]);
@@ -501,7 +501,7 @@ mod tests {
     #[test]
     fn slice_indice_negativo() {
         let (w, r) = null_io();
-        // slice(xs, -2, 4) → últimos 2 elementos de [0,1,2,3]
+        // slice(xs, -2, 4)  últimos 2 elementos de [0,1,2,3]
         let xs = lista(vec![num(0.0), num(1.0), num(2.0), num(3.0)]);
         let result = slice(&mut ctx(&w, &r), &[xs, num(-2.0), num(4.0)]).unwrap();
         assert_eq!(extraer(result), vec![num(2.0), num(3.0)]);
@@ -572,7 +572,7 @@ mod tests {
     #[test]
     fn aplanar_solo_un_nivel_profundidad() {
         let (w, r) = null_io();
-        // [[1, [2]]] → [1, [2]]  (no aplana el [2] adentro)
+        // [[1, [2]]]  [1, [2]]  (no aplana el [2] adentro)
         let xs = lista(vec![lista(vec![num(1.0), lista(vec![num(2.0)])])]);
         let result = aplanar(&mut ctx(&w, &r), &[xs]).unwrap();
         // El [2] sigue siendo lista después de un nivel

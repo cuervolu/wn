@@ -9,7 +9,7 @@ expression: chunk.to_string()
 0008     2  ObtenerLocal             0
 000a     |  Constante                2  '3'
 000d     |  Lt
-000e     |  SaltarSiFalso           14 → 0021
+000e     |  SaltarSiFalso           14  0021
 0011     |  Pop
 0012     |  ObtenerLocal             0
 0014     |  Constante                3  '1'
@@ -17,6 +17,6 @@ expression: chunk.to_string()
 0018     |  AsignarLocal             0
 001a     |  AsignarGlobal            1  'i'
 001d     |  Pop
-001e     |  Loop                    30 → 0008
+001e     |  Loop                    30  0008
 0021     |  Pop
 0022     |  RetornarNada

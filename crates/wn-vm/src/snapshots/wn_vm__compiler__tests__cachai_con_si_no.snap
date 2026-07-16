@@ -4,13 +4,13 @@ expression: chunk.to_string()
 ---
 ══ <script> ══
 0000     0  Falso
-0001     |  SaltarSiFalso            1 → 000e
+0001     |  SaltarSiFalso            1  000e
 0004     |  Pop
 0005     |  Constante                0  '1'
 0008     |  Lorea
 0009     |  Nada
 000a     |  Pop
-000b     |  Saltar                  11 → 0015
+000b     |  Saltar                  11  0015
 000e     |  Pop
 000f     |  Constante                1  '2'
 0012     |  Lorea

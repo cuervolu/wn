@@ -262,14 +262,14 @@ impl Chunk {
     ) -> Result<usize, fmt::Error> {
         let jump = self.read_u16(offset + 1) as usize;
         let dest = offset + 3 + jump;
-        writeln!(f, "{:<20} {offset:>5} → {dest:04x}", format!("{op:?}"))?;
+        writeln!(f, "{:<20} {offset:>5}  {dest:04x}", format!("{op:?}"))?;
         Ok(offset + 3)
     }
 
     fn fmt_salto_atras(&self, f: &mut impl fmt::Write, offset: usize) -> Result<usize, fmt::Error> {
         let jump = self.read_u16(offset + 1) as usize;
         let dest = offset + 3 - jump;
-        writeln!(f, "{:<20} {offset:>5} → {dest:04x}", "Loop")?;
+        writeln!(f, "{:<20} {offset:>5}  {dest:04x}", "Loop")?;
         Ok(offset + 3)
     }
 
@@ -306,7 +306,7 @@ impl Chunk {
         let slot = self.code[offset + 3];
         writeln!(
             f,
-            "{:<20} {offset:>5} → {:04x}  slot {slot}",
+            "{:<20} {offset:>5}  {:04x}  slot {slot}",
             "PushHandler",
             offset + 4 + jump
         )?;

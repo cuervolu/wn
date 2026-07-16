@@ -3,8 +3,8 @@
 //! Funciones para manipulación de cadenas. Se acceden desde WN++ como:
 //! ```text
 //! queri cadena
-//! cadena::dividir("hola wn++", " ")   // → ["hola", "wn++"]
-//! cadena::mayusculas("hola")           // → "HOLA"
+//! cadena::dividir("hola wn++", " ")   //  ["hola", "wn++"]
+//! cadena::mayusculas("hola")           //  "HOLA"
 //! ```
 
 use std::rc::Rc;
@@ -73,9 +73,9 @@ pub static CADENA: &[NativeFn] = &[
     },
 ];
 
-/// `dividir(s, sep) → lista` — divide `s` por el separador.
+/// `dividir(s, sep)  lista` — divide `s` por el separador.
 ///
-/// `dividir("a,b,c", ",")` → `["a", "b", "c"]`
+/// `dividir("a,b,c", ",")`  `["a", "b", "c"]`
 fn dividir(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> {
     let (s, sep) = esperar_dos_textos("dividir", args)?;
     let partes = s
@@ -85,9 +85,9 @@ fn dividir(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> {
     Ok(Value::Lista(Rc::new(std::cell::RefCell::new(partes))))
 }
 
-/// `unir(lista, sep) → texto` — une los elementos de la lista con el separador.
+/// `unir(lista, sep)  texto` — une los elementos de la lista con el separador.
 ///
-/// `unir(["a", "b", "c"], "-")` → `"a-b-c"`
+/// `unir(["a", "b", "c"], "-")`  `"a-b-c"`
 /// Los elementos que no son texto se convierten con su representación natural.
 fn unir(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> {
     match (&args[0], &args[1]) {
@@ -104,47 +104,47 @@ fn unir(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> {
     }
 }
 
-/// `recortar(s) → cadena` — elimina espacios (y saltos de línea) al inicio y al final.
+/// `recortar(s)  cadena` — elimina espacios (y saltos de línea) al inicio y al final.
 ///
-/// `recortar("  hola  ")` → `"hola"`
+/// `recortar("  hola  ")`  `"hola"`
 fn recortar(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> {
     let s = esperar_texto("recortar", &args[0])?;
     Ok(Value::Texto(Rc::from(s.trim())))
 }
 
-/// `contiene(s, sub) → booleano` — indica si `sub` aparece dentro de `s`.
+/// `contiene(s, sub)  booleano` — indica si `sub` aparece dentro de `s`.
 fn contiene(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> {
     let (s, sub) = esperar_dos_textos("contiene", args)?;
     Ok(Value::Booleano(s.contains(sub.as_ref())))
 }
 
-/// `empieza_con(s, prefijo) → booleano`
+/// `empieza_con(s, prefijo)  booleano`
 fn empieza_con(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> {
     let (s, prefijo) = esperar_dos_textos("empieza_con", args)?;
     Ok(Value::Booleano(s.starts_with(prefijo.as_ref())))
 }
 
-/// `termina_con(s, sufijo) → booleano`
+/// `termina_con(s, sufijo)  booleano`
 fn termina_con(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> {
     let (s, sufijo) = esperar_dos_textos("termina_con", args)?;
     Ok(Value::Booleano(s.ends_with(sufijo.as_ref())))
 }
 
-/// `mayusculas(s) → texto` — convierte a mayúsculas usando las reglas de Unicode.
+/// `mayusculas(s)  texto` — convierte a mayúsculas usando las reglas de Unicode.
 fn mayusculas(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> {
     let s = esperar_texto("mayusculas", &args[0])?;
     Ok(Value::Texto(Rc::from(s.to_uppercase().as_str())))
 }
 
-/// `minusculas(s) → texto` — convierte a minúsculas usando las reglas de Unicode.
+/// `minusculas(s)  texto` — convierte a minúsculas usando las reglas de Unicode.
 fn minusculas(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> {
     let s = esperar_texto("minusculas", &args[0])?;
     Ok(Value::Texto(Rc::from(s.to_lowercase().as_str())))
 }
 
-/// `reemplazar(s, viejo, nuevo) → texto` — reemplaza todas las ocurrencias de `viejo` por `nuevo`.
+/// `reemplazar(s, viejo, nuevo)  texto` — reemplaza todas las ocurrencias de `viejo` por `nuevo`.
 ///
-/// `reemplazar("hola mundo", "mundo", "wn")` → `"hola wn"`
+/// `reemplazar("hola mundo", "mundo", "wn")`  `"hola wn"`
 fn reemplazar(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> {
     match (&args[0], &args[1], &args[2]) {
         (Value::Texto(s), Value::Texto(viejo), Value::Texto(nuevo)) => Ok(Value::Texto(Rc::from(
@@ -158,9 +158,9 @@ fn reemplazar(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError
     }
 }
 
-/// `repetir(s, n) → texto` — repite `s` exactamente `n` veces.
+/// `repetir(s, n)  texto` — repite `s` exactamente `n` veces.
 ///
-/// `repetir("ja", 3)` → `"jajaja"`
+/// `repetir("ja", 3)`  `"jajaja"`
 fn repetir(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> {
     match (&args[0], &args[1]) {
         (Value::Texto(s), Value::Numero(n)) => {
@@ -171,12 +171,12 @@ fn repetir(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> {
     }
 }
 
-/// `indice_de(s, sub) → numero | nada` — posición de la primera aparición de `sub` en `s`.
+/// `indice_de(s, sub)  numero | nada` — posición de la primera aparición de `sub` en `s`.
 ///
 /// Retorna el índice en caracteres (no bytes). Retorna `nada` si no se encuentra.
 ///
-/// `indice_de("hola", "ol")` → `1`
-/// `indice_de("hola", "z")` → `nada`
+/// `indice_de("hola", "ol")`  `1`
+/// `indice_de("hola", "z")`  `nada`
 fn indice_de(_ctx: &mut NativeContext, args: &[Value]) -> Result<Value, VmError> {
     let (s, sub) = esperar_dos_textos("indice_de", args)?;
     // Busca en bytes, convierte a índice de caracteres
@@ -414,7 +414,7 @@ mod tests {
 
     #[test]
     fn mayusculas_unicode() {
-        // ñ → Ñ (Unicode case mapping)
+        // ñ  Ñ (Unicode case mapping)
         let (w, r) = null_io();
         let result = mayusculas(&mut ctx(&w, &r), &[txt("ñoño")]).unwrap();
         assert_eq!(result, txt("ÑOÑO"));

@@ -394,7 +394,7 @@ mod tests {
 
     #[test]
     fn texto_convierte_numero_entero_sin_decimal() {
-        // Value::Numero(42.0) → "42", no "42.0"
+        // Value::Numero(42.0)  "42", no "42.0"
         // Esto depende del Display de Value
         let (w, r) = null_io();
         let r = texto(&mut ctx(&w, &r), &[Value::Numero(42.0)]).unwrap();

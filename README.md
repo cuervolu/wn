@@ -21,7 +21,7 @@ pega fibonacci(n) {
   }
 }
 
-lorea(fibonacci(10))  // → 55
+lorea(fibonacci(10))  //  55
 ```
 
 ## Instalación
@@ -54,8 +54,8 @@ wn update
 
 Si prefieres no usar los scripts, descarga el binario para tu plataforma directamente desde [GitHub Releases](https://github.com/cuervolu/wn/releases/latest) y agrégalo a tu `PATH`.
 
-| Plataforma            | Archivo                                      |
-|-----------------------|----------------------------------------------|
+| Plataforma            | Archivo                                   |
+| --------------------- | ----------------------------------------- |
 | macOS (Apple Silicon) | `wn-cli-aarch64-apple-darwin.tar.gz`      |
 | macOS (Intel)         | `wn-cli-x86_64-apple-darwin.tar.gz`       |
 | Linux x86_64          | `wn-cli-x86_64-unknown-linux-gnu.tar.gz`  |
@@ -120,7 +120,7 @@ Lo más valioso que puedes hacer en esta etapa es escribir programas en WN++ y r
 
 Para entender la filosofía del proyecto antes de contribuir, lee [`docs/filosofia`](https://wnpp.cl/docs/filosofia/).
 
-
 ## Créditos
+
 - [iriata18](http://instagram.com/iriata18), por el diseño del logo y la identidad visual de WN++.
 - [r/ChileIT](https://www.reddit.com/r/chileIT/), por el apoyo y feedback que dieron cuando se anunció el proyecto. De esa comunidad salió el nombre, el keyword `lorea`, y muchas ideas sobre la identidad chilena del lenguaje.

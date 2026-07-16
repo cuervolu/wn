@@ -23,10 +23,10 @@ use wn_vm::{native::NativeFn, resolver::ModuleResolver, value::Value};
 ///
 /// Mapeo de paths a módulos:
 /// ```text
-/// "cadena"      → módulo cadena
-/// "std::cadena" → módulo cadena  (alias con namespace explícito)
-/// "lista"      → módulo lista
-/// "std::lista" → módulo lista
+/// "cadena"       módulo cadena
+/// "std::cadena"  módulo cadena  (alias con namespace explícito)
+/// "lista"       módulo lista
+/// "std::lista"  módulo lista
 /// ```
 pub struct StdlibResolver;
 
