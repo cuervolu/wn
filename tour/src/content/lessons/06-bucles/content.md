@@ -1,3 +1,8 @@
+---
+title: Bucles
+section: El lenguaje
+---
+
 ## mientras
 
 Repite un bloque mientras la condición sea `verdad`. Úsalo cuando no sabes de antemano cuántas veces vas a iterar.
@@ -25,7 +30,7 @@ para (region en regiones) {
 }
 ```
 
-La variable `region` solo existe dentro del bloque — es nueva en cada vuelta.
+La variable `region` solo existe dentro del bloque, es nueva en cada vuelta.
 
 ## cortala
 

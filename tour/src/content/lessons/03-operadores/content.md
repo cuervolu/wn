@@ -1,3 +1,8 @@
+---
+title: Operadores y expresiones
+section: El lenguaje
+---
+
 Aritmética, comparación y lógica. Casi todo funciona como te lo imaginái.
 
 ## Aritméticos
@@ -48,7 +53,7 @@ lorea(tiene_entrada o falso)       // verdad  (basta una)
 lorea(no tiene_entrada)            // falso
 ```
 
-Se usan principalmente para construir condiciones compuestas, que verás en la próxima lección.
+Se usan principalmente para construir condiciones compuestas, que verás en la próxima lección, no te apures tanto ctm.
 
 ## Concatenación de texto
 

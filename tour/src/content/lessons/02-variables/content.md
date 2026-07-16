@@ -1,3 +1,8 @@
+---
+title: Variables y constantes
+section: El lenguaje
+---
+
 En WN++, toda variable se declara con `wea`. Es mutable: puedes cambiarle el valor cuando quieras.
 
 ```wn
@@ -48,7 +53,7 @@ cachai (popularidad > 50) {
 lorea(estado)      // Error: 'estado' no existe acá
 ```
 
-`duro` funciona igual — scope de bloque, pero inmutable.
+`duro` funciona igual con scope de bloque, pero inmutable.
 
 ## Conversión de tipos
 

@@ -9,9 +9,6 @@ function createLessonStore() {
 	let stdinOpen = $state<boolean>(false);
 
 	function setLesson(lesson: Lesson) {
-		// untrack() previene que estas *lecturas* subscriban al $effect llamador.
-		// Sin untrack: el $effect en +page.svelte se suscribe a userCode y
-		// activeLesson → setLesson los escribe → effect re-corre → loop infinito.
 		const prevSlug = untrack(() => activeLesson?.slug);
 		const currentCode = untrack(() => userCode);
 

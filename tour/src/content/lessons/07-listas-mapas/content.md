@@ -1,3 +1,8 @@
+---
+title: Listas y mapas
+section: El lenguaje
+---
+
 ## Listas
 
 Una lista es una colección ordenada de valores. Se define con `[]` y puede mezclar tipos.
@@ -7,25 +12,25 @@ wea frutas = ["palta", "mango", "lúcuma"]
 wea mixta  = [1, "dos", verdad, nada]
 ```
 
-Accede a un elemento por su índice — parte desde `0`:
+Accede a un elemento por su índice, parte desde `0`:
 
 ```wn
-lorea(frutas[0])   // → palta
-lorea(frutas[2])   // → lúcuma
+lorea(frutas[0])   //  palta
+lorea(frutas[2])   //  lúcuma
 ```
 
 Los índices negativos cuentan desde el final:
 
 ```wn
-lorea(frutas[-1])  // → lúcuma  (el último)
-lorea(frutas[-2])  // → mango
+lorea(frutas[-1])  //  lúcuma  (el último)
+lorea(frutas[-2])  //  mango
 ```
 
 Puedes modificar un elemento existente asignando al índice:
 
 ```wn
 frutas[1] = "chirimoya"
-lorea(frutas[1])   // → chirimoya
+lorea(frutas[1])   //  chirimoya
 ```
 
 Acceder a un índice que no existe es un error en runtime.
@@ -41,7 +46,7 @@ para (fruta en frutas) {
 `largo()` devuelve la cantidad de elementos:
 
 ```wn
-lorea(largo(frutas))   // → 3
+lorea(largo(frutas))   //  3
 ```
 
 ## Mapas
@@ -59,8 +64,8 @@ wea persona = {
 Accede a un valor por su clave:
 
 ```wn
-lorea(persona["nombre"])   // → Valentina
-lorea(persona["edad"])     // → 24
+lorea(persona["nombre"])   // Valentina
+lorea(persona["edad"])     // 24
 ```
 
 Acceder a una clave que no existe es un error en runtime.
@@ -72,7 +77,7 @@ persona["edad"] = 25              // modifica
 persona["profesion"] = "diseñadora"   // agrega clave nueva
 ```
 
-Los mapas no son iterables directamente con `para` — si necesitas recorrer un mapa, guarda las claves en una lista aparte.
+Los mapas no son iterables directamente con `para`, si necesitas recorrer un mapa, guarda las claves en una lista aparte.
 
 ## Estructuras anidadas
 
@@ -85,6 +90,6 @@ wea equipo = {
   "jugadores": ["Leao", "Palacios", "Bolados"]
 }
 
-lorea(equipo["nombre"])           // → Colo-Colo
-lorea(equipo["jugadores"][0])     // → Leao
+lorea(equipo["nombre"])           // Colo-Colo
+lorea(equipo["jugadores"][0])     // Leao
 ```

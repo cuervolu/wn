@@ -1,3 +1,8 @@
+---
+title: Funciones
+section: El lenguaje
+---
+
 Una función se define con `pega`. Agrupa código que puedes reutilizar.
 
 ```wn
@@ -70,7 +75,7 @@ Las variables declaradas dentro de una `pega` no existen afuera. Las variables d
 duro IVA = 0.19
 
 pega precio_final(neto) {
-  neto + (neto * IVA)   // IVA es visible acá
+  neto + (neto * IVA)   // IVA es visible aquí
 }
 
 lorea(precio_final(10000))   //  11900.0

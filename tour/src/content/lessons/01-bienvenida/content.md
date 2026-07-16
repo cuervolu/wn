@@ -1,17 +1,20 @@
+---
+title: Bienvenida
+section: Introducción
+---
+
 Wn++ es un lenguaje de programación dinámico con sabor chileno, escrito en Rust. 
 Este tour es la forma más rápida de cacharlo, sin instalar nada.
 
-
-
 ## Cómo funciona el playground
 
-El editor de la derecha tiene código `wn` editable de verdad. Cuando apretís **▶ ejecutar**, el código corre al tiro acá en tu navegador, no hay servidor metío en la wea.
+El editor de la derecha tiene código `wn` editable de verdad. Cuando presiones **▶ ejecutar**, el código corre altiro acá en tu navegador, no hay servidor metío en la wea.
 
 El resultado aparece en el panel output de abajo. Si hay un error, también cae ahí, con la línea y el mensaje correspondiente.
 
 > **tip**
 >
-> Todo es editable: cambiá los valores, rompé cosas a propósito y volvé a ejecutar. Así se cacha más rápido. El botón reset te devuelve el código original de la lección.
+> Todo es editable: cambiá los valores, rompé cosas a propósito y vuelve a ejecutar. Así se cacha más rápido. El botón reset te devuelve el código original de la lección.
 
 ### stdin
 
@@ -34,7 +37,7 @@ pega saludar(x) {
 
 // Condicional
 cachai (PI > 3) {
-  lorea(saludar(nombre))   // → Wena, Juanito!
+  lorea(saludar(nombre))   // Wena, Juanito!
 } si no {
   lorea("Algo está muy mal")
 }

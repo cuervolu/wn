@@ -1,3 +1,8 @@
+---
+title: Manejo de errores
+section: El lenguaje
+---
+
 Cuando algo explota en tiempo de ejecución, WN++ lo dice a la chilena. `ojo`/`cago` te permite capturar esos errores antes de que corten el programa.
 
 ## Sintaxis básica

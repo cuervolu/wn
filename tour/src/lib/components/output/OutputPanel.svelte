@@ -33,7 +33,7 @@
 			<p class="output-panel__empty">ejecutando...</p>
 		{:else if result === null}
 			<p class="output-panel__empty">
-				Apretá
+				Presiona
 				<span class="output-panel__empty-key">
 					<Play size={12} />
 					ejecutar
@@ -43,7 +43,7 @@
 		{:else if lines.length === 0 && !hasError}
 			<p class="output-panel__empty">El programa corrió sin imprimir nada.</p>
 		{:else}
-			{#each lines as line}
+			{#each lines as line, i (i)}
 				<div class="output-panel__line">
 					<span class="output-panel__mark">›</span>
 					<span>{line}</span>
