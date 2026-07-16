@@ -7,6 +7,49 @@ y este proyecto sigue [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ## [No publicado]
 
 
+## [0.3.0] - 2026-07-15
+
+Esta es la release grande del ciclo: se acabo el interprete tree-walking, WN++ ahora compila a bytecode y corre en una VM propia. Junto con eso llega el sistema de modulos y la primera version de la biblioteca estándar.
+
+### Agregado
+- Migrar WN de interprete tree-walking a VM bytecode y agregar herramientas de inspeccion (wn ast, wn chunk) por @cuervolu ([#24](https://github.com/cuervolu/wn/pull/24))
+- Agregar sistema de modulos (queri / ::) y biblioteca estandar de cadena y lista por @cuervolu ([#26](https://github.com/cuervolu/wn/pull/26))
+- Agregar conversiones explicitas con numero() y texto() por @cuervolu ([#15](https://github.com/cuervolu/wn/pull/15))
+- Agregar comando Uninstall al CLI, con formatos colorizados por @cuervolu
+- Agregar tour interactivo de WN++ con WASM por @cuervolu ([#25](https://github.com/cuervolu/wn/pull/25))
+- Habilitar el tour del lenguaje en produccion por @cuervolu ([#28](https://github.com/cuervolu/wn/pull/28))
+
+
+### Cambiado
+- Expandir WnError con variantes especificas de runtime para diagnosticos mas precisos por @cuervolu ([#14](https://github.com/cuervolu/wn/pull/14))
+- Modularizar las funciones nativas de la VM y simplificar su registro por @cuervolu
+- Cambiar la forma en que el tour maneja su contenido por @cuervolu
+- Migrar la documentacion de Astro Starlight a Fumadocs por @cuervolu ([#27](https://github.com/cuervolu/wn/pull/27))
+
+
+### Arreglado
+- Corregir validacion de indices numericos en listas y textos por @jsgrrchg ([#20](https://github.com/cuervolu/wn/pull/20))
+- Corregir el flag --force del updater por @jsgrrchg ([#19](https://github.com/cuervolu/wn/pull/19))
+- Corregir layout del tour en moviles por @cuervolu
+- Actualizar links rotos del README por @cuervolu
+
+
+### Misceláneos
+- Borrar flechitas sobrantes en comentarios de la stdlib y snapshots por @cuervolu
+- Mantener documentacion y registro de cambios en español por @jsgrrchg ([#23](https://github.com/cuervolu/wn/pull/23))
+- Pasar clippy y fmt sobre el codigo de la VM por @cuervolu
+- Actualizar el gif de demo en assets por @cuervolu
+- Agregar logo del proyecto por @cuervolu
+- Agregar logo y creditos en el README por @cuervolu
+- Juntar los deploys de tour y docs en un solo flujo de CI por @cuervolu
+- Apuntar el despliegue a Cloudflare Workers por @cuervolu
+- Arreglar orden del flujo de CI por @cuervolu
+- Arreglar error de merge en CI por @cuervolu
+
+
+## [0.2.1] - 2026-05-27
+
+
 ### Cambiado
 - Renombrar builtin altiro a lorea por @cuervolu ([#13](https://github.com/cuervolu/wn/pull/13))
 
@@ -86,7 +129,9 @@ y este proyecto sigue [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - Agregar cliff.toml para generar el registro de cambios por @cuervolu
 
 
-[unreleased]: https://github.com/cuervolu/wn/compare/wn-v0.1.0..HEAD
+[unreleased]: https://github.com/cuervolu/wn/compare/v0.3.0..HEAD
+[0.3.0]: https://github.com/cuervolu/wn/compare/v0.2.1..v0.3.0
+[0.2.1]: https://github.com/cuervolu/wn/compare/wn-v0.1.0..v0.2.1
 [wn-v0.1.0]: https://github.com/cuervolu/wn/compare/piola-core-v0.1.0..wn-v0.1.0
 [piola-core-v0.1.0]: https://github.com/cuervolu/wn/compare/piola-v0.1.0..piola-core-v0.1.0
 [piola-v0.1.0]: https://github.com/cuervolu/wn/compare/v0.1.0..piola-v0.1.0
