@@ -1,4 +1,5 @@
 mod ast_dot;
+mod file_resolver;
 mod updater;
 
 use clap::Parser;
@@ -23,6 +24,7 @@ use wn_vm::{
 };
 
 use crate::ast_dot::ast_to_dot;
+use crate::file_resolver::FileResolver;
 use crate::updater::run_update;
 
 #[derive(Parser)]
@@ -91,7 +93,11 @@ fn run_file(path: PathBuf) -> miette::Result<()> {
     let loaded = load_source_file(&path)?;
     let stmts = parse_source(&loaded)?;
     let chunk = compile_stmts(&loaded, &stmts)?;
-    let mut vm = crear_vm();
+    
+    let entrada = path.canonicalize().into_diagnostic()?;
+    let raiz = entrada.parent().unwrap_or(Path::new("."));
+    let mut vm = crear_vm(Some(raiz))?;
+    vm.marcar_entrada(entrada.to_string_lossy());
     let _ = vm.run(&chunk)?;
     Ok(())
 }
@@ -118,12 +124,18 @@ fn run_chunk(path: PathBuf) -> miette::Result<()> {
     Ok(())
 }
 
-fn crear_vm() -> VM {
-    VM::con_resolver(
+/// Crea la VM con la stdlib y, si hay `raiz`, los módulos de usuario (`.cl`) bajo ella.
+fn crear_vm(raiz: Option<&Path>) -> miette::Result<VM> {
+    let mut resolvers: Vec<Box<dyn wn_vm::resolver::ModuleResolver>> =
+        vec![Box::new(StdlibResolver)];
+    if let Some(raiz) = raiz {
+        resolvers.push(Box::new(FileResolver::new(raiz).into_diagnostic()?));
+    }
+    Ok(VM::con_resolver(
         io::stdout(),
         BufReader::new(io::stdin()),
-        Box::new(CompositeResolver::new(vec![Box::new(StdlibResolver)])),
-    )
+        Box::new(CompositeResolver::new(resolvers)),
+    ))
 }
 
 fn run_repl() {
@@ -137,7 +149,15 @@ fn run_repl() {
 
     let _ = rl.load_history(".wn_history");
 
-    let mut vm = crear_vm();
+    // La raíz de los módulos del REPL es el directorio desde el que se lanzó, fijado una vez.
+    let raiz = std::env::current_dir().ok();
+    let mut vm = match crear_vm(raiz.as_deref()) {
+        Ok(vm) => vm,
+        Err(e) => {
+            eprintln!("{} {e:?}", "error:".red().bold());
+            return;
+        }
+    };
 
     // Banner de bienvenida
     println!(
