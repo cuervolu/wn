@@ -15,7 +15,7 @@ pub fn run_update(force: bool) -> miette::Result<()> {
     if force {
         let latest = latest_release_version(current)?;
         let tag = forced_target_version_tag(&latest);
-        updater.target_version_tag(&tag);
+        updater.release_tag(&tag);
     }
 
     let status = updater
@@ -24,7 +24,7 @@ pub fn run_update(force: bool) -> miette::Result<()> {
         .update()
         .into_diagnostic()?;
 
-    if status.updated() {
+    if status.is_updated() {
         println!(
             "{} Actualizado a v{}",
             "✓".green().bold(),
@@ -46,7 +46,7 @@ fn configure_updater(current: &str, force: bool) -> self_update::backends::githu
     updater
         .repo_owner(REPO_OWNER)
         .repo_name(REPO_NAME)
-        .identifier("wn-cli")
+        .asset_identifier("wn-cli")
         .bin_name("wn")
         .show_output(false)
         .show_download_progress(true)
@@ -57,13 +57,16 @@ fn configure_updater(current: &str, force: bool) -> self_update::backends::githu
 
 fn latest_release_version(current: &str) -> miette::Result<String> {
     let updater = configure_updater(current, true);
-    let latest = updater
+    let releases = updater
         .build()
         .into_diagnostic()?
         .get_latest_release()
         .into_diagnostic()?;
 
-    Ok(latest.version)
+    releases
+        .latest()
+        .map(|release| release.version().to_owned())
+        .ok_or_else(|| miette::miette!("No encontré ningún release publicado"))
 }
 
 fn forced_target_version_tag(version: &str) -> String {

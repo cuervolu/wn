@@ -26,10 +26,10 @@ rustyline = "18"
 dialoguer = "0.12"
 owo-colors = "4"
 self-replace = "1"
-self_update = { version = "0.44", features = [
+self_update = { version = "1.3", features = [
     "archive-tar",
     "archive-zip",
-    "compression-flate2",
+    "compression-tar-gz",
     "compression-zip-deflate",
 ] }
 
