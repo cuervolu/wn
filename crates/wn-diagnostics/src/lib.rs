@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use miette::{Diagnostic, NamedSource, SourceSpan};
 use thiserror::Error;
 
@@ -46,6 +48,46 @@ impl SourceFile {
             }
         }
         line
+    }
+}
+
+/// Diagnóstico original de un módulo que falló, anidado dentro de `ErrorEnModulo`.
+/// Delega todo en el diagnóstico interno; existe para que miette lo pueda usar como
+/// `diagnostic_source` sin perder `Clone`.
+#[derive(Debug, Clone)]
+pub struct CausaDiagnostico(pub Box<WnDiagnostic>);
+
+impl std::fmt::Display for CausaDiagnostico {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl std::error::Error for CausaDiagnostico {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        self.0.source()
+    }
+}
+
+impl Diagnostic for CausaDiagnostico {
+    fn code<'a>(&'a self) -> Option<Box<dyn std::fmt::Display + 'a>> {
+        self.0.code()
+    }
+
+    fn help<'a>(&'a self) -> Option<Box<dyn std::fmt::Display + 'a>> {
+        self.0.help()
+    }
+
+    fn source_code(&self) -> Option<&dyn miette::SourceCode> {
+        self.0.source_code()
+    }
+
+    fn labels(&self) -> Option<Box<dyn Iterator<Item = miette::LabeledSpan> + '_>> {
+        self.0.labels()
+    }
+
+    fn diagnostic_source(&self) -> Option<&dyn Diagnostic> {
+        self.0.diagnostic_source()
     }
 }
 
@@ -213,6 +255,131 @@ pub enum WnDiagnostic {
         mensaje: String,
     },
 
+    #[error("El módulo '{modulo}' no existe!.")]
+    #[diagnostic(code(wn::modulo::no_encontrado), help("{ayuda}"))]
+    ModuloNoEncontrado {
+        #[source_code]
+        src: Arc<NamedSource<String>>,
+        #[label("este módulo no se encontró")]
+        span: SourceSpan,
+        modulo: String,
+        ayuda: String,
+    },
+
+    #[error("No pude leer el módulo '{modulo}'.")]
+    #[diagnostic(
+        code(wn::modulo::ilegible),
+        help(
+            "Revisá que el archivo exista, que esté dentro de la raíz del proyecto y que tengái permiso para leerlo."
+        )
+    )]
+    ModuloIlegible {
+        #[source_code]
+        src: Arc<NamedSource<String>>,
+        #[label("{causa}")]
+        span: SourceSpan,
+        modulo: String,
+        causa: String,
+    },
+
+    #[error("Importación circular: {cadena}")]
+    #[diagnostic(
+        code(wn::modulo::circular),
+        help(
+            "Un módulo no puede depender de sí mismo, ni directa ni indirectamente. Mueve lo compartido a un tercer módulo."
+        )
+    )]
+    ImportCircular {
+        #[source_code]
+        src: Arc<NamedSource<String>>,
+        #[label("este import cierra el ciclo")]
+        span: SourceSpan,
+        cadena: String,
+    },
+
+    #[error("El módulo '{modulo}' es ambiguo.")]
+    #[diagnostic(
+        code(wn::modulo::conflicto),
+        help(
+            "Renombrá el archivo local, o usá `std::{modulo}` si querís el de la biblioteca estándar."
+        )
+    )]
+    ModuloConflicto {
+        #[source_code]
+        src: Arc<NamedSource<String>>,
+        #[label("{candidatos}")]
+        span: SourceSpan,
+        modulo: String,
+        candidatos: String,
+    },
+
+    #[error("'{nombre}' está reservado, no lo podí usar como módulo propio, copión.")]
+    #[diagnostic(
+        code(wn::modulo::reservado),
+        help(
+            "`std::` es exclusivo de la biblioteca estándar. Usá otro nombre para tu archivo o directorio."
+        )
+    )]
+    ModuloReservado {
+        #[source_code]
+        src: Arc<NamedSource<String>>,
+        #[label("nombre reservado")]
+        span: SourceSpan,
+        nombre: String,
+    },
+
+    #[error("'{nombre}' no es público en el módulo '{modulo}'.")]
+    #[diagnostic(
+        code(wn::modulo::no_exportado),
+        help(
+            "Para usarlo desde afuera, declaralo con `convida` en {modulo}: `convida pega {nombre}(...)` o `convida wea {nombre} = ...`."
+        )
+    )]
+    NoExportado {
+        #[source_code]
+        src: Arc<NamedSource<String>>,
+        #[label("declaración privada")]
+        span: SourceSpan,
+        modulo: String,
+        nombre: String,
+    },
+
+    #[error("No existe '{nombre}' en el módulo importado.")]
+    #[diagnostic(code(wn::modulo::export_inexistente), help("{ayuda}"))]
+    ExportInexistente {
+        #[source_code]
+        src: Arc<NamedSource<String>>,
+        #[label("no existe")]
+        span: SourceSpan,
+        nombre: String,
+        ayuda: String,
+    },
+
+    #[error("'{nombre}' ya está definido en este módulo.")]
+    #[diagnostic(
+        code(wn::modulo::nombre_en_uso),
+        help("Elegí otro nombre para el import con `queri ... como otro_nombre`.")
+    )]
+    NombreEnUso {
+        #[source_code]
+        src: Arc<NamedSource<String>>,
+        #[label("este nombre ya existe")]
+        span: SourceSpan,
+        nombre: String,
+    },
+
+    #[error("Falló un módulo importado (cadena de imports: {cadena})")]
+    #[diagnostic(code(wn::modulo::error_en_modulo))]
+    ErrorEnModulo {
+        #[source_code]
+        src: Arc<NamedSource<String>>,
+        #[label("importado desde acá")]
+        span: SourceSpan,
+        cadena: String,
+        #[diagnostic_source]
+        causa: CausaDiagnostico,
+    },
+
     #[error("Bug interno del motor: {mensaje}")]
     #[diagnostic(
         code(wn::interno),
@@ -357,6 +524,122 @@ impl WnDiagnostic {
         }
     }
 
+    pub fn modulo_no_encontrado(
+        source: &SourceFile,
+        span: SourceSpan,
+        modulo: impl Into<String>,
+        ayuda: impl Into<String>,
+    ) -> Self {
+        Self::ModuloNoEncontrado {
+            src: Arc::new(source.named_source()),
+            span,
+            modulo: modulo.into(),
+            ayuda: ayuda.into(),
+        }
+    }
+
+    pub fn modulo_ilegible(
+        source: &SourceFile,
+        span: SourceSpan,
+        modulo: impl Into<String>,
+        causa: impl Into<String>,
+    ) -> Self {
+        Self::ModuloIlegible {
+            src: Arc::new(source.named_source()),
+            span,
+            modulo: modulo.into(),
+            causa: causa.into(),
+        }
+    }
+
+    pub fn import_circular(
+        source: &SourceFile,
+        span: SourceSpan,
+        cadena: impl Into<String>,
+    ) -> Self {
+        Self::ImportCircular {
+            src: Arc::new(source.named_source()),
+            span,
+            cadena: cadena.into(),
+        }
+    }
+
+    pub fn modulo_conflicto(
+        source: &SourceFile,
+        span: SourceSpan,
+        modulo: impl Into<String>,
+        candidatos: impl Into<String>,
+    ) -> Self {
+        Self::ModuloConflicto {
+            src: Arc::new(source.named_source()),
+            span,
+            modulo: modulo.into(),
+            candidatos: candidatos.into(),
+        }
+    }
+
+    pub fn modulo_reservado(
+        source: &SourceFile,
+        span: SourceSpan,
+        nombre: impl Into<String>,
+    ) -> Self {
+        Self::ModuloReservado {
+            src: Arc::new(source.named_source()),
+            span,
+            nombre: nombre.into(),
+        }
+    }
+
+    pub fn no_exportado(
+        source: &SourceFile,
+        span: SourceSpan,
+        modulo: impl Into<String>,
+        nombre: impl Into<String>,
+    ) -> Self {
+        Self::NoExportado {
+            src: Arc::new(source.named_source()),
+            span,
+            modulo: modulo.into(),
+            nombre: nombre.into(),
+        }
+    }
+
+    pub fn export_inexistente(
+        source: &SourceFile,
+        span: SourceSpan,
+        nombre: impl Into<String>,
+        ayuda: impl Into<String>,
+    ) -> Self {
+        Self::ExportInexistente {
+            src: Arc::new(source.named_source()),
+            span,
+            nombre: nombre.into(),
+            ayuda: ayuda.into(),
+        }
+    }
+
+    pub fn nombre_en_uso(source: &SourceFile, span: SourceSpan, nombre: impl Into<String>) -> Self {
+        Self::NombreEnUso {
+            src: Arc::new(source.named_source()),
+            span,
+            nombre: nombre.into(),
+        }
+    }
+
+    pub fn error_en_modulo(
+        source: &SourceFile,
+        span: SourceSpan,
+        cadena: impl Into<String>,
+        causa: WnDiagnostic,
+    ) -> Self {
+        Self::ErrorEnModulo {
+            src: Arc::new(source.named_source()),
+            span,
+            cadena: cadena.into(),
+            causa: CausaDiagnostico(Box::new(causa)),
+        }
+    }
+
     pub fn interno(mensaje: impl Into<String>) -> Self {
         Self::Interno {
             mensaje: mensaje.into(),
@@ -377,6 +660,15 @@ impl WnDiagnostic {
             | Self::NumArgInvalido { span, .. }
             | Self::TipoInvalido { span, .. }
             | Self::TextoNoConvertibleANumero { span, .. }
+            | Self::ModuloNoEncontrado { span, .. }
+            | Self::ModuloIlegible { span, .. }
+            | Self::ImportCircular { span, .. }
+            | Self::ModuloConflicto { span, .. }
+            | Self::ModuloReservado { span, .. }
+            | Self::NoExportado { span, .. }
+            | Self::ExportInexistente { span, .. }
+            | Self::NombreEnUso { span, .. }
+            | Self::ErrorEnModulo { span, .. }
             | Self::Runtime { span, .. } => Some(*span),
             Self::Interno { .. } => None,
         }
