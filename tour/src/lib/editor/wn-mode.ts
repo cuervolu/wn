@@ -71,6 +71,9 @@ const wnParser: StreamParser<WnState> = {
 				'devolver',
 				'cortala',
 				'sigue',
+				'queri',
+				'como',
+				'convida',
 				'según'
 			]);
 			const builtins = new Set(['lorea', 'largo', 'cachar', 'pregunta', 'numero', 'texto']);

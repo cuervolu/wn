@@ -209,6 +209,13 @@ impl DotGraph {
                 self.add_node(label)
             }
 
+            Stmt::Exportar { decl, .. } => {
+                let node = self.add_node("Convida");
+                let decl_id = self.stmt(decl);
+                self.add_edge(node, decl_id, Some("decl"));
+                node
+            }
+
             Stmt::Sigue(_) => self.add_node("Sigue"),
         }
     }

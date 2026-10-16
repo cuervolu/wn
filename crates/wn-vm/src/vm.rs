@@ -5,20 +5,22 @@
 
 use std::{
     cell::RefCell,
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     io::{self, BufRead, BufReader, Cursor, Write},
     rc::Rc,
     sync::Arc,
 };
 
 use crate::native::NativeContext;
-use crate::resolver::{ModuleResolver, NoopResolver};
+use crate::resolver::{ErrorResolucion, ModuleResolver, ModuloResuelto, NoopResolver};
 use crate::{
     builtins,
     chunk::Chunk,
+    compiler::compilar_modulo,
     opcode::OpCode,
-    value::{NativeFn, ObjClosure, ObjFunction, ObjUpvalue, UpvalueState, Value},
+    value::{NativeFn, ObjClosure, ObjFunction, ObjModulo, ObjUpvalue, UpvalueState, Value},
 };
+use wn::{lexer::tokenizar_archivo, parser::parsear};
 use wn_diagnostics::{SourceFile, WnDiagnostic};
 
 #[derive(Debug, Clone, thiserror::Error)]
@@ -69,6 +71,34 @@ pub enum VmError {
     #[error("'{0}' no es un módulo.")]
     NoEsModulo(String),
 
+    #[error("No pude resolver el módulo '{modulo}'.")]
+    Resolucion {
+        modulo: String,
+        error: ErrorResolucion,
+    },
+
+    #[error("Importación circular: {0}")]
+    ImportCircular(String),
+
+    #[error("'{0}' ya está definido en este módulo.")]
+    NombreEnUso(String),
+
+    #[error("'{campo}' no es público en el módulo '{modulo}'.")]
+    NoExportado { modulo: String, campo: String },
+
+    #[error("El módulo '{modulo}' no tiene nada llamado '{campo}'.")]
+    ExportInexistente {
+        modulo: String,
+        campo: String,
+        disponibles: Vec<String>,
+    },
+
+    #[error("Falló la carga del módulo '{modulo}'.")]
+    Carga {
+        modulo: String,
+        causa: Box<WnDiagnostic>,
+    },
+
     #[error(
         "Opcode inválido: {0:#04x} - bug del compilador, reportar issue en https://github.com/cuervolu/wn/issues"
     )]
@@ -87,6 +117,34 @@ pub struct CallFrame {
     pub ip: usize,
     pub base_slot: usize,
     handlers: Vec<ExceptionHandler>,
+    /// `Some` si este frame es la inicialización de un módulo de usuario.
+    init: Option<InitModulo>,
+}
+
+/// Estado de una inicialización de módulo en curso (vive en el frame del módulo).
+#[derive(Debug)]
+struct InitModulo {
+    /// Clave de la caché (ruta canónica del archivo).
+    id: String,
+    /// Ámbito de globales del módulo.
+    ambito: usize,
+    /// Path con el que se pidió: `utilidades::texto`.
+    nombre: String,
+    exportados: HashSet<String>,
+    /// Ámbito y nombre donde se enlaza el módulo al terminar de inicializarse.
+    destino: usize,
+    binding: String,
+    /// Dónde está el `queri` (para reportar errores del módulo en el importador).
+    sitio_src: Arc<SourceFile>,
+    sitio_span: (usize, usize),
+}
+
+/// Estado de un módulo en la caché. Un módulo cuya inicialización falla se
+/// elimina de la caché, por eso no existe un estado "fallido".
+#[derive(Debug, Clone)]
+enum EstadoModulo {
+    Cargando,
+    Cargado(Value),
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -153,6 +211,13 @@ pub struct VM {
     salida: Rc<RefCell<Box<dyn Write>>>,
     entrada: Rc<RefCell<Box<dyn BufRead>>>,
     resolver: Box<dyn ModuleResolver>,
+    /// Ámbitos de globales de los módulos de usuario; el módulo con id `n` vive en `ambitos[n - 1]`.
+    /// El ámbito 0 es `globals` (script de entrada o REPL).
+    ambitos: Vec<HashMap<Rc<str>, Value>>,
+    /// Caché de módulos de usuario por identidad normalizada.
+    modulos: HashMap<String, EstadoModulo>,
+    /// Funciones siempre disponibles, visibles desde cualquier módulo.
+    builtins: HashMap<Rc<str>, Value>,
 }
 
 impl VM {
@@ -181,6 +246,9 @@ impl VM {
             salida: Rc::new(RefCell::new(Box::new(salida))),
             entrada: Rc::new(RefCell::new(Box::new(entrada))),
             resolver: Box::new(NoopResolver),
+            ambitos: Vec::new(),
+            modulos: HashMap::new(),
+            builtins: HashMap::new(),
         };
         vm.registrar_nativas();
         vm
@@ -208,6 +276,7 @@ impl VM {
         });
         let closure = Rc::new(ObjClosure {
             funcion,
+            ambito: 0,
             upvalues: RefCell::new(Vec::new()),
         });
         self.track_value(&Value::Closure(closure.clone()));
@@ -216,6 +285,7 @@ impl VM {
             ip: 0,
             base_slot: self.stack.len(),
             handlers: Vec::new(),
+            init: None,
         });
         self.execute()
     }
@@ -268,14 +338,15 @@ impl VM {
                 OpCode::DefinirGlobal => {
                     let nombre = self.read_nombre_constante(frame_idx);
                     let valor = self.pop()?;
-                    self.globals.insert(nombre, valor);
+                    let ambito = self.frames[frame_idx].closure.ambito;
+                    self.globals_de_mut(ambito).insert(nombre, valor);
                     Ok(StepAction::Continue)
                 }
                 OpCode::ObtenerGlobal => {
                     let nombre = self.read_nombre_constante(frame_idx);
+                    let ambito = self.frames[frame_idx].closure.ambito;
                     let valor = self
-                        .globals
-                        .get(&nombre)
+                        .buscar_global(ambito, &nombre)
                         .ok_or_else(|| VmError::VarNoDefinida(nombre.to_string()))?
                         .clone();
                     self.push(valor);
@@ -298,14 +369,7 @@ impl VM {
                         (path_str, name)
                     };
 
-                    let path_parts: Vec<&str> = path_str.split("::").collect();
-                    let modulo = self
-                        .resolver
-                        .resolver(&path_parts)
-                        .ok_or_else(|| VmError::ModuloNoEncontrado(path_str.to_string()))?;
-
-                    self.track_value(&modulo);
-                    self.globals.insert(Rc::from(name.as_str()), modulo);
+                    self.importar(frame_idx, op_offset, &path_str, &name)?;
                     Ok(StepAction::Continue)
                 }
                 OpCode::ObtenerPath => {
@@ -331,9 +395,9 @@ impl VM {
                     let (campo, modulo_partes) = partes.split_last().unwrap();
                     let binding = modulo_partes.last().unwrap();
 
+                    let ambito = self.frames[frame_idx].closure.ambito;
                     let modulo = self
-                        .globals
-                        .get(*binding)
+                        .buscar_global(ambito, binding)
                         .ok_or_else(|| VmError::VarNoDefinida(binding.to_string()))?
                         .clone();
 
@@ -349,6 +413,11 @@ impl VM {
                             self.push(valor);
                             Ok(StepAction::Continue)
                         }
+                        Value::ModuloUsuario(ref modulo) => {
+                            let valor = self.leer_exportado(modulo, binding, campo)?;
+                            self.push(valor);
+                            Ok(StepAction::Continue)
+                        }
                         other => Err(VmError::NoEsModulo(other.tipo_nombre().to_string())),
                     }
                 }
@@ -356,7 +425,8 @@ impl VM {
                 OpCode::AsignarGlobal => {
                     let nombre = self.read_nombre_constante(frame_idx);
                     let valor = self.peek()?.clone();
-                    if let Some(slot) = self.globals.get_mut(&nombre) {
+                    let ambito = self.frames[frame_idx].closure.ambito;
+                    if let Some(slot) = self.globals_de_mut(ambito).get_mut(&nombre) {
                         *slot = valor;
                         Ok(StepAction::Continue)
                     } else {
@@ -493,7 +563,8 @@ impl VM {
                         };
                         captures.push(capture);
                     }
-                    let closure = self.alloc_closure(funcion, captures);
+                    let ambito = self.frames[frame_idx].closure.ambito;
+                    let closure = self.alloc_closure(funcion, ambito, captures);
                     self.push(closure);
                     Ok(StepAction::Continue)
                 }
@@ -549,7 +620,11 @@ impl VM {
                 }
                 Err(err) => {
                     let diagnostic = self.vm_error_to_diagnostic(frame_idx, op_offset, &err);
-                    if !self.handle_error(diagnostic.to_string()) {
+                    // El mensaje que ve `ojo ... cago` es el del error original; el
+                    // envoltorio con la cadena de imports es solo para el reporte final.
+                    let mensaje = diagnostic.to_string();
+                    let diagnostic = self.envolver_error_de_modulo(diagnostic);
+                    if !self.handle_error(mensaje) {
                         return Err(diagnostic);
                     }
                 }
@@ -557,9 +632,256 @@ impl VM {
         }
     }
 
+    /// Registra el archivo de entrada en la caché para que `queri` del propio
+    /// archivo principal se detecte como ciclo en vez de ejecutarlo dos veces.
+    pub fn marcar_entrada(&mut self, id: impl Into<String>) {
+        self.modulos.insert(id.into(), EstadoModulo::Cargando);
+    }
+
+    fn globals_de_mut(&mut self, ambito: usize) -> &mut HashMap<Rc<str>, Value> {
+        if ambito == 0 {
+            &mut self.globals
+        } else {
+            &mut self.ambitos[ambito - 1]
+        }
+    }
+
+    /// Busca un global en el ámbito dado. Los módulos solo ven sus propios
+    /// globales y las builtins; nunca los del script de entrada ni los de otros módulos.
+    fn buscar_global(&self, ambito: usize, nombre: &str) -> Option<&Value> {
+        if ambito == 0 {
+            self.globals.get(nombre)
+        } else {
+            self.ambitos[ambito - 1]
+                .get(nombre)
+                .or_else(|| self.builtins.get(nombre))
+        }
+    }
+
+    /// ¿Se puede enlazar `binding` en `destino`? Rebindear un módulo ya importado
+    /// o tapar una builtin está permitido; pisar cualquier otra cosa no.
+    fn binding_libre(&self, destino: usize, binding: &str, nuevo: Option<&Value>) -> bool {
+        let previo = if destino == 0 {
+            self.globals.get(binding)
+        } else {
+            self.ambitos[destino - 1].get(binding)
+        };
+        match (previo, nuevo) {
+            (None, _) => true,
+            (Some(Value::Nativa(_)), _) => self.builtins.contains_key(binding),
+            (Some(Value::Modulo(_)), Some(Value::Modulo(_))) => true,
+            (Some(Value::ModuloUsuario(a)), Some(Value::ModuloUsuario(b))) => a.id == b.id,
+            _ => false,
+        }
+    }
+
+    fn importar(
+        &mut self,
+        frame_idx: usize,
+        op_offset: usize,
+        path_str: &str,
+        binding: &str,
+    ) -> Result<(), VmError> {
+        let destino = self.frames[frame_idx].closure.ambito;
+        let partes: Vec<&str> = path_str.split("::").collect();
+        let resuelto = self
+            .resolver
+            .resolver(&partes)
+            .map_err(|error| VmError::Resolucion {
+                modulo: path_str.to_string(),
+                error,
+            })?
+            .ok_or_else(|| VmError::ModuloNoEncontrado(path_str.to_string()))?;
+
+        match resuelto {
+            ModuloResuelto::Nativo(modulo) => {
+                if !self.binding_libre(destino, binding, Some(&modulo)) {
+                    return Err(VmError::NombreEnUso(binding.to_string()));
+                }
+                self.track_value(&modulo);
+                self.globals_de_mut(destino)
+                    .insert(Rc::from(binding), modulo);
+                Ok(())
+            }
+            ModuloResuelto::Fuente { id, source } => match self.modulos.get(&id).cloned() {
+                Some(EstadoModulo::Cargado(modulo)) => {
+                    if !self.binding_libre(destino, binding, Some(&modulo)) {
+                        return Err(VmError::NombreEnUso(binding.to_string()));
+                    }
+                    self.globals_de_mut(destino)
+                        .insert(Rc::from(binding), modulo);
+                    Ok(())
+                }
+                Some(EstadoModulo::Cargando) => {
+                    Err(VmError::ImportCircular(self.cadena_imports(Some(path_str))))
+                }
+                None => {
+                    if !self.binding_libre(destino, binding, None) {
+                        return Err(VmError::NombreEnUso(binding.to_string()));
+                    }
+                    self.cargar_modulo(frame_idx, op_offset, id, source, path_str, binding)
+                }
+            },
+        }
+    }
+
+    /// Compila el módulo, le crea su ámbito y empuja su frame de inicialización.
+    /// el loop principal lo ejecuta como cualquier otro frame.
+    fn cargar_modulo(
+        &mut self,
+        frame_idx: usize,
+        op_offset: usize,
+        id: String,
+        source: Arc<SourceFile>,
+        path_str: &str,
+        binding: &str,
+    ) -> Result<(), VmError> {
+        let carga = |causa: WnDiagnostic| VmError::Carga {
+            modulo: path_str.to_string(),
+            causa: Box::new(causa),
+        };
+        let tokens = tokenizar_archivo(source.src(), source.filename()).map_err(carga)?;
+        let stmts = parsear(tokens, source.src(), source.filename()).map_err(carga)?;
+        let (chunk, exportados) = compilar_modulo(&stmts, source.clone()).map_err(carga)?;
+
+        let (destino, sitio_src, sitio_span) = {
+            let frame = &self.frames[frame_idx];
+            let chunk = &frame.closure.funcion.chunk;
+            let span = &chunk.spans[op_offset];
+            (
+                frame.closure.ambito,
+                chunk.source.clone(),
+                (span.start, span.end),
+            )
+        };
+
+        self.ambitos.push(HashMap::new());
+        let ambito = self.ambitos.len();
+        self.modulos.insert(id.clone(), EstadoModulo::Cargando);
+
+        let funcion = Rc::new(ObjFunction {
+            chunk,
+            aridad: 0,
+            nombre: path_str.to_string(),
+            upvalues: Vec::new(),
+        });
+        let closure = Rc::new(ObjClosure {
+            funcion,
+            ambito,
+            upvalues: RefCell::new(Vec::new()),
+        });
+        self.track_value(&Value::Closure(closure.clone()));
+        self.frames.push(CallFrame {
+            closure,
+            ip: 0,
+            base_slot: self.stack.len(),
+            handlers: Vec::new(),
+            init: Some(InitModulo {
+                id,
+                ambito,
+                nombre: path_str.to_string(),
+                exportados: exportados.into_iter().collect(),
+                destino,
+                binding: binding.to_string(),
+                sitio_src,
+                sitio_span,
+            }),
+        });
+        Ok(())
+    }
+
+    /// El frame del módulo terminó bien, queda cargado en la caché y se enlaza
+    /// en el ámbito del importador.
+    fn completar_modulo(&mut self, init: InitModulo) {
+        let modulo = Value::ModuloUsuario(Rc::new(ObjModulo {
+            id: init.ambito,
+            nombre: init.nombre,
+            exportados: init.exportados,
+        }));
+        self.modulos
+            .insert(init.id, EstadoModulo::Cargado(modulo.clone()));
+        self.globals_de_mut(init.destino)
+            .insert(Rc::from(init.binding.as_str()), modulo);
+    }
+
+    /// La inicialización del módulo falló, no queda en la caché ni con estado parcial.
+    fn abandonar_modulo(&mut self, init: &InitModulo) {
+        self.modulos.remove(&init.id);
+        self.ambitos[init.ambito - 1].clear();
+    }
+
+    fn leer_exportado(
+        &self,
+        modulo: &ObjModulo,
+        binding: &str,
+        campo: &str,
+    ) -> Result<Value, VmError> {
+        let ambito = &self.ambitos[modulo.id - 1];
+        if modulo.exportados.contains(campo)
+            && let Some(valor) = ambito.get(campo)
+        {
+            return Ok(valor.clone());
+        }
+        if ambito.contains_key(campo) {
+            return Err(VmError::NoExportado {
+                modulo: binding.to_string(),
+                campo: campo.to_string(),
+            });
+        }
+        let mut disponibles: Vec<String> = modulo.exportados.iter().cloned().collect();
+        disponibles.sort();
+        Err(VmError::ExportInexistente {
+            modulo: binding.to_string(),
+            campo: campo.to_string(),
+            disponibles,
+        })
+    }
+
+    fn cadena_imports(&self, extra: Option<&str>) -> String {
+        let archivo = |nombre: &str| format!("{}.cl", nombre.replace("::", "/"));
+        let origen = self
+            .frames
+            .first()
+            .map(|frame| {
+                let filename = frame.closure.funcion.chunk.source.filename();
+                std::path::Path::new(filename).file_name().map_or_else(
+                    || filename.to_string(),
+                    |n| n.to_string_lossy().into_owned(),
+                )
+            })
+            .unwrap_or_else(|| "<principal>".to_string());
+        let mut cadena = vec![origen];
+        cadena.extend(
+            self.frames
+                .iter()
+                .filter_map(|frame| frame.init.as_ref())
+                .map(|init| archivo(&init.nombre)),
+        );
+        cadena.extend(extra.map(archivo));
+        cadena.join(" → ")
+    }
+
+    /// Si el error ocurrió dentro de uno o más módulos en inicialización, lo envuelve
+    /// con el sitio del `queri` más externo y la cadena de imports. El diagnóstico
+    /// original (con su archivo y span) queda como causa.
+    fn envolver_error_de_modulo(&self, diagnostic: WnDiagnostic) -> WnDiagnostic {
+        let Some(externo) = self.frames.iter().find_map(|frame| frame.init.as_ref()) else {
+            return diagnostic;
+        };
+        let (inicio, fin) = externo.sitio_span;
+        WnDiagnostic::error_en_modulo(
+            &externo.sitio_src,
+            externo.sitio_src.span(inicio, fin),
+            self.cadena_imports(None),
+            diagnostic,
+        )
+    }
+
     fn registrar_nativas(&mut self) {
         for nativa in builtins::NATIVAS_CORE {
             self.globals
+                .insert(Rc::from(nativa.nombre), Value::Nativa(*nativa));
+            self.builtins
                 .insert(Rc::from(nativa.nombre), Value::Nativa(*nativa));
         }
     }
@@ -579,6 +901,7 @@ impl VM {
                     ip: 0,
                     base_slot,
                     handlers: Vec::new(),
+                    init: None,
                 });
                 Ok(())
             }
@@ -636,7 +959,12 @@ impl VM {
             self.mark_value(value);
         }
 
-        let global_roots = self.globals.values().cloned().collect::<Vec<_>>();
+        let global_roots = self
+            .globals
+            .values()
+            .chain(self.ambitos.iter().flat_map(|ambito| ambito.values()))
+            .cloned()
+            .collect::<Vec<_>>();
         for value in &global_roots {
             self.mark_value(value);
         }
@@ -706,7 +1034,11 @@ impl VM {
                 GcKind::Iterador,
                 std::mem::size_of_val(&*iter.borrow()),
             ),
-            Value::Numero(_) | Value::Booleano(_) | Value::Nada | Value::Nativa(_) => {}
+            Value::Numero(_)
+            | Value::Booleano(_)
+            | Value::Nada
+            | Value::Nativa(_)
+            | Value::ModuloUsuario(_) => {}
         }
     }
 
@@ -798,7 +1130,11 @@ impl VM {
                     }
                 }
             }
-            Value::Numero(_) | Value::Booleano(_) | Value::Nada | Value::Nativa(_) => {}
+            Value::Numero(_)
+            | Value::Booleano(_)
+            | Value::Nada
+            | Value::Nativa(_)
+            | Value::ModuloUsuario(_) => {}
         }
     }
 
@@ -848,10 +1184,12 @@ impl VM {
     fn alloc_closure(
         &mut self,
         funcion: Rc<ObjFunction>,
+        ambito: usize,
         upvalues: Vec<Rc<RefCell<ObjUpvalue>>>,
     ) -> Value {
         let value = Value::Closure(Rc::new(ObjClosure {
             funcion,
+            ambito,
             upvalues: RefCell::new(upvalues),
         }));
         self.track_value(&value);
@@ -1179,6 +1517,10 @@ impl VM {
         let frame = self.frames.pop().expect("frame activo");
         self.close_upvalues(frame.base_slot);
         self.stack.truncate(frame.base_slot);
+        if let Some(init) = frame.init {
+            self.completar_modulo(init);
+            return None;
+        }
         if self.frames.is_empty() {
             Some(resultado)
         } else {
@@ -1201,6 +1543,9 @@ impl VM {
             let frame = self.frames.pop().expect("frame activo");
             self.close_upvalues(frame.base_slot);
             self.stack.truncate(frame.base_slot);
+            if let Some(init) = frame.init {
+                self.abandonar_modulo(&init);
+            }
         }
         false
     }
@@ -1242,11 +1587,72 @@ impl VM {
             VmError::TextoNoConvertibleANumero(valor) => {
                 WnDiagnostic::texto_no_convertible(&source, source_span, valor.clone())
             }
-            VmError::ModuloNoEncontrado(_)
-            | VmError::CampoNoExisteEnModulo { .. }
-            | VmError::NoEsModulo(_) => {
+            VmError::CampoNoExisteEnModulo { .. } | VmError::NoEsModulo(_) => {
                 WnDiagnostic::runtime(&source, source_span, err.to_string())
             }
+            VmError::ModuloNoEncontrado(modulo) => {
+                let archivo = format!("{}.cl", modulo.replace("::", "/"));
+                WnDiagnostic::modulo_no_encontrado(
+                    &source,
+                    source_span,
+                    modulo.clone(),
+                    format!(
+                        "Busqué `{archivo}` desde la raíz del proyecto y entre los módulos de la biblioteca estándar (`queri std::cadena`). Revisá el nombre y la ruta."
+                    ),
+                )
+            }
+            VmError::Resolucion { modulo, error } => match error {
+                ErrorResolucion::Reservado(nombre) => {
+                    WnDiagnostic::modulo_reservado(&source, source_span, nombre.clone())
+                }
+                ErrorResolucion::FueraDeRaiz { ruta } => WnDiagnostic::modulo_ilegible(
+                    &source,
+                    source_span,
+                    modulo.clone(),
+                    format!("'{ruta}' queda fuera de la raíz del proyecto"),
+                ),
+                ErrorResolucion::Ilegible { ruta, causa } => WnDiagnostic::modulo_ilegible(
+                    &source,
+                    source_span,
+                    modulo.clone(),
+                    format!("{ruta}: {causa}"),
+                ),
+                ErrorResolucion::Conflicto { candidatos } => WnDiagnostic::modulo_conflicto(
+                    &source,
+                    source_span,
+                    modulo.clone(),
+                    format!("lo reclaman: {}", candidatos.join(" y ")),
+                ),
+            },
+            VmError::ImportCircular(cadena) => {
+                WnDiagnostic::import_circular(&source, source_span, cadena.clone())
+            }
+            VmError::NombreEnUso(nombre) => {
+                WnDiagnostic::nombre_en_uso(&source, source_span, nombre.clone())
+            }
+            VmError::NoExportado { modulo, campo } => {
+                WnDiagnostic::no_exportado(&source, source_span, modulo.clone(), campo.clone())
+            }
+            VmError::ExportInexistente {
+                modulo,
+                campo,
+                disponibles,
+            } => {
+                let ayuda = if disponibles.is_empty() {
+                    format!(
+                        "El módulo '{modulo}' no exporta nada todavía; marcá con `convida` lo que quieras compartir."
+                    )
+                } else {
+                    format!("Lo que '{modulo}' comparte: {}.", disponibles.join(", "))
+                };
+                WnDiagnostic::export_inexistente(&source, source_span, campo.clone(), ayuda)
+            }
+            VmError::Carga { modulo, causa } => WnDiagnostic::error_en_modulo(
+                &source,
+                source_span,
+                self.cadena_imports(Some(modulo)),
+                (**causa).clone(),
+            ),
             VmError::EntradaAgotada => WnDiagnostic::runtime(&source, source_span, err.to_string()),
             VmError::OpcodeInvalido(_) | VmError::StackUnderflow => {
                 WnDiagnostic::interno(err.to_string())

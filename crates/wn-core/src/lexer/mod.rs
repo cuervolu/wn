@@ -172,6 +172,7 @@ impl Lexer {
             "sigue" => TokenKind::Sigue,
             "queri" => TokenKind::Queri,
             "como" => TokenKind::Como,
+            "convida" => TokenKind::Convida,
             _ => TokenKind::Ident(s),
         }
     }
