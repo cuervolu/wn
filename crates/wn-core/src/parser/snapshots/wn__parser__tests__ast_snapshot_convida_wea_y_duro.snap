@@ -1,0 +1,48 @@
+---
+source: crates/wn-core/src/parser/mod.rs
+expression: ast
+---
+[
+    Exportar {
+        decl: DeclWea {
+            nombre: "x",
+            valor: Numero(
+                1.0,
+                Span {
+                    start: 16,
+                    end: 17,
+                },
+            ),
+            es_duro: false,
+            span: Span {
+                start: 8,
+                end: 17,
+            },
+        },
+        span: Span {
+            start: 0,
+            end: 17,
+        },
+    },
+    Exportar {
+        decl: DeclWea {
+            nombre: "PI",
+            valor: Numero(
+                3.0,
+                Span {
+                    start: 36,
+                    end: 37,
+                },
+            ),
+            es_duro: true,
+            span: Span {
+                start: 26,
+                end: 37,
+            },
+        },
+        span: Span {
+            start: 18,
+            end: 37,
+        },
+    },
+]

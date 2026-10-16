@@ -95,6 +95,13 @@ pub enum Stmt {
         span: Span,
     },
 
+    /// `convida pega f() { ... }`, `convida wea x = 1`, `convida duro K = 2`
+    /// Marca una declaración de nivel raíz como accesible desde otros módulos.
+    Exportar {
+        decl: Box<Stmt>,
+        span: Span,
+    },
+
     DeclPega {
         nombre: String,
         params: Vec<String>,
@@ -187,6 +194,7 @@ impl Stmt {
             Stmt::Expresion { span, .. }
             | Stmt::DeclWea { span, .. }
             | Stmt::DeclPega { span, .. }
+            | Stmt::Exportar { span, .. }
             | Stmt::Cachai { span, .. }
             | Stmt::Mientras { span, .. }
             | Stmt::Para { span, .. }

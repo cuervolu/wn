@@ -44,7 +44,7 @@
       }
     },
     "keywords": {
-      "match": "\\b(wea|duro|pega|cachai|si|no|mientras|para|en|ojo|cago|devolver|cortala|sigue|queri|como)\\b",
+      "match": "\\b(wea|duro|pega|cachai|si|no|mientras|para|en|ojo|cago|devolver|cortala|sigue|queri|como|convida)\\b",
       "name": "keyword.control.wn"
     },
     "builtins": {

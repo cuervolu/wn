@@ -106,6 +106,8 @@ pub struct Compiler {
     contexts: Vec<FunctionContext>,
     duro_globals: HashSet<String>,
     script_locals_enabled: bool,
+    /// Nombres de nivel raíz marcados con `convida`.
+    exportados: Vec<String>,
 }
 
 impl Compiler {
@@ -114,6 +116,7 @@ impl Compiler {
             contexts: vec![FunctionContext::new_script(nombre, source)],
             duro_globals: HashSet::new(),
             script_locals_enabled: true,
+            exportados: Vec::new(),
         }
     }
 
@@ -124,6 +127,15 @@ impl Compiler {
     pub fn compile_repl(mut self, stmts: &[Stmt]) -> Result<Chunk, WnDiagnostic> {
         self.script_locals_enabled = false;
         self.compile_impl(stmts, true)
+    }
+
+    /// Compila un archivo como módulo. Todo el nivel raíz vive como global del módulo
+    /// (igual que en el REPL), para que las funciones y el importador vean siempre el
+    /// valor actual de cada binding. Devuelve además los nombres marcados con `convida`.
+    pub fn compile_modulo(mut self, stmts: &[Stmt]) -> Result<(Chunk, Vec<String>), WnDiagnostic> {
+        self.script_locals_enabled = false;
+        let chunk = self.compile_impl(stmts, false)?;
+        Ok((chunk, self.exportados))
     }
 
     fn compile_impl(&mut self, stmts: &[Stmt], repl: bool) -> Result<Chunk, WnDiagnostic> {
@@ -172,6 +184,15 @@ impl Compiler {
                 span,
             } => {
                 self.stmt_importar(path, items, alias.as_deref(), span)?;
+            }
+            Stmt::Exportar { decl, .. } => {
+                self.stmt(decl)?;
+                match &**decl {
+                    Stmt::DeclWea { nombre, .. } | Stmt::DeclPega { nombre, .. } => {
+                        self.exportados.push(nombre.clone());
+                    }
+                    _ => unreachable!("el parser solo permite convida sobre pega, wea o duro"),
+                }
             }
             Stmt::DeclPega {
                 nombre,
@@ -283,6 +304,11 @@ impl Compiler {
                 span,
             } => {
                 self.stmt_importar(path, items, alias.as_deref(), span)?;
+                self.emit_opcode(OpCode::Nada, span.clone());
+            }
+            Stmt::Exportar { span, .. } => {
+                // El parser solo acepta `convida` al nivel raíz, nunca en cola de bloque.
+                self.stmt(stmt)?;
                 self.emit_opcode(OpCode::Nada, span.clone());
             }
             Stmt::Cortala(span) => self.stmt_cortala(span)?,
@@ -1156,6 +1182,14 @@ impl Compiler {
 
 pub fn compilar(stmts: &[Stmt], source: Arc<SourceFile>) -> Result<Chunk, WnDiagnostic> {
     Compiler::new("<script>", source).compile(stmts)
+}
+
+/// Compila un archivo de módulo. Ver [`Compiler::compile_modulo`].
+pub fn compilar_modulo(
+    stmts: &[Stmt],
+    source: Arc<SourceFile>,
+) -> Result<(Chunk, Vec<String>), WnDiagnostic> {
+    Compiler::new("<modulo>", source).compile_modulo(stmts)
 }
 
 pub fn compilar_repl(stmts: &[Stmt], source: Arc<SourceFile>) -> Result<Chunk, WnDiagnostic> {

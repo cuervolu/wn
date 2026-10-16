@@ -87,9 +87,32 @@ impl Parser {
     pub fn parsear(&mut self) -> Result<Vec<Stmt>, WnDiagnostic> {
         let mut stmts = Vec::new();
         while !self.is_at_end() {
-            stmts.push(self.parse_stmt()?);
+            if self.check(&TokenKind::Convida) {
+                stmts.push(self.parse_exportar()?);
+            } else {
+                stmts.push(self.parse_stmt()?);
+            }
         }
         Ok(stmts)
+    }
+
+    /// `convida` solo se acepta al nivel raíz del archivo, delante de `pega`, `wea` o `duro`.
+    fn parse_exportar(&mut self) -> Result<Stmt, WnDiagnostic> {
+        let start = self.peek_span().start;
+        self.advance();
+        let decl = match self.peek() {
+            TokenKind::Wea => self.parse_decl_wea()?,
+            TokenKind::Duro => self.parse_decl_duro()?,
+            TokenKind::Pega => self.parse_decl_pega()?,
+            _ => {
+                let span = self.peek_span().clone();
+                return Err(self.error(&span, "'convida' va antes de 'pega', 'wea' o 'duro'."));
+            }
+        };
+        Ok(Stmt::Exportar {
+            span: Span::new(start, self.previous_span().end),
+            decl: Box::new(decl),
+        })
     }
 
     fn parse_stmt(&mut self) -> Result<Stmt, WnDiagnostic> {
@@ -103,6 +126,13 @@ impl Parser {
             TokenKind::Ojo => self.parse_ojo(),
             TokenKind::Devolver => self.parse_devolver(),
             TokenKind::Queri => self.parse_importar(),
+            TokenKind::Convida => {
+                let span = self.peek_span().clone();
+                Err(self.error(
+                    &span,
+                    "'convida' solo se puede usar al nivel raíz del archivo, no dentro de bloques ni funciones.",
+                ))
+            }
             TokenKind::Cortala => {
                 let span = self.peek_span().clone();
                 self.advance();
@@ -635,5 +665,46 @@ mod tests {
         let ast = parse_program("wea x = 10 + 20");
 
         assert_debug_snapshot!(ast);
+    }
+
+    fn parse_err(src: &str) -> WnDiagnostic {
+        let tokens = tokenizar(src).unwrap();
+        parsear(tokens, src, "<test>").unwrap_err()
+    }
+
+    #[test]
+    fn ast_snapshot_convida_pega() {
+        let ast = parse_program("convida pega sumar(a, b) { devolver a + b }");
+
+        assert_debug_snapshot!(ast);
+    }
+
+    #[test]
+    fn ast_snapshot_convida_wea_y_duro() {
+        let ast = parse_program("convida wea x = 1\nconvida duro PI = 3");
+
+        assert_debug_snapshot!(ast);
+    }
+
+    #[test]
+    fn convida_solo_acepta_declaraciones() {
+        assert!(matches!(
+            parse_err("convida lorea(1)"),
+            WnDiagnostic::Sintaxis { .. }
+        ));
+    }
+
+    #[test]
+    fn convida_dentro_de_un_bloque_es_error() {
+        for src in [
+            "pega f() { convida wea x = 1 }",
+            "cachai (verdad) { convida pega g() { } }",
+            "mientras (falso) { convida duro K = 1 }",
+        ] {
+            assert!(
+                matches!(parse_err(src), WnDiagnostic::Sintaxis { .. }),
+                "{src}"
+            );
+        }
     }
 }

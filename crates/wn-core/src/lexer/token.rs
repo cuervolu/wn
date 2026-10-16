@@ -57,6 +57,7 @@ pub enum TokenKind {
     Pega,
     Queri,
     Como,
+    Convida,
 
     // Control flow keywords
     Cachai,

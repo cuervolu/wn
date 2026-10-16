@@ -1,0 +1,52 @@
+---
+source: crates/wn-core/src/parser/mod.rs
+expression: ast
+---
+[
+    Exportar {
+        decl: DeclPega {
+            nombre: "sumar",
+            params: [
+                "a",
+                "b",
+            ],
+            cuerpo: [
+                Devolver {
+                    valor: Binario {
+                        izq: Ident(
+                            "a",
+                            Span {
+                                start: 36,
+                                end: 37,
+                            },
+                        ),
+                        op: Suma,
+                        der: Ident(
+                            "b",
+                            Span {
+                                start: 40,
+                                end: 41,
+                            },
+                        ),
+                        span: Span {
+                            start: 36,
+                            end: 41,
+                        },
+                    },
+                    span: Span {
+                        start: 27,
+                        end: 41,
+                    },
+                },
+            ],
+            span: Span {
+                start: 8,
+                end: 43,
+            },
+        },
+        span: Span {
+            start: 0,
+            end: 43,
+        },
+    },
+]
