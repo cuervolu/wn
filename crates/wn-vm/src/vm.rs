@@ -836,7 +836,7 @@ impl VM {
             disponibles,
         })
     }
-    
+
     fn cadena_imports(&self, extra: Option<&str>) -> String {
         let archivo = |nombre: &str| format!("{}.cl", nombre.replace("::", "/"));
         let origen = self

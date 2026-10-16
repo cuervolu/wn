@@ -93,7 +93,7 @@ fn run_file(path: PathBuf) -> miette::Result<()> {
     let loaded = load_source_file(&path)?;
     let stmts = parse_source(&loaded)?;
     let chunk = compile_stmts(&loaded, &stmts)?;
-    
+
     let entrada = path.canonicalize().into_diagnostic()?;
     let raiz = entrada.parent().unwrap_or(Path::new("."));
     let mut vm = crear_vm(Some(raiz))?;
