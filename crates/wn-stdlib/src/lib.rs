@@ -4,9 +4,9 @@
 //! de [`NativeFn`] que el sistema de módulos registra bajo demanda via `queri`.
 //!
 //! ```text
-//! queri texto
+//! queri cadena
 //! queri lista
-//! texto::dividir("hola wn", " ")
+//! cadena::mayusculas("hola wn")
 //! ```
 
 pub mod cadena;

@@ -4,7 +4,12 @@
 //! semántica del VM antes de acoplar el recolector final. La capa de GC se monta
 //! encima de estas referencias rastreando qué objetos siguen alcanzables.
 
-use std::{cell::RefCell, collections::HashMap, fmt, rc::Rc};
+use std::{
+    cell::RefCell,
+    collections::{HashMap, HashSet},
+    fmt,
+    rc::Rc,
+};
 
 use crate::chunk::Chunk;
 pub use crate::native::NativeFn;
@@ -44,7 +49,21 @@ pub struct ObjUpvalue {
 #[derive(Debug)]
 pub struct ObjClosure {
     pub funcion: Rc<ObjFunction>,
+    /// Ámbito de globales del módulo donde se definió la closure (0 = raíz).
+    /// Se hereda de quien la crea, nunca de quien la invoca.
+    pub ambito: usize,
     pub upvalues: RefCell<Vec<Rc<RefCell<ObjUpvalue>>>>,
+}
+
+/// Módulo de usuario instanciado que apunta al ámbito del módulo y recuerda qué
+/// nombres declaró con `convida`. Los valores se leen en vivo desde el ámbito.
+#[derive(Debug)]
+pub struct ObjModulo {
+    /// Id del ámbito del módulo (≥ 1; el 0 es el ámbito raíz).
+    pub id: usize,
+    /// Nombre con que se importó la primera vez, p. ej. `utilidades::texto`.
+    pub nombre: String,
+    pub exportados: HashSet<String>,
 }
 
 /// Iterador interno del VM. Siempre snapshot-ea al iniciar el `para`.
@@ -64,6 +83,7 @@ pub enum Value {
     Lista(Rc<RefCell<Vec<Value>>>),
     Mapa(Rc<RefCell<HashMap<String, Value>>>),
     Modulo(Rc<HashMap<String, Value>>),
+    ModuloUsuario(Rc<ObjModulo>),
     Funcion(Rc<ObjFunction>),
     Closure(Rc<ObjClosure>),
     Nativa(NativeFn),
@@ -79,7 +99,7 @@ impl Value {
             Value::Booleano(b) => *b,
             Value::Nada => false,
             Value::Texto(s) => !s.is_empty(),
-            Value::Modulo(_) => true,
+            Value::Modulo(_) | Value::ModuloUsuario(_) => true,
             Value::Lista(_)
             | Value::Mapa(_)
             | Value::Funcion(_)
@@ -98,7 +118,7 @@ impl Value {
             Value::Texto(_) => "texto",
             Value::Lista(_) => "lista",
             Value::Mapa(_) => "mapa",
-            Value::Modulo(_) => "modulo",
+            Value::Modulo(_) | Value::ModuloUsuario(_) => "modulo",
             Value::Funcion(_) | Value::Closure(_) | Value::Nativa(_) => "pega",
             Value::Iterador(_) => "iterador",
         }
@@ -154,6 +174,7 @@ impl fmt::Display for Value {
             Value::Nativa(_) => write!(f, "<pega nativa>"),
             Value::Iterador(_) => write!(f, "<iterador>"),
             Value::Modulo(m) => write!(f, "<modulo ({} funciones)>", m.len()),
+            Value::ModuloUsuario(m) => write!(f, "<modulo {}>", m.nombre),
         }
     }
 }
