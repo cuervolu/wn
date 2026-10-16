@@ -30,6 +30,9 @@ WN++ ya no está en la etapa de "toy language que apenas corre". Hoy el repo tra
   <Card title="Conversiones y módulos">
     `numero()`, `texto()`, `pregunta()` y `queri` ya forman parte de la base útil del lenguaje.
   </Card>
+  <Card title="Módulos de usuario">
+    `queri` carga archivos `.cl` con ámbito propio, `convida` marca lo que se exporta, y hay caché, detección de ciclos y diagnósticos con la cadena de imports.
+  </Card>
 </Cards>
 
 ## v1.0 - Lenguaje completo y consolidado
@@ -75,7 +78,7 @@ lorea(duplicar(4))
 
 ### Biblioteca estandar mas util
 
-El sistema de modulos ya existe, asi que ahora tiene sentido crecer la stdlib con mas funciones utiles sobre texto, listas, archivos, tiempo y utilidades practicas.
+El sistema de modulos ya existe (stdlib y archivos `.cl` propios), asi que ahora tiene sentido crecer la stdlib con mas funciones utiles sobre texto, listas, archivos, tiempo y utilidades practicas.
 
 El alcance exacto se define mejor a medida que existan programas reales escritos en WN++ que muestren que duele repetir.
 

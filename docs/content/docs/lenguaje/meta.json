@@ -1,4 +1,4 @@
 {
   "title": "Lenguaje",
-  "pages": ["variables", "tipos", "funciones", "control-flujo", "errores"]
+  "pages": ["variables", "tipos", "funciones", "modulos", "control-flujo", "errores"]
 }

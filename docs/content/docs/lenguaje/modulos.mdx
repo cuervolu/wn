@@ -1,0 +1,163 @@
+---
+title: Módulos
+description: Partir un programa en archivos con queri y convida.
+icon: Package
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Un programa de WN++ puede repartirse en varios archivos `.cl`. Cada archivo es un **módulo** con su propio ámbito. Lo que declaras ahí no se mezcla con lo de los demás, y solo se comparte lo que tú marques con `convida`.
+
+## Crear un módulo
+
+Un módulo es un archivo `.cl` cualquiera. Con `convida` decides qué sale hacia afuera. Todo lo demás es privado.
+
+```wn
+// matematicas.cl
+convida duro PI = 3.14159
+
+convida wea llamadas = 0
+
+// Privada: solo existe dentro de este archivo.
+pega validar(a, b) {
+  devolver cachar(a) == "numero" y cachar(b) == "numero"
+}
+
+convida pega sumar(a, b) {
+  llamadas = llamadas + 1
+  cachai (no validar(a, b)) {
+    devolver nada
+  }
+  devolver a + b
+}
+```
+
+`convida` va delante de `pega`, `wea` o `duro`, y **solo al nivel raíz del archivo**. Dentro de una función o un bloque es un error de sintaxis.
+
+<Callout type="info">
+  La visibilidad por defecto es privada. Si usas `matematicas::validar` desde otro archivo, WN++ te avisa que no es público y te sugiere `convida`.
+</Callout>
+
+## Importar archivos
+
+`queri` y `::` funcionan igual que con la biblioteca estándar.
+
+```text
+proyecto/
+├── main.cl
+├── matematicas.cl
+└── utilidades/
+    └── texto.cl
+```
+
+```wn
+// main.cl
+queri matematicas
+queri utilidades::texto
+
+lorea(matematicas::sumar(10, 20))
+lorea(texto::saludar("WN++"))
+```
+
+El módulo queda disponible con el **último segmento** del path (`utilidades::texto` queda como `texto`). Para usar otro nombre, o evitar un choque, usa `como`:
+
+```wn
+queri utilidades::texto como t
+
+lorea(t::saludar("WN++"))
+```
+
+Ojo con los nombres de las funciones siempre disponibles: `queri utilidades::texto` deja un módulo llamado `texto` que, dentro de tu archivo, tapa a la función `texto()`. Si todavía la necesitas, importa con `como`.
+
+Si el nombre ya está en uso en tu archivo (por ejemplo una `wea` con el mismo nombre), el import falla antes de ejecutar el módulo; elige otro con `como`.
+
+<Callout type="warn">
+  `queri utilidades::{texto, fechas}` conserva su significado de siempre: importa los **submódulos** `utilidades::texto` y `utilidades::fechas`. No trae símbolos sueltos de un módulo.
+</Callout>
+
+## Qué se comparte y qué no
+
+Cada módulo tiene su propio ámbito:
+
+- Las variables y funciones globales de un archivo no aparecen en los demás.
+- Un módulo no ve las variables del archivo que lo importa, ni las de otros módulos. Solo ve las suyas y las funciones siempre disponibles (`lorea`, `largo`, etc.).
+- Una función siempre usa el ámbito del módulo donde se **definió**, sin importar quién la llame o a dónde la pases.
+
+### Variables exportadas
+
+El importador ve el valor **actual** de lo exportado, no una copia:
+
+```wn
+// contador.cl
+convida wea cuenta = 0
+convida pega subir() { cuenta = cuenta + 1 }
+```
+
+```wn
+queri contador
+
+contador::subir()
+lorea(contador::cuenta)   // 1
+```
+
+Lo que no puedes hacer es reasignar el binding desde afuera: `contador::cuenta = 5` no es válido, y los cambios los hace el módulo dueño (por ejemplo, con `subir()`).
+
+Los valores que son listas o mapas son el mismo objeto en ambos lados: si un módulo exporta una lista llamada `datos`, `modulo::datos[0] = 1` sí modifica el contenido que ve el módulo. `duro` se comporta como siempre: no se puede reasignar.
+
+## Cómo se buscan los archivos
+
+La resolución es determinista y **no depende del directorio desde donde ejecutas `wn`**:
+
+- La **raíz del proyecto** es la carpeta del archivo que ejecutas (`wn proyecto/main.cl` → `proyecto/`). En el REPL es la carpeta desde la que lo lanzaste.
+- `queri a::b` busca `<raíz>/a/b.cl`. Siempre desde la raíz, sin importar qué archivo escriba el `queri`.
+- Los nombres de módulo son identificadores: no se pueden usar `..` ni rutas con `/`.
+- Un archivo (o un enlace simbólico) que termine fuera de la raíz se rechaza.
+- Dos imports distintos que apunten al mismo archivo son el mismo módulo.
+
+## Caché e inicialización
+
+Un módulo se ejecuta **una sola vez** por ejecución del programa, la primera vez que alguien lo importa. Los demás importadores reciben la misma instancia y comparten su estado:
+
+```wn
+// base.cl
+lorea("cargando base")
+convida wea valor = 1
+```
+
+Si `a.cl` y `b.cl` hacen `queri base`, "cargando base" se imprime una vez.
+
+Si la inicialización de un módulo falla, no queda guardado: ni ese módulo ni los que lo estaban importando quedan en la caché a medias. Puedes capturar el fallo con `ojo ... cago`, y corregir el archivo y reintentar el `queri` en el mismo REPL.
+
+### REPL
+
+El REPL usa una sola VM, así que los módulos importados y la caché se mantienen entre líneas. Si cambias un módulo en disco después de importarlo con éxito, el REPL sigue usando la versión cargada; para ver los cambios hay que reiniciar el REPL.
+
+## Dependencias circulares
+
+Las importaciones circulares se rechazan, y el error muestra la cadena completa:
+
+```text
+Importación circular: main.cl → a.cl → b.cl → c.cl → a.cl
+```
+
+El archivo que ejecutas también cuenta: si un módulo hace `queri main`, es un ciclo.
+
+## Módulos locales y biblioteca estándar
+
+|                      | Biblioteca estándar                 | Archivos `.cl`                             |
+|----------------------|-------------------------------------|--------------------------------------------|
+| Ejemplo              | `queri cadena`, `queri std::cadena` | `queri matematicas`                        |
+| Origen               | Funciones nativas dentro de `wn`    | Tu código, en disco                        |
+| Exportaciones        | Todas sus funciones                 | Solo lo marcado con `convida`              |
+| Con `wn-wasm` (tour) | Disponible                          | No disponible (no hay sistema de archivos) |
+
+- **`std::` está reservado** para la biblioteca estándar. No se busca nunca en disco, y no puedes tener un módulo propio llamado `std`.
+- Si escribes un nombre sin `std::` (por ejemplo `queri cadena`) y existen **tanto** el módulo de la biblioteca estándar **como** un archivo `cadena.cl`, es un error de ambigüedad. Renombra tu archivo, o usa `queri std::cadena` para elegir la biblioteca estándar.
+
+## Ejemplo completo
+
+Hay un proyecto funcional en [`examples/modulos`](https://github.com/cuervolu/wn/tree/main/examples/modulos):
+
+```sh
+wn examples/modulos/main.cl
+```
